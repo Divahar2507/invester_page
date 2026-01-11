@@ -214,17 +214,17 @@ const BrowsePitches = () => {
                                 {startup.connectionStatus === 'accepted' ? (
                                     <button onClick={() => handleMessage(startup)} className="w-full py-2 bg-emerald-100 text-emerald-700 rounded-xl text-sm font-bold hover:bg-emerald-200 transition-colors flex items-center justify-center gap-2">
                                         {/* <MessageCircle size={16} /> */}
-                                        Message
+                                        Accepted
                                     </button>
                                 ) : startup.connectionStatus === 'pending' ? (
                                     <button disabled className="w-full py-2 bg-slate-100 text-slate-400 rounded-xl text-sm font-bold flex items-center justify-center gap-2 cursor-not-allowed">
                                         {/* <Clock size={16} /> */}
-                                        Request Sent
+                                        Pending
                                     </button>
                                 ) : (
                                     <button onClick={() => handleConnect(startup)} className="w-full py-2 bg-blue-50 text-blue-600 rounded-xl text-sm font-bold hover:bg-blue-100 transition-colors flex items-center justify-center gap-2">
                                         {/* <UserPlus size={16} /> */}
-                                        Connect
+                                        Send Request
                                     </button>
                                 )}
 

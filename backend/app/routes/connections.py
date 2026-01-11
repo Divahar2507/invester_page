@@ -109,8 +109,7 @@ def get_my_connections(db: Session = Depends(get_db), current_user: User = Depen
         or_(
             Connection.requester_id == current_user.id,
             Connection.receiver_id == current_user.id
-        ),
-        Connection.status == "accepted"
+        )
     ).all()
     
     results = []
