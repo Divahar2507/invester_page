@@ -9,6 +9,7 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     password: str
     role: str = Field(..., pattern="^(startup|investor)$")
+    full_name: str
 
 class UserLogin(UserBase):
     password: str

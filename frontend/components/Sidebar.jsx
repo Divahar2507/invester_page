@@ -3,6 +3,7 @@ import * as React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Settings, LogOut, TrendingUp } from 'lucide-react';
 import { NAV_ITEMS } from '../constants';
+import { api } from '../services/api';
 
 const Sidebar = () => {
     const location = useLocation();
@@ -11,10 +12,7 @@ const Sidebar = () => {
     React.useEffect(() => {
         const fetchUser = async () => {
             try {
-                // We can't import api directly if it causes circular deps or if not available? 
-                // Wait, api.ts is available.
-                // Let's assume we can import it. If not, I'll fix imports.
-                const userData = await import('../services/api').then(m => m.api.getMe());
+                const userData = await api.getMe();
                 setUser(userData);
             } catch (e) {
                 console.error("Failed to fetch user for sidebar", e);
@@ -55,11 +53,7 @@ const Sidebar = () => {
                                     {item.icon}
                                     {item.label}
                                 </div>
-                                {item.badge && (
-                                    <span className="bg-blue-600 text-white text-[10px] px-1.5 py-0.5 rounded-full">
-                                        {item.badge}
-                                    </span>
-                                )}
+
                             </Link>
                         );
                     })}

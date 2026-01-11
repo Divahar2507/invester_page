@@ -5,8 +5,8 @@ import { api } from '../services/api';
 import { Loader2, Eye, EyeOff, TrendingUp } from 'lucide-react';
 
 const Login = () => {
-    const [email, setEmail] = useState('investor@test.com');
-    const [password, setPassword] = useState('password');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);

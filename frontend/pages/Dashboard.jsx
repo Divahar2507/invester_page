@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 const Dashboard = () => {
     const [startups, setStartups] = React.useState([]);
     const [investments, setInvestments] = React.useState([]);
+    const [watchlist, setWatchlist] = React.useState([]);
     const [user, setUser] = React.useState(null);
     const [insight, setInsight] = React.useState(null);
     const [loading, setLoading] = React.useState(true);
@@ -20,13 +21,15 @@ const Dashboard = () => {
     const fetchDashboardData = async () => {
         try {
             setLoading(true);
-            const [userData, pitchesData, investmentsData] = await Promise.all([
+            const [userData, pitchesData, investmentsData, watchlistData] = await Promise.all([
                 api.getMe(),
                 api.getPitchFeed(),
-                api.getInvestments()
+                api.getInvestments(),
+                api.getWatchlist()
             ]);
 
             setUser(userData);
+            setWatchlist(watchlistData);
 
             const mappedStartups = pitchesData.map((pitch) => ({
                 id: pitch.id.toString(),
@@ -158,7 +161,7 @@ const Dashboard = () => {
                                     <p className="text-sm text-slate-600 line-clamp-2 mb-4 leading-relaxed">
                                         {startup.description}
                                     </p>
-                                    <Link to={`/pitch/${startup.id}`} className="block w-full text-center py-2.5 bg-blue-50 text-blue-600 rounded-xl text-sm font-bold hover:bg-blue-100 transition-colors">
+                                    <Link to={`/pitch/${startup.id}`} state={{ startupName: startup.name }} className="block w-full text-center py-2.5 bg-blue-50 text-blue-600 rounded-xl text-sm font-bold hover:bg-blue-100 transition-colors">
                                         Review Deck
                                     </Link>
                                 </div>
@@ -179,24 +182,21 @@ const Dashboard = () => {
                             <Link to="/watchlist" className="text-sm font-semibold text-blue-600 hover:text-blue-700">Manage</Link>
                         </div>
                         <div className="space-y-4">
-                            {[
-                                { name: 'AeroTech', stage: 'Series B', trend: 'Last round: $12M', logo: 'AT', color: 'indigo' },
-                                { name: 'MarketX', stage: 'Seed', trend: 'Pitch Deck Viewed', logo: 'MX', color: 'orange' },
-                                { name: 'BioGen', stage: 'Pre-Seed', trend: 'Meeting scheduled', logo: 'BG', color: 'teal' }
-                            ].map((item, idx) => (
-                                <div key={idx} className="flex items-center justify-between p-2 hover:bg-slate-50 rounded-xl transition-colors group">
+                            {watchlist.slice(0, 5).map((item, idx) => (
+                                <div key={item.id} className="flex items-center justify-between p-2 hover:bg-slate-50 rounded-xl transition-colors group">
                                     <div className="flex items-center gap-3">
                                         <div className={`w-10 h-10 bg-slate-50 text-slate-600 rounded-lg flex items-center justify-center font-bold text-xs`}>
-                                            {item.logo}
+                                            {(item.startup_name || 'S').charAt(0)}
                                         </div>
                                         <div>
-                                            <h4 className="text-sm font-bold text-slate-900">{item.name}</h4>
-                                            <p className="text-[10px] text-slate-500 font-medium">{item.trend}</p>
+                                            <h4 className="text-sm font-bold text-slate-900">{item.startup_name}</h4>
+                                            <p className="text-[10px] text-slate-500 font-medium">Added {new Date(item.added_at).toLocaleDateString()}</p>
                                         </div>
                                     </div>
                                     <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded uppercase">{item.stage}</span>
                                 </div>
                             ))}
+                            {watchlist.length === 0 && <p className="text-slate-500 text-sm p-2">No items in watchlist.</p>}
                         </div>
                     </div>
                     <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">

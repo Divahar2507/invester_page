@@ -9,6 +9,12 @@ import { api } from '../services/api';
 const Portfolio = () => {
     const [investments, setInvestments] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [stats, setStats] = useState({
+        capitalDeployed: '$0',
+        activeStartups: 0,
+        portfolioGrowth: '0%',
+        avgEquity: '0%'
+    });
 
     useEffect(() => {
         fetchInvestments();
@@ -38,6 +44,20 @@ const Portfolio = () => {
                 reviewStatus: 'Completed'
             }));
             setInvestments(mappedInvestments);
+
+            // Calculate Stats
+            const totalInvested = mappedInvestments.reduce((sum, inv) => {
+                const amount = parseFloat(inv.investedAmount.replace(/[^0-9.-]+/g, ""));
+                return sum + (isNaN(amount) ? 0 : amount);
+            }, 0);
+
+            setStats({
+                capitalDeployed: totalInvested.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }),
+                activeStartups: mappedInvestments.length,
+                portfolioGrowth: '+22%', // Mock calculation or derive from current value
+                avgEquity: '8.5%' // Mock or derive
+            });
+
         } catch (err) {
             console.error('Failed to fetch investments', err);
         } finally {
@@ -61,10 +81,10 @@ const Portfolio = () => {
             {/* Grid Summary */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[
-                    { label: 'Capital Deployed', value: '$4.2M', trend: '+15%', icon: <FileText /> },
-                    { label: 'Active Startups', value: '12', trend: '+2 New', icon: <Plus /> },
-                    { label: 'Portfolio Growth', value: '22%', trend: '+4%', icon: <TrendingUp size={22} /> },
-                    { label: 'Avg. Equity Stake', value: '8.5%', trend: 'Stable', icon: <LayoutGrid /> }
+                    { label: 'Capital Deployed', value: stats.capitalDeployed, trend: '+15%', icon: <FileText /> },
+                    { label: 'Active Startups', value: stats.activeStartups, trend: '+2 New', icon: <Plus /> },
+                    { label: 'Portfolio Growth', value: stats.portfolioGrowth, trend: '+4%', icon: <TrendingUp size={22} /> },
+                    { label: 'Avg. Equity Stake', value: stats.avgEquity, trend: 'Stable', icon: <LayoutGrid /> }
                 ].map((stat, idx) => (
                     <div key={idx} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
                         <div className="flex items-center justify-between mb-4">
@@ -167,30 +187,30 @@ const Portfolio = () => {
                             </div>
 
                             <div className="grid grid-cols-3 divide-x divide-slate-100 border-t border-slate-100 p-2 bg-slate-50/30">
-                                <button className="py-3 flex flex-col items-center gap-1 hover:bg-white transition-colors group/btn">
+                                <Link to={`/pitch/${startup.id}`} state={{ startupName: startup.name }} className="py-3 flex flex-col items-center gap-1 hover:bg-white transition-colors group/btn">
                                     <ExternalLink size={18} className="text-slate-400 group-hover/btn:text-blue-600" />
                                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Profile</span>
-                                </button>
-                                <button className="py-3 flex flex-col items-center gap-1 hover:bg-white transition-colors group/btn">
+                                </Link>
+                                <Link to={`/pitch/${startup.id}`} state={{ startupName: startup.name }} className="py-3 flex flex-col items-center gap-1 hover:bg-white transition-colors group/btn">
                                     <FileText size={18} className="text-slate-400 group-hover/btn:text-blue-600" />
                                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Deck</span>
-                                </button>
-                                <button className="py-3 flex flex-col items-center gap-1 hover:bg-white transition-colors group/btn">
+                                </Link>
+                                <Link to="/messages" state={{ conversationStart: startup.name }} className="py-3 flex flex-col items-center gap-1 hover:bg-white transition-colors group/btn">
                                     <MessageCircle size={18} className="text-slate-400 group-hover/btn:text-blue-600" />
                                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Msg</span>
-                                </button>
+                                </Link>
                             </div>
                         </div>
                     ))}
 
                     {/* Add New Card */}
-                    <button className="rounded-3xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center p-8 hover:border-blue-400 hover:bg-blue-50/30 transition-all group bg-white/50 min-h-[400px]">
+                    <Link to="/log-investment" className="rounded-3xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center p-8 hover:border-blue-400 hover:bg-blue-50/30 transition-all group bg-white/50 min-h-[400px]">
                         <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-blue-100 group-hover:text-blue-600 transition-all mb-4">
                             <Plus size={32} />
                         </div>
                         <h3 className="text-lg font-bold text-slate-900 mb-1">Add New Investment</h3>
                         <p className="text-sm text-slate-500">Track a new startup in your portfolio</p>
-                    </button>
+                    </Link>
                 </div>
             )}
         </div>

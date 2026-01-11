@@ -29,14 +29,16 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     if user.role == "investor":
         investor_profile = InvestorProfile(
             user_id=new_user.id,
-            firm_name="My Firm", # Default placeholder
+            firm_name=user.full_name, # Use provided name as Firm Name for display
+            contact_name=user.full_name,
             preferred_stage="Seed"
         )
         db.add(investor_profile)
     elif user.role == "startup":
         startup_profile = StartupProfile(
             user_id=new_user.id,
-            company_name="My Startup", # Default placeholder
+            company_name=user.full_name, # Use provided name as Company Name for display
+            founder_name=user.full_name,
             industry="Technology",
             funding_stage="Pre-Seed"
         )

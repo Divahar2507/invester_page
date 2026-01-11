@@ -1,4 +1,4 @@
-const API_URL = 'http://127.0.0.1:8000';
+const API_URL = import.meta.env.PROD ? '/api' : 'http://127.0.0.1:8000';
 
 export const api = {
     login: async (email, password) => {
@@ -15,11 +15,11 @@ export const api = {
         return response.json();
     },
 
-    register: async (email, password, role) => {
+    register: async (email, password, role, full_name) => {
         const response = await fetch(`${API_URL}/auth/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password, role }),
+            body: JSON.stringify({ email, password, role, full_name }),
         });
 
         if (!response.ok) {
@@ -149,6 +149,18 @@ export const api = {
         return response.json();
     },
 
+    getMyConnections: async () => {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('No token found');
+
+        const response = await fetch(`${API_URL}/connections/my`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch connections');
+        return response.json();
+    },
+
     updateStartupProfile: async (data) => {
         const token = localStorage.getItem('token');
         if (!token) throw new Error('No token found');
@@ -204,6 +216,46 @@ export const api = {
         });
 
         if (!response.ok) throw new Error('Failed to fetch investor profile');
+        return response.json();
+    },
+
+    // Watchlist
+    getWatchlist: async () => {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('No token found');
+
+        const response = await fetch(`${API_URL}/watchlist/`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch watchlist');
+        return response.json();
+    },
+
+    addToWatchlist: async (startupId) => {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('No token found');
+
+        const response = await fetch(`${API_URL}/watchlist/add`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ startup_id: startupId })
+        });
+        if (!response.ok) throw new Error('Failed to add to watchlist');
+        return response.json();
+    },
+
+    removeFromWatchlist: async (startupId) => {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('No token found');
+
+        const response = await fetch(`${API_URL}/watchlist/remove/${startupId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to remove from watchlist');
         return response.json();
     }
 };

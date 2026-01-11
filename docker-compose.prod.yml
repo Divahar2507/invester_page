@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: pitch_platform_db_prod
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secure_production_password}
+      POSTGRES_DB: ${POSTGRES_DB:-pitch_platform}
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+    networks:
+      - pitch_prod_network
+
+  # FastAPI Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: pitch_platform_backend_prod
+    restart: always
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-secure_production_password}@db:5432/${POSTGRES_DB:-pitch_platform}
+      SECRET_KEY: ${SECRET_KEY:-change_this_to_a_real_secret_key}
+      ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: 60
+    volumes:
+      - production_uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - pitch_prod_network
+
+  # Nginx Frontend (Serves React App)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: pitch_platform_frontend_prod
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443" # For SSL if configured
+    depends_on:
+      - backend
+    networks:
+      - pitch_prod_network
+
+volumes:
+  postgres_data_prod:
+  production_uploads:
+
+
+networks:
+  pitch_prod_network:
+    driver: bridge
