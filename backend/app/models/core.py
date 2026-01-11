@@ -19,6 +19,7 @@ class User(Base):
     
     sent_connections = relationship("Connection", back_populates="requester", foreign_keys="Connection.requester_id")
     received_connections = relationship("Connection", back_populates="receiver", foreign_keys="Connection.receiver_id")
+    watchlist_items = relationship("Watchlist", back_populates="user", cascade="all, delete-orphan")
 
 class Connection(Base):
     __tablename__ = "connections"
@@ -143,3 +144,13 @@ class Investment(Base):
     status = Column(String, default="Active") # Active, Exited, Needs Attention
     
     investor = relationship("InvestorProfile", back_populates="investments")
+
+class Watchlist(Base):
+    __tablename__ = "watchlist"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    startup_id = Column(Integer, ForeignKey("startup_profiles.id"), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    user = relationship("User", back_populates="watchlist_items")
+    startup = relationship("StartupProfile")

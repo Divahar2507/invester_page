@@ -1,43 +1,55 @@
-import { MOCK_STARTUPS, MOCK_PORTFOLIO, MOCK_MESSAGES } from '../constants';
-
+// Local storage wrapper - mainly for messages/contacts now
 const KEYS = {
     STARTUPS: 'vf_startups',
     PORTFOLIO: 'vf_portfolio',
-    MESSAGES: 'vf_messages'
+    MESSAGES: 'vf_messages',
+    CONTACTS: 'vf_contacts'
 };
 
 export const db = {
     init: () => {
-        if (!localStorage.getItem(KEYS.STARTUPS)) {
-            localStorage.setItem(KEYS.STARTUPS, JSON.stringify(MOCK_STARTUPS));
-        }
-        if (!localStorage.getItem(KEYS.PORTFOLIO)) {
-            localStorage.setItem(KEYS.PORTFOLIO, JSON.stringify(MOCK_PORTFOLIO));
-        }
-        if (!localStorage.getItem(KEYS.MESSAGES)) {
-            localStorage.setItem(KEYS.MESSAGES, JSON.stringify(MOCK_MESSAGES));
-        }
+        // No-op: Real DB used for core data.
+        // Local storage reserved for temporary message caching if needed.
     },
 
-    getStartups: () => JSON.parse(localStorage.getItem(KEYS.STARTUPS) || '[]'),
+    getStartups: () => [], // Deprecated
 
-    getPortfolio: () => JSON.parse(localStorage.getItem(KEYS.PORTFOLIO) || '[]'),
+    getPortfolio: () => [], // Deprecated
 
-    getMessages: () => JSON.parse(localStorage.getItem(KEYS.MESSAGES) || '[]'),
+    getMessages: (userId) => {
+        const key = userId ? `${KEYS.MESSAGES}_${userId}` : KEYS.MESSAGES;
+        const stored = localStorage.getItem(key);
+        if (!stored & userId) {
+            return [];
+        }
+        return JSON.parse(stored || '[]');
+    },
 
-    addMessage: (msg) => {
-        const msgs = db.getMessages();
+    addMessage: (userId, msg) => {
+        const key = userId ? `${KEYS.MESSAGES}_${userId}` : KEYS.MESSAGES;
+        const msgs = db.getMessages(userId);
         msgs.push(msg);
-        localStorage.setItem(KEYS.MESSAGES, JSON.stringify(msgs));
+        localStorage.setItem(key, JSON.stringify(msgs));
         return msgs;
     },
 
-    updateStartup: (updated) => {
-        const startups = db.getStartups();
-        const index = startups.findIndex(s => s.id === updated.id);
-        if (index !== -1) {
-            startups[index] = updated;
-            localStorage.setItem(KEYS.STARTUPS, JSON.stringify(startups));
+    getContacts: (userId) => {
+        const key = userId ? `${KEYS.CONTACTS}_${userId}` : KEYS.CONTACTS;
+        return JSON.parse(localStorage.getItem(key) || '[]');
+    },
+
+    addContact: (userId, contact) => {
+        const key = userId ? `${KEYS.CONTACTS}_${userId}` : KEYS.CONTACTS;
+        const contacts = db.getContacts(userId);
+        const exists = contacts.find(c => c.id === contact.id || c.name === contact.name);
+        if (!exists) {
+            contacts.unshift(contact); // Add to top
+            localStorage.setItem(key, JSON.stringify(contacts));
         }
+        return contacts;
+    },
+
+    updateStartup: (updated) => {
+        // No-op
     }
 };

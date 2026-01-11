@@ -103,6 +103,51 @@ def respond_to_request(response: ConnectionRespond, db: Session = Depends(get_db
     
     return connection
 
+@router.get("/my", response_model=List[ConnectionResponse])
+def get_my_connections(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    connections = db.query(Connection).filter(
+        or_(
+            Connection.requester_id == current_user.id,
+            Connection.receiver_id == current_user.id
+        ),
+        Connection.status == "accepted"
+    ).all()
+    
+    results = []
+    for conn in connections:
+        # Determine the "other" user
+        other_id = conn.receiver_id if conn.requester_id == current_user.id else conn.requester_id
+        other_user = db.query(User).filter(User.id == other_id).first()
+        
+        name = "Unknown"
+        if other_user:
+            if other_user.role == "startup" and other_user.startup_profile:
+                name = other_user.startup_profile.company_name
+            elif other_user.role == "investor" and other_user.investor_profile:
+                name = other_user.investor_profile.firm_name
+            elif other_user.full_name:
+                name = other_user.full_name
+            else:
+                name = other_user.email.split('@')[0]
+        
+        # Construct response
+        # Note: ConnectionResponse expects requester_role but we serve a generic "my connection".
+        # Let's map "requester_name" to the OTHER person's name for UI convenience,
+        # or better, use a specific schema? 
+        # For simplicity, reusing ConnectionResponse but treating 'requester_name' as 'partner_name'.
+        
+        results.append({
+            "id": conn.id,
+            "requester_id": conn.requester_id,
+            "receiver_id": conn.receiver_id,
+            "status": conn.status,
+            "created_at": conn.created_at,
+            "requester_name": name, # Overloading this field for UI display of "Contact Name"
+            "requester_role": other_user.role if other_user else "unknown"
+        })
+        
+    return results
+
 @router.get("/check", response_model=ConnectionStatus)
 def check_connection_status(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     connection = db.query(Connection).filter(

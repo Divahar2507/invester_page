@@ -25,7 +25,7 @@ const Register = () => {
         setLoading(true);
         setError(null);
         try {
-            await api.register(email, password, 'investor');
+            await api.register(email, password, 'investor', fullName);
             navigate('/login');
         } catch (err) {
             setError(err.message || 'Registration failed');
@@ -114,7 +114,7 @@ const Register = () => {
                                         type="text"
                                         value={fullName}
                                         onChange={(e) => setFullName(e.target.value)}
-                                        placeholder="John Doe"
+                                        placeholder="invester name"
                                         className="w-full px-6 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium text-slate-900 placeholder:text-slate-300 shadow-sm"
                                         required
                                     />
@@ -126,7 +126,7 @@ const Register = () => {
                                         type="tel"
                                         value={mobileNumber}
                                         onChange={(e) => setMobileNumber(e.target.value)}
-                                        placeholder="+1 (555) 000-0000"
+                                        placeholder="+91 012 345 6789"
                                         className="w-full px-6 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium text-slate-900 placeholder:text-slate-300 shadow-sm"
                                         required
                                     />
@@ -138,7 +138,7 @@ const Register = () => {
                                         type="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        placeholder="name@firm.vc"
+                                        placeholder="invester@gmail.com"
                                         className="w-full px-6 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium text-slate-900 placeholder:text-slate-300 shadow-sm"
                                         required
                                     />

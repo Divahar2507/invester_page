@@ -82,7 +82,8 @@ def get_pitch_feed(
     db: Session = Depends(get_db), 
     current_user: Optional[User] = Depends(get_current_user_optional) # To be defined or just remove logic
 ):
-    query = db.query(Pitch).join(StartupProfile).filter(Pitch.status != "draft")
+    query = db.query(Pitch).join(StartupProfile)
+    # .filter(Pitch.status != "draft") # Show all for dev purposes as requested
     
     if industry and industry != "All":
         # Case insensitive partial match or exact match depending on requirement

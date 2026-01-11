@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import ShareModal from '../components/ShareModal';
 import {
     ArrowLeft,
@@ -23,11 +23,15 @@ import {
 const PitchDeckView = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
+    // Use the passed startup name if available, otherwise default to EcoCharge
+    const startupName = location.state?.startupName || 'EcoCharge';
+
     const pitchData = {
-        name: 'EcoCharge',
-        fullName: 'EcoCharge Pitch Deck',
+        name: startupName,
+        fullName: `${startupName} Pitch Deck`,
         round: 'Series A',
         updateTime: 'Updated 2 days ago',
         version: 'v2.4',

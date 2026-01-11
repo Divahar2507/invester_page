@@ -1,12 +1,13 @@
 
 import * as React from 'react';
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Search, Filter, Grid, List, ChevronDown, Star, X, TrendingUp, Sparkles, Loader2 } from 'lucide-react';
 import { api } from '../services/api';
 import { aiService } from '../services/aiService';
 
 const BrowsePitches = () => {
+    const navigate = useNavigate();
     const [viewMode, setViewMode] = useState('grid');
     const [startups, setStartups] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -27,6 +28,7 @@ const BrowsePitches = () => {
             const mappedStartups = data.map((pitch) => ({
                 id: pitch.id.toString(),
                 userId: pitch.startup_user_id,
+                startupId: pitch.startup_id, // Added for Watchlist
                 name: pitch.company_name || 'Unknown Company',
                 sector: pitch.industry || 'Unknown',
                 stage: pitch.stage || 'Seed',
@@ -60,6 +62,16 @@ const BrowsePitches = () => {
         }
     };
 
+    const handleAddToWatchlist = async (startupId) => {
+        try {
+            const res = await api.addToWatchlist(startupId);
+            if (res.message) alert(res.message);
+        } catch (e) {
+            console.error(e);
+            alert("Failed to add to watchlist");
+        }
+    };
+
     const handleConnect = async (startup) => {
         try {
             await api.sendConnectionRequest(startup.userId);
@@ -71,10 +83,7 @@ const BrowsePitches = () => {
     };
 
     const handleMessage = (startup) => {
-        // Navigate to messages or open chat modal
-        console.log("Open chat with", startup.name);
-        // For now just alert or log
-        // navigation.navigate('/messages', { userId: startup.userId })
+        navigate('/messages', { state: { conversationStart: startup.name } });
     };
 
     const runAnalysis = async (startup) => {
@@ -163,7 +172,14 @@ const BrowsePitches = () => {
                                             <p className="text-xs text-slate-500 uppercase font-bold tracking-wider">{startup.sector}</p>
                                         </div>
                                     </div>
-                                    <div className="flex flex-col items-end">
+                                    <div className="flex flex-col items-end gap-2">
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); handleAddToWatchlist(startup.startupId); }}
+                                            className="p-1 text-slate-300 hover:text-yellow-400 transition-colors"
+                                            title="Add to Watchlist"
+                                        >
+                                            <Star size={20} />
+                                        </button>
                                         <div className="flex items-center gap-1 text-blue-600 font-bold">
                                             <TrendingUp size={16} />
                                             <span>{startup.matchScore}%</span>
@@ -213,7 +229,7 @@ const BrowsePitches = () => {
                                 )}
 
                                 <div className="flex gap-2">
-                                    <Link to={`/pitch/${startup.id}`} className="flex-1 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-slate-800 transition-colors text-center">
+                                    <Link to={`/pitch/${startup.id}`} state={{ startupName: startup.name }} className="flex-1 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-slate-800 transition-colors text-center">
                                         Pitch Deck
                                     </Link>
                                     <button
