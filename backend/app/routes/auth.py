@@ -3,7 +3,7 @@ from app.dependencies import get_db, get_current_user
 from sqlalchemy.orm import Session
 from app.database import SessionLocal
 from app.models.core import User, InvestorProfile, StartupProfile
-from app.schemas import UserCreate, UserLogin, Token, UserResponse
+from app.schemas import UserCreate, UserLogin, Token, UserResponse, ForgotPasswordRequest, ResetPasswordRequest, GoogleLoginRequest
 from app.utils.security import get_password_hash, verify_password, create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 from datetime import timedelta
 
@@ -64,6 +64,70 @@ def login(user_credentials: UserLogin, db: Session = Depends(get_db)):
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
+@router.post("/google-login", response_model=Token)
+def google_login(request: GoogleLoginRequest, db: Session = Depends(get_db)):
+    try:
+        from google.oauth2 import id_token
+        from google.auth.transport import requests
+        
+        GOOGLE_CLIENT_ID = "835532330363-8lohj8uk8bvqd37nnlpsfl4rslul8nff.apps.googleusercontent.com"
+        
+        # Verify the token
+        id_info = id_token.verify_oauth2_token(request.token, requests.Request(), GOOGLE_CLIENT_ID)
+        
+        email = id_info['email']
+        name = id_info.get('name', '')
+        
+        # Check if user exists
+        user = db.query(User).filter(User.email == email).first()
+        
+        if not user:
+            # Register new user
+            hashed_password = get_password_hash("google_auth_user") # Dummy password for OAuth users
+            user = User(
+                email=email,
+                password_hash=hashed_password,
+                role=request.role
+            )
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+            
+            # Create Profile
+            if user.role == "investor":
+                investor_profile = InvestorProfile(
+                    user_id=user.id,
+                    firm_name=name if name else "My Firm", 
+                    contact_name=name,
+                    preferred_stage="Seed"
+                )
+                db.add(investor_profile)
+            elif user.role == "startup":
+                startup_profile = StartupProfile(
+                    user_id=user.id,
+                    company_name=name if name else "My Startup",
+                    founder_name=name,
+                    industry="Technology",
+                    funding_stage="Pre-Seed"
+                )
+                db.add(startup_profile)
+            
+            db.commit()
+            
+        # Create Access Token
+        access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+        access_token = create_access_token(
+            data={"sub": user.email, "role": user.role}, expires_delta=access_token_expires
+        )
+        return {"access_token": access_token, "token_type": "bearer"}
+
+    except ValueError as e:
+        # Invalid token
+        raise HTTPException(status_code=401, detail="Invalid Google Token")
+    except Exception as e:
+        print(f"Google Login Error: {e}")
+        raise HTTPException(status_code=500, detail="Google Login Failed")
+
 @router.get("/me", response_model=UserResponse)
 def get_current_user_info(current_user: User = Depends(get_current_user)):
     # Enrich user object with profile name
@@ -78,3 +142,52 @@ def get_current_user_info(current_user: User = Depends(get_current_user)):
     # current_user.profile_image = ...
     
     return current_user
+
+@router.post("/forgot-password")
+def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.email == request.email).first()
+    if not user:
+        # Don't reveal if user exists or not, but for dev we might want to know
+        return {"message": "If this email is registered, you will receive a reset link."}
+    
+    # Generate a simple token (mock logic). In prod, use a dedicated reset token table or signed JWT with short expiry
+    reset_token = create_access_token(
+        data={"sub": user.email, "type": "reset"}, 
+        expires_delta=timedelta(minutes=15)
+    )
+    
+    # MOCK SEND EMAIL
+    reset_link = f"http://localhost/#/reset-password?token={reset_token}"
+    print(f"------------ PASSWORD RESET LINK FOR {user.email} ------------")
+    print(reset_link)
+    print("-------------------------------------------------------------")
+    
+    return {"message": "Password reset link sent to email.", "dev_link": reset_link} 
+
+@router.post("/reset-password")
+def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db)):
+    # Verify token
+    try:
+        from jose import jwt, JWTError
+        from app.utils.security import SECRET_KEY, ALGORITHM
+        
+        payload = jwt.decode(request.token, SECRET_KEY, algorithms=[ALGORITHM])
+        email = payload.get("sub")
+        token_type = payload.get("type")
+        
+        if email is None or token_type != "reset":
+            raise HTTPException(status_code=400, detail="Invalid token")
+            
+    except JWTError:
+        raise HTTPException(status_code=400, detail="Invalid or expired token")
+        
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    # Update password
+    hashed_password = get_password_hash(request.new_password)
+    user.password_hash = hashed_password
+    db.commit()
+    
+    return {"message": "Password updated successfully"}

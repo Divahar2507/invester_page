@@ -30,6 +30,45 @@ export const api = {
         return response.json();
     },
 
+    forgotPassword: async (email) => {
+        const response = await fetch(`${API_URL}/auth/forgot-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to send reset email');
+        }
+        return response.json();
+    },
+
+    resetPassword: async (token, newPassword) => {
+        const response = await fetch(`${API_URL}/auth/reset-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token, new_password: newPassword }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to reset password');
+        }
+        return response.json();
+    },
+
+    googleLogin: async (token, role) => {
+        const response = await fetch(`${API_URL}/auth/google-login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token, role }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Google Login failed');
+        }
+        return response.json();
+    },
+
     getMe: async () => {
         const token = localStorage.getItem('token');
         if (!token) throw new Error('No token found');
@@ -42,16 +81,86 @@ export const api = {
         return response.json();
     },
 
-    getPitchFeed: async (industry = 'All', stage = 'All') => {
+    getPitchFeed: async (industry = 'All', stage = 'All', query = '') => {
         let url = `${API_URL}/pitches/feed?skip=0&limit=50`;
         if (industry && industry !== 'All') url += `&industry=${encodeURIComponent(industry)}`;
         if (stage && stage !== 'All') url += `&stage=${encodeURIComponent(stage)}`;
+        if (query) url += `&query=${encodeURIComponent(query)}`;
 
         const token = localStorage.getItem('token');
         const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
 
         const response = await fetch(url, { headers });
         if (!response.ok) throw new Error('Failed to fetch pitch feed');
+        return response.json();
+    },
+
+    recordDecision: async (pitchId, decision) => {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('No token found');
+
+        const response = await fetch(`${API_URL}/pitches/${pitchId}/decision`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ decision })
+        });
+
+        if (!response.ok) throw new Error('Failed to record decision');
+        return response.json();
+    },
+
+    // Social Logic (Comments & Meetings)
+    getComments: async (pitchId) => {
+        const token = localStorage.getItem('token');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        const response = await fetch(`${API_URL}/social/comments/${pitchId}`, { headers });
+        if (!response.ok) throw new Error('Failed to fetch comments');
+        return response.json();
+    },
+
+    postComment: async (data) => {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('No token found');
+
+        const response = await fetch(`${API_URL}/social/comments`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) throw new Error('Failed to post comment');
+        return response.json();
+    },
+
+    scheduleMeeting: async (data) => {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('No token found');
+
+        const response = await fetch(`${API_URL}/social/meetings/schedule`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) throw new Error('Failed to schedule meeting');
+        return response.json();
+    },
+
+    // Documents (Data Room)
+    getDocuments: async (pitchId) => {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('No token found');
+        const response = await fetch(`${API_URL}/pitches/${pitchId}/data-room`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch documents');
         return response.json();
     },
 

@@ -19,7 +19,7 @@ const Navbar = () => {
     }, []);
 
     return (
-        <header className="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-8 sticky top-0 z-30 w-full">
+        <header className="bg-white border-b border-slate-200 h-16 flex items-center justify-between px-8 fixed top-0 right-0 left-64 z-30">
             <div className="flex-1 max-w-2xl">
                 <div className="relative group">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" size={18} />

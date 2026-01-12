@@ -7,25 +7,7 @@ import { api } from '../services/api';
 
 const Sidebar = () => {
     const location = useLocation();
-    const [user, setUser] = React.useState(null);
 
-    React.useEffect(() => {
-        const fetchUser = async () => {
-            try {
-                const userData = await api.getMe();
-                setUser(userData);
-            } catch (e) {
-                console.error("Failed to fetch user for sidebar", e);
-            }
-        };
-        fetchUser();
-    }, []);
-
-    const getRoleLabel = (role) => {
-        if (role === 'investor') return 'Investor';
-        if (role === 'startup') return 'Startup Founder';
-        return role;
-    };
 
     return (
         <div className="w-64 bg-white border-r border-slate-200 h-screen flex flex-col sticky top-0">
@@ -79,19 +61,7 @@ const Sidebar = () => {
                     Logout
                 </button>
 
-                {user && (
-                    <div className="pt-6 flex items-center gap-3">
-                        <img
-                            src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`}
-                            alt="User"
-                            className="w-10 h-10 rounded-full border border-slate-200"
-                        />
-                        <div className="overflow-hidden">
-                            <p className="text-sm font-semibold text-slate-900 truncate">{user.name}</p>
-                            <p className="text-xs text-slate-500 truncate">{getRoleLabel(user.role)}</p>
-                        </div>
-                    </div>
-                )}
+
             </div>
         </div>
     );

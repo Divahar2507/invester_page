@@ -77,22 +77,35 @@ from typing import Optional
 def get_pitch_feed(
     industry: str = None,
     stage: str = None,
+    query: str = None,  # Search query
     skip: int = 0,
     limit: int = 50,
     db: Session = Depends(get_db), 
-    current_user: Optional[User] = Depends(get_current_user_optional) # To be defined or just remove logic
+    current_user: Optional[User] = Depends(get_current_user_optional)
 ):
-    query = db.query(Pitch).join(StartupProfile)
-    # .filter(Pitch.status != "draft") # Show all for dev purposes as requested
+    query_db = db.query(Pitch).join(StartupProfile)
     
+    # 1. Search Logic
+    if query:
+        search_term = f"%{query}%"
+        query_db = query_db.filter(
+            or_(
+                func.lower(StartupProfile.company_name).like(func.lower(search_term)),
+                func.lower(Pitch.title).like(func.lower(search_term)),
+                func.lower(Pitch.description).like(func.lower(search_term)),
+                func.lower(StartupProfile.industry).like(func.lower(search_term)),
+                func.lower(Pitch.tags).like(func.lower(search_term))
+            )
+        )
+
+    # 2. Filters
     if industry and industry != "All":
-        # Case insensitive partial match or exact match depending on requirement
-        query = query.filter(func.lower(StartupProfile.industry) == industry.lower())
+        query_db = query_db.filter(func.lower(StartupProfile.industry) == industry.lower())
         
     if stage and stage != "All":
-        query = query.filter(StartupProfile.funding_stage == stage)
+        query_db = query_db.filter(StartupProfile.funding_stage == stage)
         
-    results = query.offset(skip).limit(limit).all()
+    results = query_db.offset(skip).limit(limit).all()
     
     # Enrich response
     response_list = []
@@ -101,41 +114,36 @@ def get_pitch_feed(
     connections_map = {}
     if current_user:
         from app.models.core import Connection
-        from sqlalchemy import or_, and_
         
-        # Get all connections for this user
-        # This is optimization: fetch all connections where current_user is involved
-        # Then map by other_user_id
-        
-        # Actually, simpler to just query generic connection
-        # Since we are iterating pitches, we want connection status with pitch.startup.user_id
-        
-        # Batch query would be best but let's do loop for simplicity first, or better:
-        # Fetch all connections involving current_user
+        # Batch query for connections
         my_connections = db.query(Connection).filter(
             or_(Connection.requester_id == current_user.id, Connection.receiver_id == current_user.id)
         ).all()
         
         for c in my_connections:
             other_id = c.receiver_id if c.requester_id == current_user.id else c.requester_id
-            # Determine status. 
-            # If rejected, it's 'rejected'. 
-            # If accepted, 'accepted'.
-            # If pending:
-            #  - checks if I sent it ("request_sent") or received it ("request_received")?
-            #  - For simple status string: 'pending' is enough, frontend handles button state.
-            # But wait, frontend needs to know if "Request Sent" (disabled) or "Accept" (action).
-            # The UI shows "Request Sent" if pending. So 'pending' is fine.
-            # If I am receiver and it is pending, I should see "Accept".
-            # Let's just return 'pending'.
             connections_map[other_id] = c.status
 
     for pitch in results:
-        resp = PitchResponse.model_validate(pitch)
-        resp.company_name = pitch.startup.company_name
-        resp.industry = pitch.startup.industry
-        resp.stage = pitch.startup.funding_stage
-        resp.startup_user_id = pitch.startup.user_id
+        # Use simple mapping or model_validate
+        # Construct response manually to ensure all fields are populated correctly logic
+        resp = PitchResponse(
+            id=pitch.id,
+            startup_id=pitch.startup_id,
+            title=pitch.title,
+            description=pitch.description,
+            pitch_file_url=pitch.pitch_file_url,
+            status=pitch.status,
+            raising_amount=pitch.raising_amount,
+            equity_percentage=pitch.equity_percentage,
+            created_at=pitch.created_at,
+            company_name=pitch.startup.company_name,
+            industry=pitch.startup.industry,
+            logo=pitch.startup.user.email[0].upper() if pitch.startup.user and pitch.startup.user.email else "S",
+            stage=pitch.startup.funding_stage,
+            startup_user_id=pitch.startup.user_id,
+            match_score=0 # Calculated below
+        )
         
         # Set connection status
         if current_user:
@@ -146,9 +154,9 @@ def get_pitch_feed(
         else:
             resp.connection_status = "not_connected"
 
-        # Mock match score for now, real implementation would compare with investor preferences
+        # Mock match score for now
         import random
-        resp.match_score = random.randint(60, 99) 
+        resp.match_score = random.randint(75, 99) 
         response_list.append(resp)
         
     return response_list
@@ -156,7 +164,7 @@ def get_pitch_feed(
 @router.post("/{pitch_id}/decision")
 def record_decision(
     pitch_id: int,
-    decision: str = Body(..., embed=True), # Invest, Decline, Archive
+    decision: str = Body(..., embed=True), # Invest, Decline, In Review
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -170,16 +178,11 @@ def record_decision(
     if decision == "Invest":
         pitch.status = "funded"
         
-        # Also create an investment record implicitly for tracking?
-        # Let's check if we have investor profile
+        # Create Investment Record
         if current_user.investor_profile:
-            # Check if already exists to avoid dupes?
-            # Assuming not for now.
-            
             raw_amount = pitch.raising_amount or "0"
             clean_amount = raw_amount.replace('$', '').replace(',', '').strip()
             amount_val = 0.0
-            
             try:
                 if 'M' in clean_amount:
                     amount_val = float(clean_amount.replace('M', '')) * 1_000_000
@@ -203,6 +206,11 @@ def record_decision(
             
     elif decision == "Decline":
         pitch.status = "declined"
+        
+    elif decision == "In Review" or decision == "Review":
+        pitch.status = "under_review"
+        # Logic to 'backup' or save state could be adding to a specific list
+        # But 'under_review' status on pitch is good state persistence.
         
     db.commit()
     return {"message": f"Decision {decision} recorded", "status": pitch.status}

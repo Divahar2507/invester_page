@@ -35,7 +35,7 @@ const Register = () => {
     };
 
     return (
-        <div className="min-h-screen bg-white flex flex-col font-sans">
+        <div className="min-h-screen bg-white flex flex-col font-mono">
             {/* Top Navbar */}
             <div className="w-full px-8 py-5 flex items-center justify-between border-b border-slate-50">
                 <div className="flex items-center gap-2">

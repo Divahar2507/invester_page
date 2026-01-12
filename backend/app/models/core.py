@@ -90,11 +90,30 @@ class Pitch(Base):
     startup_id = Column(Integer, ForeignKey("startup_profiles.id"), nullable=False)
     title = Column(String, nullable=False)
     description = Column(Text)
+    
+    # Document uploads (Data Room)
+    pitch_deck_url = Column(String)  # Main pitch deck (PDF/PPT/DOCX)
+    financial_doc_url = Column(String)  # Financial projections
+    business_plan_url = Column(String)  # Business plan document
+    other_docs_urls = Column(Text)  # JSON array of additional documents
+    
+    # Legacy field (keep for backward compatibility)
     pitch_file_url = Column(String)
+    
     status = Column(String, default="draft") # draft / shared / under_review / funded / declined
     raising_amount = Column(String) # e.g. "$2M"
     equity_percentage = Column(String) # e.g. "10%"
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    # New fields for detailed pitch information
+    industry = Column(String)
+    funding_stage = Column(String)
+    amount_seeking = Column(Integer)  # Amount in dollars
+    business_model = Column(String)
+    revenue_model = Column(String)
+    team_size = Column(Integer)
+    tags = Column(String)  # Comma-separated tags
+    location = Column(String)
     
     startup = relationship("StartupProfile", back_populates="pitches")
 
@@ -154,3 +173,40 @@ class Watchlist(Base):
     
     user = relationship("User", back_populates="watchlist_items")
     startup = relationship("StartupProfile")
+
+class PitchComment(Base):
+    __tablename__ = "pitch_comments"
+    id = Column(Integer, primary_key=True, index=True)
+    pitch_id = Column(Integer, ForeignKey("pitches.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    comment = Column(Text, nullable=False)
+    rating = Column(Integer)  # Optional rating 1-5
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    pitch = relationship("Pitch")
+    user = relationship("User")
+
+class Meeting(Base):
+    __tablename__ = "meetings"
+    id = Column(Integer, primary_key=True, index=True)
+    investor_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    startup_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    pitch_id = Column(Integer, ForeignKey("pitches.id"), nullable=True)
+    
+    title = Column(String, nullable=False)
+    description = Column(Text)
+    meeting_time = Column(DateTime(timezone=True), nullable=False)
+    duration_minutes = Column(Integer, default=30)
+    
+    meet_link = Column(String)  # Google Meet or Zoom link
+    location = Column(String)  # Physical location or "Virtual"
+    
+    status = Column(String, default="scheduled")  # scheduled, completed, cancelled
+    google_calendar_event_id = Column(String)  # For Google Calendar integration
+    
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    investor = relationship("User", foreign_keys=[investor_id])
+    startup = relationship("User", foreign_keys=[startup_id])
+    pitch = relationship("Pitch")
