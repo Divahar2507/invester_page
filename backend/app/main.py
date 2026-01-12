@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from app.database import engine, Base, SessionLocal
 from app.models.core import User, StartupProfile, InvestorProfile
 from app.utils.security import get_password_hash
-from app.routes import auth, startup, investor, pitch, matching, messaging, notifications, images_check, investment, connections, watchlist
+from app.routes import auth, startup, investor, pitch, matching, messaging, notifications, images_check, investment, connections, watchlist, file_upload, social
 from app.middleware.error_handlers import setup_exception_handlers
 import os
 import logging
@@ -60,6 +60,8 @@ app.include_router(images_check.router)
 app.include_router(investment.router)
 app.include_router(connections.router)
 app.include_router(watchlist.router)
+app.include_router(file_upload.router)
+app.include_router(social.router)
 
 # Health Check Endpoint
 @app.get("/health")
@@ -141,41 +143,112 @@ def seed_data():
             db.add(pitch1)
 
         # Additional Seeding for Pitches if empty (or just add new ones if missing users)
-        if db.query(Pitch).count() < 3:
-            print("Seeding additional pitches...")
-            # Create Mock Startups and Pitches
-            mocks = [
+        if db.query(Pitch).count() < 10:
+            print("Seeding realistic pitch data...")
+            # Realistic startup pitches
+            pitches_data = [
                 {
-                    "email": "eco@test.com", "company": "EcoCharge", "industry": "CleanTech", "stage": "Series A",
-                    "desc": "Wireless charging for EVs at stopping lights.", "ask": "$12M"
+                    "email": "ecotech@startup.com", "company": "EcoTech Solutions", "industry": "Clean Technology", 
+                    "stage": "Seed", "founder": "Raj Kumar",
+                    "title": "AI-Powered Solar Energy Optimization Platform",
+                    "desc": "We're revolutionizing solar energy with AI-driven optimization that increases energy output by 35% using weather prediction and smart routing algorithms.",
+                    "ask": "$500,000", "team_size": 5, "revenue": "Pre-revenue",
+                    "tags": "AI,Clean Energy,SaaS"
                 },
                 {
-                    "email": "med@test.com", "company": "BioLife", "industry": "HealthTech", "stage": "Seed",
-                    "desc": "Personalized medicine using CRISPR.", "ask": "$2M"
+                    "email": "healthtrack@startup.com", "company": "HealthTrack AI", "industry": "Healthcare", 
+                    "stage": "Series A", "founder": "Dr. Priya Shah",
+                    "title": "Personal Health Assistant powered by Machine Learning",
+                    "desc": "AI-driven platform that predicts health risks 90 days in advance through wearable data analysis. Already serving 50,000+ users across India.",
+                    "ask": "$2,000,000", "team_size": 15, "revenue": "$500K ARR",
+                    "tags": "Healthcare,AI,Wearables"
                 },
                 {
-                    "email": "fin@test.com", "company": "BlockPay", "industry": "FinTech", "stage": "Pre-Seed",
-                    "desc": "Seamless crypto payments for retail.", "ask": "$500k"
+                    "email": "farmconnect@startup.com", "company": "FarmConnect", "industry": "Agriculture Technology", 
+                    "stage": "Pre-Seed", "founder": "Kumar Patel",
+                    "title": "B2B Marketplace connecting farmers directly to restaurants",
+                    "desc": "Eliminating middlemen in farm-to-table supply chain. Helping 1000+ farmers increase income by 40% while restaurants save 25% on produce costs.",
+                    "ask": "$250,000", "team_size": 3, "revenue": "Pre-revenue",
+                    "tags": "Marketplace,Agriculture,Supply Chain"
+                },
+                {
+                    "email": "eduverse@startup.com", "company": "EduVerse Learning", "industry": "Education Technology", 
+                    "stage": "Seed", "founder": "Ananya Reddy",
+                    "title": "Immersive VR/AR Platform for K-12 Education",
+                    "desc": "Making complex subjects fun through immersive 3D experiences. Partnered with 50+ schools, 10,000+ active students. 85% improvement in test scores.",
+                    "ask": "$750,000", "team_size": 8, "revenue": "$120K ARR",
+                    "tags": "EdTech,VR/AR,K-12"
+                },
+                {
+                    "email": "finsecure@startup.com", "company": "FinSecure Pro", "industry": "Financial Technology", 
+                    "stage": "Series A", "founder": "Vikram Singh",
+                    "title": "AI-Based Fraud Detection for Digital Payments",
+                    "desc": "Real-time fraud detection preventing $2M+ in fraudulent transactions monthly. Processing 100K+ transactions daily for 20+ fintech clients.",
+                    "ask": "$3,000,000", "team_size": 20, "revenue": "$1.2M ARR",
+                    "tags": "Fintech,AI,Security"
+                },
+                {
+                    "email": "greenlogistics@startup.com", "company": "GreenLogistics Hub", "industry": "Logistics", 
+                    "stage": "Seed", "founder": "Arjun Menon",
+                    "title": "Carbon-Neutral Last-Mile Delivery Network",
+                    "desc": "Building India's first 100% electric delivery fleet. Operating in 5 cities with 200+ EVs. Reducing delivery costs by 30% while eliminating emissions.",
+                    "ask": "$1,000,000", "team_size": 12, "revenue": "$300K ARR",
+                    "tags": "Logistics,Clean Energy,EV"
+                },
+                {
+                    "email": "styleai@startup.com", "company": "StyleAI Wardrobe", "industry": "Fashion Technology", 
+                    "stage": "Pre-Seed", "founder": "Neha Gupta",
+                    "title": "AI Personal Stylist & Virtual Try-On Platform",
+                    "desc": "AI-powered fashion recommendations with AR try-on. 50,000+ downloads, 35% conversion rate. Partnered with 100+ fashion brands.",
+                    "ask": "$400,000", "team_size": 4, "revenue": "Pre-revenue",
+                    "tags": "Fashion,AI,AR"
+                },
+                {
+                    "email": "cybershield@startup.com", "company": "CyberShield Sentinel", "industry": "Cybersecurity", 
+                    "stage": "Series B", "founder": "Rahul Verma",
+                    "title": "Enterprise-Grade Zero-Trust Security Platform",
+                    "desc": "Protecting 500+ enterprises from cyber threats. Prevented 10,000+ attacks last year. YoY growth of 300%. Expanding to SE Asia.",
+                    "ask": "$5,000,000", "team_size": 45, "revenue": "$3.5M ARR",
+                    "tags": "Cybersecurity,Enterprise,SaaS"
+                },
+                {
+                    "email": "foodsense@startup.com", "company": "FoodSense Labs", "industry": "Food Technology", 
+                    "stage": "Seed", "founder": "Meera Krishnan",
+                    "title": "Smart Kitchen Assistant with Nutritional Tracking",
+                    "desc": "IoT device that tracks ingredient freshness, suggests recipes, and monitors nutritional intake. 15,000 units sold in pre-orders.",
+                    "ask": "$600,000", "team_size": 7, "revenue": "$180K MRR",
+                    "tags": "IoT,Food Tech,Hardware"
+                },
+                {
+                    "email": "proptech@startup.com", "company": "PropTech Innovations", "industry": "Real Estate Technology", 
+                    "stage": "Seed", "founder": "Sanjay Nair",
+                    "title": "Virtual Property Tours & AI-Powered Matching",
+                    "desc": "3D virtual tours + AI matching buyers to perfect properties. Listed 5000+ properties. 25% faster sale cycles for real estate agents.",
+                    "ask": "$800,000", "team_size": 10, "revenue": "$250K ARR",
+                    "tags": "PropTech,AI,Virtual Tours"
                 }
             ]
             
-            for m in mocks:
+            for p_data in pitches_data:
                 # Check if user exists
-                if not db.query(User).filter(User.email == m["email"]).first():
-                    u = User(email=m["email"], password_hash=get_password_hash("password"), role="startup") 
+                if not db.query(User).filter(User.email == p_data["email"]).first():
+                    u = User(email=p_data["email"], password_hash=get_password_hash("demo123"), role="startup") 
                     db.add(u)
                     db.commit()
                     db.refresh(u)
                     
                     sp = StartupProfile(
                         user_id=u.id,
-                        company_name=m["company"],
-                        industry=m["industry"],
-                        funding_stage=m["stage"],
-                        description=m["desc"],
-                        vision="To change the world",
-                        problem="Big problem",
-                        solution="Great solution"
+                        company_name=p_data["company"],
+                        founder_name=p_data["founder"],
+                        industry=p_data["industry"],
+                        funding_stage=p_data["stage"],
+                        team_size=p_data["team_size"],
+                        description=p_data["desc"],
+                        vision="Transforming the industry with innovation",
+                        problem="Traditional solutions are inefficient",
+                        solution="Our technology solves this at scale",
+                        location="Chennai, India"
                     )
                     db.add(sp)
                     db.commit()
@@ -183,16 +256,21 @@ def seed_data():
                     
                     p = Pitch(
                         startup_id=sp.id,
-                        title=f"{m['company']} Pitch Deck",
-                        description=m['desc'],
-                        raising_amount=m['ask'],
-                        status="active",
-                        equity_percentage="15%"
+                        title=p_data['title'],
+                        description=p_data['desc'],
+                        industry=p_data['industry'],
+                        funding_stage=p_data['stage'],
+                        amount_seeking=int(p_data['ask'].replace('$', '').replace(',', '').replace('K', '000').replace('M', '00000')),
+                        business_model="B2B SaaS" if "SaaS" in p_data['tags'] else "B2C",
+                        revenue_model=p_data['revenue'],
+                        team_size=p_data['team_size'],
+                        tags=p_data['tags'],
+                        status="active"
                     )
                     db.add(p)
             
             db.commit()
-            print("Additional pitches seeded!")
+            print(f"✅ Seeded {len(pitches_data)} realistic pitches!")
             
     finally:
         db.close()
