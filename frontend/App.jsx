@@ -23,6 +23,8 @@ import PitchDeckView from './pages/PitchDeckView';
 import ScheduleMeeting from './pages/ScheduleMeeting';
 import Landing from './pages/Landing';
 import ContactSupport from './pages/ContactSupport';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 // const SettingsPage = () => <div className="p-8 text-2xl font-bold">Settings Page (Coming Soon)</div>; // Removed placeholder
 
@@ -46,34 +48,50 @@ const RequireAuth = ({ children }) => {
     return children;
 };
 
+import { GoogleOAuthProvider } from '@react-oauth/google';
+
 const App = () => {
     return (
-        <Router>
-            <Routes>
-                <Route path="/" element={<Landing />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/contact-support" element={<ContactSupport />} />
+        <GoogleOAuthProvider clientId="835532330363-8lohj8uk8bvqd37nnlpsfl4rslul8nff.apps.googleusercontent.com">
+            <Router>
+                <Routes>
+                    <Route path="/" element={<Landing />} />
 
-                <Route element={<RequireAuth><MainLayout /></RequireAuth>}>
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/browse" element={<BrowsePitches />} />
-                    <Route path="/portfolio" element={<Portfolio />} />
-                    <Route path="/in-review" element={<InReview />} />
-                    <Route path="/messages" element={<Messages />} />
-                    <Route path="/settings" element={<Settings />} />
-                    <Route path="/log-investment" element={<LogInvestment />} />
-                    <Route path="/export-reports" element={<ExportReports />} />
-                    <Route path="/profile" element={<Profile />} />
-                    <Route path="/change-photo" element={<ChangePhoto />} />
-                    <Route path="/change-password" element={<ChangePassword />} />
-                    <Route path="/notifications" element={<NotificationsPage />} />
-                    <Route path="/watchlist" element={<WatchlistManagement />} />
-                    <Route path="/pitch/:id" element={<PitchDeckView />} />
-                    <Route path="/schedule-meeting/:id" element={<ScheduleMeeting />} />
-                </Route>
-            </Routes>
-        </Router>
+                    {/* Unified Login/Register Routes that accept logic via props or URL params */}
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/login/investor" element={<Login role="investor" />} />
+                    <Route path="/login/startup" element={<Login role="startup" />} />
+
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/register/investor" element={<Register role="investor" />} />
+                    <Route path="/register/startup" element={<Register role="startup" />} />
+
+                    <Route path="/contact-support" element={<ContactSupport />} />
+
+                    {/* Password Recovery */}
+                    <Route path="/forgot-password" element={<ForgotPassword />} />
+                    <Route path="/reset-password" element={<ResetPassword />} />
+
+                    <Route element={<RequireAuth><MainLayout /></RequireAuth>}>
+                        <Route path="/dashboard" element={<Dashboard />} />
+                        <Route path="/browse" element={<BrowsePitches />} />
+                        <Route path="/portfolio" element={<Portfolio />} />
+                        <Route path="/in-review" element={<InReview />} />
+                        <Route path="/messages" element={<Messages />} />
+                        <Route path="/settings" element={<Settings />} />
+                        <Route path="/log-investment" element={<LogInvestment />} />
+                        <Route path="/export-reports" element={<ExportReports />} />
+                        <Route path="/profile" element={<Profile />} />
+                        <Route path="/change-photo" element={<ChangePhoto />} />
+                        <Route path="/change-password" element={<ChangePassword />} />
+                        <Route path="/notifications" element={<NotificationsPage />} />
+                        <Route path="/watchlist" element={<WatchlistManagement />} />
+                        <Route path="/pitch/:id" element={<PitchDeckView />} />
+                        <Route path="/schedule-meeting/:id" element={<ScheduleMeeting />} />
+                    </Route>
+                </Routes>
+            </Router>
+        </GoogleOAuthProvider>
     );
 };
 

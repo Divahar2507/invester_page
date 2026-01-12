@@ -5,7 +5,12 @@ from app.database import engine, Base, SessionLocal
 from app.models.core import User, StartupProfile, InvestorProfile
 from app.utils.security import get_password_hash
 from app.routes import auth, startup, investor, pitch, matching, messaging, notifications, images_check, investment, connections, watchlist
+from app.middleware.error_handlers import setup_exception_handlers
 import os
+import logging
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -15,6 +20,9 @@ app = FastAPI(
     description="Backend for a pitch platform connecting startups and investors.",
     version="1.0.0"
 )
+
+# Setup error handlers
+setup_exception_handlers(app)
 
 # CORS
 origins = [
@@ -52,6 +60,25 @@ app.include_router(images_check.router)
 app.include_router(investment.router)
 app.include_router(connections.router)
 app.include_router(watchlist.router)
+
+# Health Check Endpoint
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for monitoring"""
+    return {
+        "status": "healthy",
+        "version": "1.0.0",
+        "service": "pitch-platform-api"
+    }
+
+@app.get("/")
+async def root():
+    """Root endpoint"""
+    return {
+        "message": "Investor Platform API",
+        "version": "1.0.0",
+        "docs": "/docs"
+    }
 
 @app.get("/")
 def read_root():

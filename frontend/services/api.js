@@ -30,6 +30,45 @@ export const api = {
         return response.json();
     },
 
+    forgotPassword: async (email) => {
+        const response = await fetch(`${API_URL}/auth/forgot-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to send reset email');
+        }
+        return response.json();
+    },
+
+    resetPassword: async (token, newPassword) => {
+        const response = await fetch(`${API_URL}/auth/reset-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token, new_password: newPassword }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to reset password');
+        }
+        return response.json();
+    },
+
+    googleLogin: async (token, role) => {
+        const response = await fetch(`${API_URL}/auth/google-login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token, role }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Google Login failed');
+        }
+        return response.json();
+    },
+
     getMe: async () => {
         const token = localStorage.getItem('token');
         if (!token) throw new Error('No token found');

@@ -14,6 +14,17 @@ class UserCreate(UserBase):
 class UserLogin(UserBase):
     password: str
 
+class GoogleLoginRequest(BaseModel):
+    token: str
+    role: Optional[str] = "investor" # Default if new user
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+
 class UserResponse(UserBase):
     id: int
     role: str
