@@ -5,17 +5,32 @@ import { api } from '../services/api';
 
 const Navbar = () => {
     const [user, setUser] = React.useState(null);
+    const [unreadCount, setUnreadCount] = React.useState(0);
 
     React.useEffect(() => {
-        const fetchUser = async () => {
+        const fetchData = async () => {
             try {
-                const userData = await api.getMe();
+                const [userData, notifs] = await Promise.all([
+                    api.getMe(),
+                    api.getNotifications()
+                ]);
                 setUser(userData);
+                setUnreadCount(notifs.filter(n => !n.is_read).length);
             } catch (e) {
-                console.error("Failed to fetch user for Navbar", e);
+                console.error("Failed to fetch Navbar data", e);
             }
         };
-        fetchUser();
+        fetchData();
+
+        // Optional: Poll for notifications every minute
+        const interval = setInterval(async () => {
+            try {
+                const notifs = await api.getNotifications();
+                setUnreadCount(notifs.filter(n => !n.is_read).length);
+            } catch (e) { console.error(e); }
+        }, 60000);
+
+        return () => clearInterval(interval);
     }, []);
 
     return (
@@ -34,7 +49,9 @@ const Navbar = () => {
             <div className="flex items-center gap-2">
                 <Link to="/notifications" className="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors relative group">
                     <Bell size={20} />
-                    <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white group-hover:animate-pulse"></span>
+                    {unreadCount > 0 && (
+                        <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
+                    )}
                 </Link>
 
                 <div className="h-6 w-px bg-slate-200 mx-2"></div>

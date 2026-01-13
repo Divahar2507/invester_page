@@ -81,17 +81,35 @@ export const api = {
         return response.json();
     },
 
-    getPitchFeed: async (industry = 'All', stage = 'All', query = '') => {
+    getPitchFeed: async (industry = 'All', stage = 'All', query = '', status = null, sortBy = 'newest') => {
         let url = `${API_URL}/pitches/feed?skip=0&limit=50`;
+
+        // Only append params if they have valid values
         if (industry && industry !== 'All') url += `&industry=${encodeURIComponent(industry)}`;
         if (stage && stage !== 'All') url += `&stage=${encodeURIComponent(stage)}`;
         if (query) url += `&query=${encodeURIComponent(query)}`;
+        if (status) url += `&status=${encodeURIComponent(status)}`;
+        if (sortBy) url += `&sort_by=${encodeURIComponent(sortBy)}`;
 
         const token = localStorage.getItem('token');
         const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
 
+        console.log("Fetching pitch feed:", url); // Debugging
+
         const response = await fetch(url, { headers });
-        if (!response.ok) throw new Error('Failed to fetch pitch feed');
+        if (!response.ok) {
+            const err = await response.text();
+            console.error("Pitch feed error:", err);
+            throw new Error('Failed to fetch pitch feed');
+        }
+        return response.json();
+    },
+
+    getPitch: async (pitchId) => {
+        const token = localStorage.getItem('token');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        const response = await fetch(`${API_URL}/pitches/${pitchId}`, { headers });
+        if (!response.ok) throw new Error('Failed to fetch pitch');
         return response.json();
     },
 
@@ -114,9 +132,12 @@ export const api = {
 
     // Social Logic (Comments & Meetings)
     getComments: async (pitchId) => {
+        // Prevent calling with dummy IDs to avoid 422s
+        if (typeof pitchId === 'string' && pitchId.startsWith('d')) return [];
+
         const token = localStorage.getItem('token');
         const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-        const response = await fetch(`${API_URL}/social/comments/${pitchId}`, { headers });
+        const response = await fetch(`${API_URL}/pitches/${pitchId}/comments`, { headers });
         if (!response.ok) throw new Error('Failed to fetch comments');
         return response.json();
     },
@@ -125,13 +146,20 @@ export const api = {
         const token = localStorage.getItem('token');
         if (!token) throw new Error('No token found');
 
-        const response = await fetch(`${API_URL}/social/comments`, {
+        const { pitch_id, ...commentData } = data;
+
+        // Prevent dummy IDs
+        if (typeof pitch_id === 'string' && pitch_id.startsWith('d')) {
+            throw new Error('Cannot comment on demo pitch');
+        }
+
+        const response = await fetch(`${API_URL}/pitches/${pitch_id}/comments`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify(data)
+            body: JSON.stringify(commentData)
         });
         if (!response.ok) throw new Error('Failed to post comment');
         return response.json();
@@ -149,12 +177,30 @@ export const api = {
             },
             body: JSON.stringify(data)
         });
-        if (!response.ok) throw new Error('Failed to schedule meeting');
+        if (!response.ok) {
+            const err = await response.text();
+            console.error("Schedule meeting error:", err);
+            throw new Error('Failed to schedule meeting');
+        }
+        return response.json();
+    },
+
+    getMeetings: async () => {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('No token found');
+
+        const response = await fetch(`${API_URL}/social/meetings`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch meetings');
         return response.json();
     },
 
     // Documents (Data Room)
     getDocuments: async (pitchId) => {
+        // Prevent dummy IDs
+        if (typeof pitchId === 'string' && pitchId.startsWith('d')) return { documents: [] };
+
         const token = localStorage.getItem('token');
         if (!token) throw new Error('No token found');
         const response = await fetch(`${API_URL}/pitches/${pitchId}/data-room`, {
@@ -365,6 +411,100 @@ export const api = {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!response.ok) throw new Error('Failed to remove from watchlist');
+        return response.json();
+    },
+
+    // Tasks (Action Registry)
+    getTasks: async () => {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('No token found');
+        const response = await fetch(`${API_URL}/tasks/`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch tasks');
+        return response.json();
+    },
+
+    createTask: async (task) => {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('No token found');
+        const response = await fetch(`${API_URL}/tasks/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify(task)
+        });
+        if (!response.ok) throw new Error('Failed to create task');
+        return response.json();
+    },
+
+    updateTask: async (taskId, updates) => {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('No token found');
+        const response = await fetch(`${API_URL}/tasks/${taskId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify(updates)
+        });
+        if (!response.ok) throw new Error('Failed to update task');
+        return response.json();
+    },
+
+    deleteTask: async (taskId) => {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('No token found');
+        const response = await fetch(`${API_URL}/tasks/${taskId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to delete task');
+        return response.json();
+    },
+
+    // Notifications
+    getNotifications: async () => {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('No token found');
+        const response = await fetch(`${API_URL}/notifications/`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch notifications');
+        return response.json();
+    },
+
+    markNotificationAsRead: async (notificationId) => {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('No token found');
+        const response = await fetch(`${API_URL}/notifications/${notificationId}/read`, {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to mark notification as read');
+        return response.json();
+    },
+
+    // Messaging
+    sendMessage: async (receiverId, content) => {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('No token found');
+        const response = await fetch(`${API_URL}/messages/send`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ receiver_id: receiverId, content })
+        });
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.detail || 'Failed to send message');
+        }
+        return response.json();
+    },
+
+    getMessages: async (userId) => {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('No token found');
+        const response = await fetch(`${API_URL}/messages/${userId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch messages');
         return response.json();
     }
 };

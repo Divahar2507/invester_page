@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Body
+from typing import List
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from app.dependencies import get_db, get_current_user, get_current_user_optional
-from app.models.core import User, StartupProfile, Pitch, Investment
-from app.schemas import PitchCreate, PitchResponse
+from app.models.core import User, StartupProfile, Pitch, Investment, PitchComment
+from app.schemas import PitchCreate, PitchResponse, PitchCommentCreate, PitchCommentResponse
 import shutil
 import os
 import uuid
@@ -61,6 +62,20 @@ def create_pitch(
     db.refresh(new_pitch)
     return new_pitch
 
+@router.get("/{pitch_id}", response_model=PitchResponse)
+def get_pitch(pitch_id: int, db: Session = Depends(get_db)):
+    pitch = db.query(Pitch).filter(Pitch.id == pitch_id).first()
+    if not pitch:
+        raise HTTPException(status_code=404, detail="Pitch not found")
+    
+    # Simple enrichment for response model (simplified compared to feed)
+    resp = PitchResponse.model_validate(pitch)
+    resp.company_name = pitch.startup.company_name
+    resp.industry = pitch.startup.industry
+    resp.stage = pitch.startup.funding_stage
+    resp.startup_user_id = pitch.startup.user_id
+    return resp
+
 @router.get("/my", response_model=list[PitchResponse])
 def get_my_pitches(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     if current_user.role != "startup":
@@ -80,6 +95,8 @@ def get_pitch_feed(
     query: str = None,  # Search query
     skip: int = 0,
     limit: int = 50,
+    status: str = None, # Filter by status
+    sort_by: str = "newest", # newest, funding_high, funding_low
     db: Session = Depends(get_db), 
     current_user: Optional[User] = Depends(get_current_user_optional)
 ):
@@ -104,7 +121,18 @@ def get_pitch_feed(
         
     if stage and stage != "All":
         query_db = query_db.filter(StartupProfile.funding_stage == stage)
+
+    if status:
+        query_db = query_db.filter(Pitch.status == status)
         
+    # 3. Sorting
+    if sort_by == "funding_high":
+        query_db = query_db.order_by(Pitch.amount_seeking.desc())
+    elif sort_by == "funding_low":
+        query_db = query_db.order_by(Pitch.amount_seeking.asc())
+    else:
+        query_db = query_db.order_by(Pitch.created_at.desc())
+
     results = query_db.offset(skip).limit(limit).all()
     
     # Enrich response
@@ -142,7 +170,10 @@ def get_pitch_feed(
             logo=pitch.startup.user.email[0].upper() if pitch.startup.user and pitch.startup.user.email else "S",
             stage=pitch.startup.funding_stage,
             startup_user_id=pitch.startup.user_id,
-            match_score=0 # Calculated below
+            match_score=0, # Calculated below
+            location=pitch.location,
+            tags=pitch.tags,
+            valuation=pitch.valuation
         )
         
         # Set connection status
@@ -214,3 +245,120 @@ def record_decision(
         
     db.commit()
     return {"message": f"Decision {decision} recorded", "status": pitch.status}
+
+@router.post("/{pitch_id}/comments", response_model=PitchCommentResponse)
+def post_comment(
+    pitch_id: int,
+    comment_data: PitchCommentCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    pitch = db.query(Pitch).filter(Pitch.id == pitch_id).first()
+    if not pitch:
+        raise HTTPException(status_code=404, detail="Pitch not found")
+
+    new_comment = PitchComment(
+        pitch_id=pitch_id,
+        user_id=current_user.id,
+        comment=comment_data.comment,
+        rating=comment_data.rating
+    )
+    db.add(new_comment)
+    db.commit()
+    db.refresh(new_comment)
+    
+    # Enrich response
+    resp = PitchCommentResponse.model_validate(new_comment)
+    resp.user_name = current_user.email.split('@')[0] # Simple name fallback
+    resp.user_role = current_user.role
+    return resp
+
+@router.get("/{pitch_id}/comments", response_model=List[PitchCommentResponse])
+def get_comments(
+    pitch_id: int,
+    db: Session = Depends(get_db)
+):
+    comments = db.query(PitchComment).filter(PitchComment.pitch_id == pitch_id).order_by(PitchComment.created_at.desc()).all()
+    
+    response = []
+    for c in comments:
+        # Get user details
+        user = db.query(User).filter(User.id == c.user_id).first()
+        res = PitchCommentResponse.model_validate(c)
+        if user:
+            res.user_name = user.email.split('@')[0]
+            res.user_role = user.role
+        response.append(res)
+        
+    return response
+
+@router.get("/{pitch_id}/data-room")
+def get_data_room(pitch_id: int, db: Session = Depends(get_db)):
+    pitch = db.query(Pitch).filter(Pitch.id == pitch_id).first()
+    if not pitch:
+        raise HTTPException(status_code=404, detail="Pitch not found")
+
+    docs = []
+    if pitch.pitch_deck_url:
+        docs.append({"type": "Pitch Deck", "filename": os.path.basename(pitch.pitch_deck_url), "download_url": pitch.pitch_deck_url})
+    if pitch.financial_doc_url:
+        docs.append({"type": "Financial Doc", "filename": os.path.basename(pitch.financial_doc_url), "download_url": pitch.financial_doc_url})
+    if pitch.business_plan_url:
+        docs.append({"type": "Business Plan", "filename": os.path.basename(pitch.business_plan_url), "download_url": pitch.business_plan_url})
+    
+    # Also include pitch_file_url if it exists and isn't one of the above
+    if pitch.pitch_file_url and pitch.pitch_file_url not in [pitch.pitch_deck_url, pitch.financial_doc_url, pitch.business_plan_url]:
+        docs.append({"type": "Other Document", "filename": os.path.basename(pitch.pitch_file_url), "download_url": pitch.pitch_file_url})
+
+    return {"documents": docs}
+
+@router.post("/{pitch_id}/upload-pitch-deck")
+async def upload_specialized_deck(pitch_id: int, file: UploadFile = File(...), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    pitch = db.query(Pitch).filter(Pitch.id == pitch_id).first()
+    if not pitch: raise HTTPException(status_code=404, detail="Pitch not found")
+    
+    file_extension = os.path.splitext(file.filename)[1]
+    unique_filename = f"pitch_{pitch_id}_{uuid.uuid4()}{file_extension}"
+    file_path = os.path.join(UPLOAD_DIR, unique_filename)
+    
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+        
+    pitch.pitch_deck_url = file_path
+    pitch.pitch_file_url = file_path # Sync legacy
+    db.commit()
+    return {"url": file_path}
+
+@router.post("/{pitch_id}/upload-financial-doc")
+async def upload_financial(pitch_id: int, file: UploadFile = File(...), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    pitch = db.query(Pitch).filter(Pitch.id == pitch_id).first()
+    if not pitch: raise HTTPException(status_code=404, detail="Pitch not found")
+    
+    file_extension = os.path.splitext(file.filename)[1]
+    unique_filename = f"fin_{pitch_id}_{uuid.uuid4()}{file_extension}"
+    file_path = os.path.join(UPLOAD_DIR, unique_filename)
+    
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+        
+    pitch.financial_doc_url = file_path
+    db.commit()
+    return {"url": file_path}
+
+@router.post("/{pitch_id}/upload-business-plan")
+async def upload_biz_plan(pitch_id: int, file: UploadFile = File(...), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    pitch = db.query(Pitch).filter(Pitch.id == pitch_id).first()
+    if not pitch: raise HTTPException(status_code=404, detail="Pitch not found")
+    
+    file_extension = os.path.splitext(file.filename)[1]
+    unique_filename = f"plan_{pitch_id}_{uuid.uuid4()}{file_extension}"
+    file_path = os.path.join(UPLOAD_DIR, unique_filename)
+    
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+        
+    pitch.business_plan_url = file_path
+    db.commit()
+    return {"url": file_path}
+
+from typing import List

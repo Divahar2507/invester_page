@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { User, MessageCircle, Star, Send } from 'lucide-react';
-import api from '../services/api';
+import { api } from '../services/api';
 
 export default function CommentsSection({ pitchId }) {
     const [comments, setComments] = useState([
@@ -33,9 +33,9 @@ export default function CommentsSection({ pitchId }) {
 
     const fetchComments = async () => {
         try {
-            const response = await api.get(`/social/comments/${pitchId}`);
-            if (response.data && response.data.length > 0) {
-                setComments(response.data);
+            const data = await api.getComments(pitchId);
+            if (data && data.length > 0) {
+                setComments(data);
             }
         } catch (error) {
             console.error('Error fetching comments:', error);
@@ -50,7 +50,7 @@ export default function CommentsSection({ pitchId }) {
 
         setSubmitting(true);
         try {
-            await api.post('/social/comments', {
+            await api.postComment({
                 pitch_id: pitchId,
                 comment: newComment,
                 rating: rating > 0 ? rating : null

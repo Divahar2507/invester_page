@@ -2,6 +2,9 @@ import * as React from 'react';
 import { useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import ShareModal from '../components/ShareModal';
+import CommentsSection from '../components/CommentsSection';
+import DataRoom from '../components/DataRoom';
+import { api } from '../services/api';
 import {
     ArrowLeft,
     Share2,
@@ -10,14 +13,17 @@ import {
     LayoutGrid,
     MessageSquare,
     Send,
-    Bookmark,
     DownloadCloud,
     FileText,
     Table,
     CheckCircle2,
     Calendar,
     ChevronRight,
-    Search
+    Search,
+    Bookmark,
+    Star,
+    X,
+    TrendingUp
 } from 'lucide-react';
 
 const PitchDeckView = () => {
@@ -25,87 +31,128 @@ const PitchDeckView = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+    const startupName = location.state?.startupName || 'Startup';
 
-    // Use the passed startup name if available, otherwise default to EcoCharge
-    const startupName = location.state?.startupName || 'EcoCharge';
+    const [pitch, setPitch] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [viewingUrl, setViewingUrl] = useState(null);
+
+    const handleDecision = async (decision) => {
+        try {
+            await api.recordDecision(id, decision);
+            alert(`Marked as ${decision}`);
+            // Refresh pitch status locally
+            setPitch(prev => ({ ...prev, status: decision === 'In Review' ? 'under_review' : prev.status }));
+        } catch (error) {
+            console.error('Decision failed:', error);
+            alert('Failed to record decision');
+        }
+    };
+
+    const handleAddToWatchlist = async () => {
+        try {
+            if (!pitch?.startup_id) return;
+            await api.addToWatchlist(pitch.startup_id);
+            alert("Added to watchlist!");
+        } catch (e) {
+            console.error(e);
+            alert("Failed to add to watchlist");
+        }
+    };
+
+    React.useEffect(() => {
+        const fetchPitchData = async () => {
+            try {
+                // Use the dedicated getPitch by ID endpoint
+                const found = await api.getPitch(id);
+                if (found) {
+                    setPitch(found);
+                    if (found.pitch_file_url) {
+                        const fullUrl = found.pitch_file_url.startsWith('http')
+                            ? found.pitch_file_url
+                            : `${window.location.protocol}//${window.location.host}${found.pitch_file_url.startsWith('/') ? '' : '/'}${found.pitch_file_url}`;
+
+                        const ext = found.pitch_file_url.split('.').pop().toLowerCase();
+                        if (['ppt', 'pptx', 'doc', 'docx', 'xls', 'xlsx'].includes(ext)) {
+                            setViewingUrl(`https://docs.google.com/viewer?url=${encodeURIComponent(fullUrl)}&embedded=true`);
+                        } else {
+                            setViewingUrl(fullUrl);
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error(e);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchPitchData();
+    }, [id]);
+
+    if (loading) return (
+        <div className="min-h-screen bg-slate-900 flex items-center justify-center font-['Plus Jakarta Sans']">
+            <div className="flex flex-col items-center gap-4">
+                <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-blue-200 font-bold animate-pulse">Loading Pitch Deck...</p>
+            </div>
+        </div>
+    );
 
     const pitchData = {
-        name: startupName,
-        fullName: `${startupName} Pitch Deck`,
-        round: 'Series A',
-        updateTime: 'Updated 2 days ago',
-        version: 'v2.4',
-        matchScore: '95%',
-        location: 'San Francisco, CA',
-        sector: 'CleanTech',
-        description: 'Revolutionary solid-state battery technology increasing EV range by 40% with sustainable materials.',
-        tags: ['B2B', 'Hardware', 'Manufacturing'],
+        name: pitch?.company_name || startupName,
+        fullName: pitch?.title || `${startupName} Pitch Deck`,
+        round: pitch?.stage || 'Series A',
+        updateTime: pitch?.created_at ? new Date(pitch.created_at).toLocaleDateString() : 'Recently updated',
+        version: 'v1.0',
+        matchScore: pitch?.match_score ? `${pitch.match_score}%` : '95%',
+        location: pitch?.location || 'Remote',
+        sector: pitch?.industry || 'Technology',
+        description: pitch?.description || 'Revolutionary technology.',
+        tags: pitch?.tags ? pitch.tags.split(',') : ['Innovative', 'Scalable'],
         ask: {
-            raising: '$5,000,000',
-            valuationCap: '$25M',
+            raising: pitch?.raising_amount || '$1,000,000',
+            valuationCap: pitch?.valuation || 'TBD',
             runway: '18 Months',
-            committed: '$2.1M (42%)'
+            committed: '20%'
         },
-        dataRoom: [
-            { name: 'Financial Model.pdf', size: '2.4 MB', date: 'Added Oct 20', type: 'pdf' },
-            { name: 'Cap Table.xlsx', size: '1.1 MB', date: 'Added Oct 18', type: 'excel' }
-        ],
-        comments: [
-            {
-                id: 1,
-                author: 'John Doe',
-                initials: 'JD',
-                role: 'Lead Investor',
-                time: '2h ago',
-                content: 'Can we get more granularity on the unit economics here? The 40% margin assumption seems optimistic compared to current lithium-ion benchmarks.',
-                avatarBg: 'bg-purple-100 text-purple-600'
-            },
-            {
-                id: 2,
-                author: 'Mike Evans',
-                initials: 'ME',
-                role: 'Analyst',
-                time: '45m ago',
-                content: 'Agreed. Also, does this timeline account for the new factory setup in Nevada?',
-                avatarBg: 'bg-blue-100 text-blue-600'
-            }
-        ]
+        dataRoom: [], // In real app would fetch separately
+        comments: []
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col">
+        <div className="min-h-screen bg-slate-50 flex flex-col font-['Plus Jakarta Sans']">
             {/* Main Content Area */}
             <div className="p-8 max-w-[1600px] mx-auto w-full space-y-6">
 
                 {/* Header Actions */}
                 <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-6">
-                        <button onClick={() => navigate(-1)} className="p-2 hover:bg-white rounded-full transition-colors">
+                    <div className="flex items-center gap-4">
+                        <button onClick={() => navigate(-1)} className="p-2 hover:bg-white rounded-full transition-colors border border-transparent hover:border-slate-200">
                             <ArrowLeft size={20} className="text-slate-600" />
                         </button>
                         <div>
                             <div className="flex items-center gap-3">
                                 <h1 className="text-2xl font-bold text-slate-900 leading-tight">{pitchData.fullName}</h1>
-                                <span className="px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-bold rounded uppercase tabular-nums">
+                                <span className="px-2.5 py-0.5 bg-blue-50 text-blue-700 text-xs font-semibold rounded-md border border-blue-100">
                                     {pitchData.round}
                                 </span>
                             </div>
-                            <p className="text-xs font-semibold text-slate-400 mt-0.5 tracking-tight">
-                                {pitchData.updateTime} • {pitchData.version}
+                            <p className="text-sm font-medium text-slate-500 mt-1">
+                                Last updated: {pitchData.updateTime} • Version {pitchData.version}
                             </p>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
                         <button
                             onClick={() => setIsShareModalOpen(true)}
-                            className="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-50 shadow-sm transition-all"
+                            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-all"
                         >
-                            <Share2 size={18} />
+                            <Share2 size={16} />
                             Share
                         </button>
-                        <button className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 rounded-xl text-sm font-bold text-white hover:bg-blue-700 shadow-lg shadow-blue-100 transition-all">
-                            <Download size={18} />
-                            Download PDF
+                        <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 rounded-lg text-sm font-semibold text-white hover:bg-blue-700 transition-all shadow-sm">
+                            <Download size={16} />
+                            Download Deck
                         </button>
                     </div>
                 </div>
@@ -115,142 +162,116 @@ const PitchDeckView = () => {
                     <div className="lg:col-span-8 space-y-8">
 
                         {/* Deck Viewer */}
-                        <div className="bg-white rounded-[32px] border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden">
-                            <div className="aspect-[16/9] bg-gradient-to-br from-slate-900 to-slate-800 relative flex items-center justify-center overflow-hidden">
-                                {/* Slide Content Mockup */}
-                                <div className="text-center space-y-6 max-w-2xl px-8 relative z-10">
-                                    <h2 className="text-5xl font-black text-white tracking-tight leading-tight">
-                                        Revolutionizing Energy Storage
-                                    </h2>
-                                    <p className="text-xl text-slate-300 font-medium">
-                                        EcoCharge's solid-state technology delivers 40% more range, 3x faster charging, and 100% recyclability.
-                                    </p>
-                                </div>
-                                <div className="absolute top-6 right-8 w-12 h-12 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center font-bold text-white border border-white/20">
-                                    EC
-                                </div>
-                                {/* Mesh Gradient Overlay */}
-                                <div className="absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_20%_35%,rgba(59,130,246,0.5)_0%,transparent_50%)]"></div>
-                            </div>
-
-                            {/* Viewer Controls */}
-                            <div className="px-8 py-5 border-t border-slate-100 flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Slide 4 of 15</span>
-                                    <div className="w-32 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                        <div className="w-[26%] h-full bg-blue-600 rounded-full"></div>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <button className="p-2 text-slate-400 hover:text-slate-900 transition-colors"><LayoutGrid size={20} /></button>
-                                    <button className="p-2 text-slate-400 hover:text-slate-900 transition-colors"><Maximize2 size={20} /></button>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Comments Section */}
-                        <div className="bg-white rounded-[32px] border border-slate-100 shadow-lg shadow-slate-200/50 overflow-hidden">
-                            <div className="px-8 py-5 border-b border-slate-100 flex items-center justify-between">
-                                <div className="flex items-center gap-3 text-slate-900">
-                                    <MessageSquare size={18} className="text-blue-600" />
-                                    <h3 className="font-bold">Comments on Slide 4</h3>
-                                </div>
-                                <span className="bg-orange-50 text-orange-600 text-[10px] font-bold px-2 py-0.5 rounded uppercase">2 Unresolved</span>
-                            </div>
-
-                            <div className="p-8 space-y-8">
-                                {pitchData.comments.map((comment) => (
-                                    <div key={comment.id} className="flex gap-4">
-                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${comment.avatarBg}`}>
-                                            {comment.initials}
-                                        </div>
-                                        <div className="flex-1 space-y-1.5">
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-sm font-bold text-slate-900">{comment.author}</span>
-                                                <span className="text-[10px] font-bold text-slate-400 uppercase">{comment.role}</span>
-                                                <span className="text-[10px] text-slate-300 ml-auto">{comment.time}</span>
+                        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+                            <div className="aspect-[16/9] bg-slate-100 relative border-b border-slate-200">
+                                {viewingUrl ? (
+                                    <iframe
+                                        src={viewingUrl}
+                                        className="w-full h-full border-none"
+                                        title="Pitch Deck Viewer"
+                                    />
+                                ) : (
+                                    <div className="absolute inset-0 flex items-center justify-center text-center p-8">
+                                        <div className="space-y-4 max-w-md">
+                                            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-200 shadow-sm">
+                                                <FileText className="text-slate-400" size={24} />
                                             </div>
-                                            <p className="text-sm text-slate-600 leading-relaxed font-medium">
-                                                {comment.content}
+                                            <h2 className="text-xl font-bold text-slate-900">
+                                                {pitchData.name} Presentation
+                                            </h2>
+                                            <p className="text-slate-500 text-sm">
+                                                The founder hasn't uploaded the pitch deck yet.
                                             </p>
                                         </div>
                                     </div>
-                                ))}
+                                )}
                             </div>
 
-                            <div className="p-6 bg-slate-50/50 border-t border-slate-100 flex items-center gap-4">
-                                <div className="w-8 h-8 rounded-full bg-slate-200 shrink-0"></div>
-                                <div className="flex-1 relative">
-                                    <input
-                                        type="text"
-                                        placeholder="Add a comment on this slide..."
-                                        className="w-full bg-white border border-slate-200 rounded-2xl py-2.5 pl-4 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                                    />
-                                    <button className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
-                                        <Send size={16} />
-                                    </button>
+                            {/* Viewer Controls */}
+                            <div className="px-6 py-3 bg-white flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Presentation Mode</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <button className="p-2 text-slate-400 hover:text-blue-600 transition-colors rounded-lg hover:bg-slate-50"><Maximize2 size={18} /></button>
                                 </div>
                             </div>
                         </div>
+
+                        {/* Real Comments Section */}
+                        <CommentsSection pitchId={id} />
                     </div>
 
                     {/* Right Column: Info Panel */}
                     <div className="lg:col-span-4 space-y-6">
 
                         {/* Company Summary */}
-                        <div className="bg-white rounded-[32px] p-8 border border-slate-100 shadow-lg shadow-slate-200/50 space-y-6">
+                        <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-6">
                             <div className="flex items-start justify-between">
-                                <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center font-black text-slate-400 text-xl">
-                                    EC
+                                <div className="w-16 h-16 bg-slate-900 rounded-xl flex items-center justify-center font-bold text-white text-2xl shadow-sm">
+                                    {(pitchData.name || 'S').charAt(0)}
                                 </div>
-                                <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-100">
-                                    <CheckCircle2 size={12} className="fill-emerald-600 text-white" />
-                                    <span className="text-[10px] font-bold uppercase tracking-wider">{pitchData.matchScore} Match</span>
+                                <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-100">
+                                    <TrendingUp size={14} className="text-emerald-600" />
+                                    <span className="text-xs font-bold">{pitchData.matchScore} Match</span>
                                 </div>
                             </div>
 
                             <div>
-                                <h1 className="text-3xl font-black text-slate-900 tracking-tight">{pitchData.name}</h1>
-                                <p className="text-sm font-semibold text-slate-400 mt-1">{pitchData.location} • {pitchData.sector}</p>
+                                <h2 className="text-xl font-bold text-slate-900 mb-1">{pitchData.name}</h2>
+                                <p className="text-sm font-medium text-slate-500">{pitchData.location} • {pitchData.sector}</p>
                             </div>
 
-                            <p className="text-sm text-slate-500 leading-relaxed font-medium">
+                            <p className="text-sm text-slate-600 leading-relaxed">
                                 {pitchData.description}
                             </p>
 
                             <div className="flex flex-wrap gap-2 pt-2">
                                 {pitchData.tags.map(tag => (
-                                    <span key={tag} className="px-3 py-1 bg-slate-50 text-slate-400 text-[10px] font-bold rounded-lg uppercase border border-slate-100">
-                                        {tag}
+                                    <span key={tag} className="px-2.5 py-1 bg-slate-50 text-slate-600 text-xs font-semibold rounded-lg border border-slate-100">
+                                        #{tag}
                                     </span>
                                 ))}
                             </div>
 
-                            <div className="flex gap-3 pt-4">
+                            <div className="flex flex-col gap-3 pt-4 border-t border-slate-100 mt-4">
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={() => handleDecision('In Review')}
+                                        className="flex-1 py-2.5 bg-white border border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all text-sm flex items-center justify-center gap-2"
+                                    >
+                                        <Star size={16} className="text-amber-500" />
+                                        Review
+                                    </button>
+                                    <button
+                                        onClick={() => handleAddToWatchlist()}
+                                        className="flex-1 py-2.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 shadow-sm transition-all text-sm flex items-center justify-center gap-2"
+                                    >
+                                        <Bookmark size={16} />
+                                        Watchlist
+                                    </button>
+                                </div>
                                 <button
                                     onClick={() => navigate(`/schedule-meeting/${id}`)}
-                                    className="flex-1 py-3.5 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 shadow-xl shadow-blue-200 transition-all active:scale-95 text-sm"
+                                    className="w-full py-3 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800 transition-all text-sm"
                                 >
-                                    Schedule Meeting
-                                </button>
-                                <button className="p-3.5 border border-slate-200 rounded-2xl text-slate-400 hover:bg-slate-50 transition-colors">
-                                    <Bookmark size={20} />
+                                    Schedule Deep Dive
                                 </button>
                             </div>
                         </div>
 
                         {/* The Ask */}
-                        <div className="bg-white rounded-[32px] border border-slate-100 shadow-lg shadow-slate-200/50 overflow-hidden">
-                            <div className="px-8 py-4 border-b border-slate-100 bg-slate-50/30">
-                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">The Ask</h4>
+                        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                            <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
+                                <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Financial Summary</h4>
                             </div>
-                            <div className="p-8 space-y-6">
+                            <div className="p-6 space-y-4">
                                 {Object.entries(pitchData.ask).map(([key, value]) => (
                                     <div key={key} className="flex items-center justify-between">
-                                        <span className="text-sm font-semibold text-slate-400 uppercase tracking-tight capitalize">
+                                        <span className="text-sm font-medium text-slate-500 capitalize">
                                             {key.replace(/([A-Z])/g, ' $1')}
                                         </span>
-                                        <span className={`text-sm font-black ${key === 'committed' ? 'text-emerald-600' : 'text-slate-900'}`}>
+                                        <span className={`text-sm font-bold ${key === 'committed' ? 'text-emerald-600' : 'text-slate-900'}`}>
                                             {value}
                                         </span>
                                     </div>
@@ -258,38 +279,21 @@ const PitchDeckView = () => {
                             </div>
                         </div>
 
-                        {/* Data Room */}
-                        <div className="bg-white rounded-[32px] border border-slate-100 shadow-lg shadow-slate-200/50 overflow-hidden">
-                            <div className="px-8 py-4 border-b border-slate-100 bg-slate-50/30">
-                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Data Room</h4>
-                            </div>
-                            <div className="divide-y divide-slate-100">
-                                {pitchData.dataRoom.map((file, idx) => (
-                                    <div key={idx} className="p-6 flex items-center gap-4 hover:bg-slate-50 transition-colors group cursor-pointer">
-                                        <div className={`p-2.5 rounded-xl ${file.type === 'pdf' ? 'bg-red-50 text-red-500' : 'bg-blue-50 text-blue-500'}`}>
-                                            {file.type === 'pdf' ? <FileText size={20} /> : <Table size={20} />}
-                                        </div>
-                                        <div className="flex-1 space-y-0.5">
-                                            <p className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{file.name}</p>
-                                            <p className="text-[10px] text-slate-400 font-bold uppercase">{file.size} • {file.date}</p>
-                                        </div>
-                                        <DownloadCloud size={18} className="text-slate-300 group-hover:text-slate-500 transition-all" />
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                        {/* Real Data Room */}
+                        <DataRoom pitchId={id} isOwner={false} />
 
                     </div>
                 </div>
+                {/* Share Modal */}
+                <ShareModal
+                    isOpen={isShareModalOpen}
+                    onClose={() => setIsShareModalOpen(false)}
+                    startupName={pitchData.name}
+                />
             </div>
-            {/* Share Modal */}
-            <ShareModal
-                isOpen={isShareModalOpen}
-                onClose={() => setIsShareModalOpen(false)}
-                startupName={pitchData.name}
-            />
         </div>
     );
 };
 
 export default PitchDeckView;
+

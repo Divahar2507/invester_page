@@ -22,7 +22,16 @@ app = FastAPI(
 )
 
 # Setup error handlers
+# Setup error handlers
 setup_exception_handlers(app)
+
+# Rate Limiting
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from app.middleware.rate_limit import limiter
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # CORS
 origins = [
@@ -62,6 +71,15 @@ app.include_router(connections.router)
 app.include_router(watchlist.router)
 app.include_router(file_upload.router)
 app.include_router(social.router)
+
+from app.routes import tasks
+app.include_router(tasks.router)
+
+from app.routes import ai_analysis
+app.include_router(ai_analysis.router)
+
+from app.routes import admin
+app.include_router(admin.router)
 
 # Health Check Endpoint
 @app.get("/health")
@@ -226,6 +244,70 @@ def seed_data():
                     "desc": "3D virtual tours + AI matching buyers to perfect properties. Listed 5000+ properties. 25% faster sale cycles for real estate agents.",
                     "ask": "$800,000", "team_size": 10, "revenue": "$250K ARR",
                     "tags": "PropTech,AI,Virtual Tours"
+                },
+                {
+                    "email": "aquapure@startup.com", "company": "AquaPure AI", "industry": "Water Technology", 
+                    "stage": "Seed", "founder": "Vikram Das",
+                    "title": "Graphene-based water filtration with AI monitoring",
+                    "desc": "Low-cost, high-efficiency water purification for rural areas using nanotechnology and IoT sensors for real-time quality tracking.",
+                    "ask": "$450,000", "team_size": 6, "revenue": "Pre-revenue",
+                    "tags": "WaterTech,AI,Sustainability"
+                },
+                {
+                    "email": "spacebound@startup.com", "company": "SpaceBound Robotics", "industry": "Aerospace", 
+                    "stage": "Series A", "founder": "Siddharth Rao",
+                    "title": "Autonomous satellite servicing robots",
+                    "desc": "Reducing space debris and extending satellite life via orbiting robotic repair stations. Partnered with 3 major space agencies.",
+                    "ask": "$12,000,000", "team_size": 30, "revenue": "Contracts signed",
+                    "tags": "Aerospace,Robotics,Space"
+                },
+                {
+                    "email": "bioheart@startup.com", "company": "BioHeart Genomics", "industry": "Biotechnology", 
+                    "stage": "Seed", "founder": "Dr. Sarah Khan",
+                    "title": "Gene-editing therapy for congenital heart disease",
+                    "desc": "CRISPR-based treatment currently in Phase 1 trials. Potential to cure 200,000 infants annually. Patent-pending delivery mechanism.",
+                    "ask": "$4,000,000", "team_size": 12, "revenue": "Grants",
+                    "tags": "Biotech,CRISPR,Health"
+                },
+                {
+                    "email": "nexustransport@startup.com", "company": "Nexus Hyperloop", "industry": "Transportation", 
+                    "stage": "Series B", "founder": "Amit Sharma",
+                    "title": "High-speed vacuum tube transport for cargo",
+                    "desc": "Revolutionizing logistics with 1000km/h cargo pods. First 10km test track complete in Gujarat. Reducing transit time by 90%.",
+                    "ask": "$25,000,000", "team_size": 80, "revenue": "Strategic partners",
+                    "tags": "Transport,Logistics,Tech"
+                },
+                {
+                    "email": "mindwell@startup.com", "company": "MindWell AI", "industry": "Education", 
+                    "stage": "Seed", "founder": "Lata Mangeshkar",
+                    "title": "AI Mental Health Counselor for Students",
+                    "desc": "Personalized emotional support platform for schools. Used by 100,000 students. 40% reduction in reported anxiety levels.",
+                    "ask": "$900,000", "team_size": 10, "revenue": "$300K ARR",
+                    "tags": "EdTech,MentalHealth,AI"
+                },
+                {
+                    "email": "quantumcompute@startup.com", "company": "QuantumQubits", "industry": "Computing", 
+                    "stage": "Seed", "founder": "Dr. Alan Turing",
+                    "title": "Quantum-as-a-Service for Drug Discovery",
+                    "desc": "Using quantum algorithms to simulate molecular interactions. 1000x faster than supercomputers. Scaling to 100 qubits.",
+                    "ask": "$6,000,000", "team_size": 25, "revenue": "Pilot projects",
+                    "tags": "Quantum,Computing,SaaS"
+                },
+                {
+                    "email": "urbanvertical@startup.com", "company": "UrbanVertical Farms", "industry": "Agriculture", 
+                    "stage": "Series A", "founder": "Gautam Adani",
+                    "title": "Fully automated vertical farms in city centers",
+                    "desc": "Growing produce with 95% less water and zero pesticides. 24-hour delivery from farm to table. Tech-patented hydroponics.",
+                    "ask": "$7,000,000", "team_size": 40, "revenue": "$2M ARR",
+                    "tags": "AgriTech,Food,Sustainability"
+                },
+                {
+                    "email": "secureid@startup.com", "company": "SecureID Biometrics", "industry": "Security", 
+                    "stage": "Seed", "founder": "Nandan Nilekani",
+                    "title": "Blockchain-based decentralized identity platform",
+                    "desc": "Giving users control over their data with sovereign digital IDs. Integrated with 5 major banks. Zero-knowledge authentication.",
+                    "ask": "$1,500,000", "team_size": 18, "revenue": "$400K ARR",
+                    "tags": "Blockchain,Security,Identity"
                 }
             ]
             
@@ -243,12 +325,10 @@ def seed_data():
                         founder_name=p_data["founder"],
                         industry=p_data["industry"],
                         funding_stage=p_data["stage"],
-                        team_size=p_data["team_size"],
                         description=p_data["desc"],
                         vision="Transforming the industry with innovation",
                         problem="Traditional solutions are inefficient",
-                        solution="Our technology solves this at scale",
-                        location="Chennai, India"
+                        solution="Our technology solves this at scale"
                     )
                     db.add(sp)
                     db.commit()
@@ -260,12 +340,15 @@ def seed_data():
                         description=p_data['desc'],
                         industry=p_data['industry'],
                         funding_stage=p_data['stage'],
-                        amount_seeking=int(p_data['ask'].replace('$', '').replace(',', '').replace('K', '000').replace('M', '00000')),
+                        amount_seeking=int(p_data['ask'].replace('$', '').replace(',', '').replace('K', '000').replace('M', '000000')),
                         business_model="B2B SaaS" if "SaaS" in p_data['tags'] else "B2C",
                         revenue_model=p_data['revenue'],
                         team_size=p_data['team_size'],
                         tags=p_data['tags'],
-                        status="active"
+                        status="active",
+                        location="Mumbai, India",
+                        valuation=f"${int(p_data['ask'].replace('$', '').replace(',', '').replace('K', '0').replace('M', '000000')) * 5 // 1000000}M", # Corrected valuation logic basically.
+                        pitch_file_url="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
                     )
                     db.add(p)
             
@@ -276,4 +359,4 @@ def seed_data():
         db.close()
 
 # Run seed on startup
-seed_data()
+# seed_data()

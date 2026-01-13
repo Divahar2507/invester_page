@@ -75,6 +75,7 @@ const App = () => {
                     <Route element={<RequireAuth><MainLayout /></RequireAuth>}>
                         <Route path="/dashboard" element={<Dashboard />} />
                         <Route path="/browse" element={<BrowsePitches />} />
+                        <Route path="/browse-pitches" element={<Navigate to="/browse" replace />} />
                         <Route path="/portfolio" element={<Portfolio />} />
                         <Route path="/in-review" element={<InReview />} />
                         <Route path="/messages" element={<Messages />} />

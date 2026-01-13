@@ -124,8 +124,6 @@ def get_my_connections(db: Session = Depends(get_db), current_user: User = Depen
                 name = other_user.startup_profile.company_name
             elif other_user.role == "investor" and other_user.investor_profile:
                 name = other_user.investor_profile.firm_name
-            elif other_user.full_name:
-                name = other_user.full_name
             else:
                 name = other_user.email.split('@')[0]
         

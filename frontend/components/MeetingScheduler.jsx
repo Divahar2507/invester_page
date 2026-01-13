@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Calendar, Clock, MapPin, Video, CheckCircle } from 'lucide-react';
-import api from '../services/api';
+import { api } from '../services/api';
 
 export default function MeetingScheduler({ startupId, startupName, pitchId }) {
     const [formData, setFormData] = useState({
@@ -16,13 +16,20 @@ export default function MeetingScheduler({ startupId, startupName, pitchId }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Prevent scheduling for dummy/demo data
+        if (startupId && startupId.toString().startsWith('d')) {
+            alert("This is a demo startup. Logic meeting scheduling is disabled in demo mode.");
+            return;
+        }
+
         setSubmitting(true);
 
         try {
             // Combine date and time
             const meetingTime = new Date(`${formData.date}T${formData.time}`);
 
-            await api.post('/social/meetings/schedule', {
+            await api.scheduleMeeting({
                 startup_id: startupId,
                 pitch_id: pitchId,
                 title: formData.title,

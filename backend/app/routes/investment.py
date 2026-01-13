@@ -19,6 +19,15 @@ def create_investment(
     if not current_user.investor_profile:
         raise HTTPException(status_code=400, detail="Investor profile not found")
 
+    # Prevent duplicate entries for the same startup
+    existing = db.query(Investment).filter(
+        Investment.investor_id == current_user.investor_profile.id,
+        Investment.startup_name == investment.startup_name
+    ).first()
+    
+    if existing:
+        raise HTTPException(status_code=400, detail="This startup is already in your portfolio")
+
     db_investment = Investment(
         **investment.model_dump(),
         investor_id=current_user.investor_profile.id

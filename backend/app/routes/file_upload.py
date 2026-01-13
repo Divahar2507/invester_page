@@ -1,9 +1,9 @@
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException, status
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
-from app.database import get_db
+from app.dependencies import get_db
 from app.models.core import Pitch, User
-from app.utils.security import get_current_user
+from app.dependencies import get_current_user
 import os
 import shutil
 from pathlib import Path
@@ -44,35 +44,23 @@ async def upload_pitch_deck(
     db: Session = Depends(get_db)
 ):
     """Upload pitch deck (PDF/PPT/DOCX)"""
-    
-    # Validate file
     validate_file(file)
-    
-    # Get pitch and verify ownership
     pitch = db.query(Pitch).filter(Pitch.id == pitch_id).first()
     if not pitch:
         raise HTTPException(status_code=404, detail="Pitch not found")
-    
     if pitch.startup.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized to upload to this pitch")
     
-    # Create filename with timestamp
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    file_ext = Path(file.filename).suffix
-    filename = f"pitch_deck_{pitch_id}_{timestamp}{file_ext}"
-    file_path = UPLOAD_DIR / filename
+    from app.utils.storage import upload_file
+    url = upload_file(file)
     
-    # Save file
-    save_upload_file(file, file_path)
-    
-    # Update pitch record
-    pitch.pitch_deck_url = f"/uploads/pitch_documents/{filename}"
+    pitch.pitch_deck_url = url
     db.commit()
     
     return {
         "message": "Pitch deck uploaded successfully",
-        "filename": filename,
-        "url": pitch.pitch_deck_url
+        "filename": file.filename,
+        "url": url
     }
 
 @router.post("/{pitch_id}/upload-financial-doc")
@@ -83,30 +71,23 @@ async def upload_financial_doc(
     db: Session = Depends(get_db)
 ):
     """Upload financial projections/documents"""
-    
     validate_file(file)
-    
     pitch = db.query(Pitch).filter(Pitch.id == pitch_id).first()
     if not pitch:
         raise HTTPException(status_code=404, detail="Pitch not found")
-    
     if pitch.startup.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized")
     
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    file_ext = Path(file.filename).suffix
-    filename = f"financials_{pitch_id}_{timestamp}{file_ext}"
-    file_path = UPLOAD_DIR / filename
+    from app.utils.storage import upload_file
+    url = upload_file(file)
     
-    save_upload_file(file, file_path)
-    
-    pitch.financial_doc_url = f"/uploads/pitch_documents/{filename}"
+    pitch.financial_doc_url = url
     db.commit()
     
     return {
         "message": "Financial document uploaded successfully",
-        "filename": filename,
-        "url": pitch.financial_doc_url
+        "filename": file.filename,
+        "url": url
     }
 
 @router.post("/{pitch_id}/upload-business-plan")
@@ -117,30 +98,23 @@ async def upload_business_plan(
     db: Session = Depends(get_db)
 ):
     """Upload business plan document"""
-    
     validate_file(file)
-    
     pitch = db.query(Pitch).filter(Pitch.id == pitch_id).first()
     if not pitch:
         raise HTTPException(status_code=404, detail="Pitch not found")
-    
     if pitch.startup.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized")
     
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    file_ext = Path(file.filename).suffix
-    filename = f"business_plan_{pitch_id}_{timestamp}{file_ext}"
-    file_path = UPLOAD_DIR / filename
+    from app.utils.storage import upload_file
+    url = upload_file(file)
     
-    save_upload_file(file, file_path)
-    
-    pitch.business_plan_url = f"/uploads/pitch_documents/{filename}"
+    pitch.business_plan_url = url
     db.commit()
     
     return {
         "message": "Business plan uploaded successfully",
-        "filename": filename,
-        "url": pitch.business_plan_url
+        "filename": file.filename,
+        "url": url
     }
 
 @router.get("/download/{filename}")

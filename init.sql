@@ -10,7 +10,7 @@
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
-SET transaction_timeout = 0;
+
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SELECT pg_catalog.set_config('search_path', '', false);
@@ -269,7 +269,19 @@ CREATE TABLE public.pitches (
     status character varying,
     raising_amount character varying,
     equity_percentage character varying,
-    created_at timestamp with time zone DEFAULT now()
+    created_at timestamp with time zone DEFAULT now(),
+    pitch_deck_url character varying,
+    financial_doc_url character varying,
+    business_plan_url character varying,
+    other_docs_urls text,
+    industry character varying,
+    funding_stage character varying,
+    amount_seeking integer,
+    business_model character varying,
+    revenue_model character varying,
+    team_size integer,
+    tags character varying,
+    location character varying
 );
 
 

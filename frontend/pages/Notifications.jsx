@@ -1,175 +1,106 @@
-import * as React from 'react';
-import { useState, useEffect } from 'react';
-import { Rocket, TrendingUp, MessageSquare, Megaphone, Eye, X, Bell, UserPlus, check, XClicke } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Bell, MessageSquare, Briefcase, Info, Check, CheckCircle2 } from 'lucide-react';
 import { api } from '../services/api';
 
-const NotificationsPage = () => {
-    const [filter, setFilter] = useState('All');
-    const [requests, setRequests] = useState([]);
+const Notifications = () => {
+    const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // Mock Notifications for other types
-    const [notifications, setNotifications] = useState([
-        {
-            id: 101, // Use high ID to avoid conflict
-            type: 'pitch',
-            title: 'New Pitch: CyberGuard AI',
-            description: 'Submitted a Series A pitch deck. 92% Match with your cybersecurity thesis.',
-            time: '2h ago',
-            unread: true,
-            icon: <Rocket className="text-indigo-600" size={20} />,
-            iconBg: 'bg-indigo-50',
-            actions: ['Review Pitch', 'Dismiss']
-        },
-        {
-            id: 102,
-            type: 'announcement',
-            title: 'Platform Announcement',
-            description: 'VentureFlow will undergo scheduled maintenance on Oct 30th from 2:00 AM to 4:00 AM UTC.',
-            time: 'Yesterday',
-            unread: false,
-            icon: <Megaphone className="text-orange-600" size={20} />,
-            iconBg: 'bg-orange-50'
-        }
-    ]);
-
-    useEffect(() => {
-        fetchRequests();
-    }, []);
-
-    const fetchRequests = async () => {
+    const fetchNotifications = async () => {
         try {
-            const data = await api.getIncomingRequests();
-            // Map to notification format
-            const requestNotifs = data.map(req => ({
-                id: req.id,
-                type: 'connection_request',
-                title: `Connection Request: ${req.requester_name || 'Startup'}`,
-                description: `${req.requester_name} (${req.requester_role}) wants to connect with you.`,
-                time: new Date(req.created_at).toLocaleDateString(),
-                unread: true,
-                icon: <UserPlus className="text-blue-600" size={20} />,
-                iconBg: 'bg-blue-50',
-                isRequest: true,
-                connectionId: req.id
-            }));
-
-            setRequests(requestNotifs);
-        } catch (e) {
-            console.error("Failed to fetch requests", e);
+            setLoading(true);
+            const data = await api.getNotifications();
+            setNotifications(data);
+        } catch (error) {
+            console.error("Failed to fetch notifications", error);
         } finally {
             setLoading(false);
         }
     };
 
-    const handleRespond = async (id, action) => {
+    useEffect(() => {
+        fetchNotifications();
+    }, []);
+
+    const handleMarkAsRead = async (id) => {
         try {
-            await api.respondToRequest(id, action);
-            // Remove from list or update status
-            setRequests(prev => prev.filter(r => r.connectionId !== id));
-            // Optionally add a success notification
-            alert(`Request ${action}ed`);
-        } catch (e) {
-            console.error(e);
-            alert("Failed to respond");
+            await api.markNotificationAsRead(id);
+            // Optimistic update
+            setNotifications(notifications.map(n =>
+                n.id === id ? { ...n, is_read: true } : n
+            ));
+        } catch (error) {
+            console.error("Failed to mark as read", error);
         }
     };
 
-    // Merge mocks and real requests
-    const allItems = [...requests, ...notifications].sort((a, b) => b.id - a.id);
-
-    const filteredNotifications = filter === 'Unread'
-        ? allItems.filter(n => n.unread)
-        : allItems;
+    const getIcon = (type) => {
+        switch (type) {
+            case 'message': return <MessageSquare size={18} className="text-blue-500" />;
+            case 'match': return <Briefcase size={18} className="text-emerald-500" />;
+            case 'system': return <Info size={18} className="text-slate-500" />;
+            default: return <Bell size={18} className="text-orange-500" />;
+        }
+    };
 
     return (
-        <div className="p-8 max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div>
-                <h1 className="text-3xl font-bold text-slate-900">Notifications</h1>
+        <div className="p-8 max-w-4xl mx-auto space-y-6 font-['Plus Jakarta Sans'] animate-in fade-in duration-500 min-h-screen bg-slate-50">
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Notifications</h1>
+                    <p className="text-slate-500 mt-1 text-sm">Stay updated with your investment activity.</p>
+                </div>
             </div>
 
-            <div className="flex items-center gap-2 border-b border-slate-100 pb-4">
-                {['All', 'Unread'].map((tab) => (
-                    <button
-                        key={tab}
-                        onClick={() => setFilter(tab)}
-                        className={`px-6 py-1.5 rounded-full text-sm font-bold transition-all ${filter === tab
-                            ? 'bg-blue-600 text-white shadow-md shadow-blue-100'
-                            : 'text-slate-500 hover:bg-slate-100'
-                            }`}
-                    >
-                        {tab}
-                    </button>
-                ))}
-            </div>
-
-            <div className="space-y-6">
-                {filteredNotifications.length === 0 ? (
-                    <div className="p-12 text-center text-slate-500 bg-slate-50 rounded-2xl">
-                        No notifications found.
-                    </div>
-                ) : (
-                    filteredNotifications.map((item) => (
+            {loading ? (
+                <div className="text-center py-20">
+                    <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+                    <p className="text-slate-500 text-sm">Loading notifications...</p>
+                </div>
+            ) : notifications.length === 0 ? (
+                <div className="bg-white rounded-2xl border border-dashed border-slate-200 p-12 text-center">
+                    <Bell size={40} className="mx-auto text-slate-200 mb-4" />
+                    <p className="text-slate-500 font-medium">No notifications yet.</p>
+                    <p className="text-slate-400 text-sm mt-1">We'll let you know when something important happens.</p>
+                </div>
+            ) : (
+                <div className="space-y-3">
+                    {notifications.map((notif) => (
                         <div
-                            key={item.id}
-                            className={`bg-white rounded-2xl border ${item.unread ? 'border-blue-100 shadow-sm' : 'border-slate-100'} overflow-hidden flex relative group hover:shadow-md transition-all duration-300`}
+                            key={notif.id}
+                            className={`flex gap-4 p-4 rounded-xl border transition-all duration-200 ${notif.is_read ? 'bg-white border-slate-100' : 'bg-blue-50/50 border-blue-100 shadow-sm'}`}
                         >
-                            {item.unread && <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600"></div>}
-
-                            <div className="p-6 flex gap-6 w-full">
-                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${item.iconBg}`}>
-                                    {item.initials ? (
-                                        <span className="text-sm font-bold text-slate-500">{item.initials}</span>
-                                    ) : item.icon}
+                            <div className={`mt-1 h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${notif.is_read ? 'bg-slate-100' : 'bg-white shadow-sm border border-blue-100'}`}>
+                                {getIcon(notif.type)}
+                            </div>
+                            <div className="flex-1">
+                                <div className="flex justify-between items-start">
+                                    <h3 className={`text-sm font-semibold ${notif.is_read ? 'text-slate-700' : 'text-slate-900'}`}>
+                                        {notif.title}
+                                    </h3>
+                                    <span className="text-xs text-slate-400 whitespace-nowrap ml-2">
+                                        {new Date(notif.created_at).toLocaleDateString()}
+                                    </span>
                                 </div>
-
-                                <div className="flex-1 space-y-1">
-                                    <div className="flex items-center justify-between">
-                                        <h3 className="font-bold text-slate-900">{item.title}</h3>
-                                        <span className="text-xs font-medium text-slate-400">{item.time}</span>
-                                    </div>
-                                    <p className="text-sm text-slate-500 leading-relaxed max-w-3xl">
-                                        {item.description}
-                                    </p>
-
-                                    {item.isRequest ? (
-                                        <div className="flex items-center gap-4 pt-3">
-                                            <button
-                                                onClick={() => handleRespond(item.connectionId, 'accept')}
-                                                className="px-4 py-1.5 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition-colors">
-                                                Accept
-                                            </button>
-                                            <button
-                                                onClick={() => handleRespond(item.connectionId, 'reject')}
-                                                className="px-4 py-1.5 bg-white border border-slate-200 text-slate-600 text-sm font-bold rounded-lg hover:bg-slate-50 transition-colors">
-                                                Decline
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        item.actions && (
-                                            <div className="flex items-center gap-6 pt-3">
-                                                {item.actions.map((action, aIdx) => (
-                                                    <button
-                                                        key={aIdx}
-                                                        className={`text-sm font-bold transition-colors ${aIdx === 0
-                                                            ? 'text-blue-600 hover:text-blue-700'
-                                                            : 'text-slate-400 hover:text-slate-600'
-                                                            }`}
-                                                    >
-                                                        {action}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        )
-                                    )}
-                                </div>
+                                <p className="text-sm text-slate-500 mt-1 leading-relaxed">
+                                    {notif.description}
+                                </p>
+                                {!notif.is_read && (
+                                    <button
+                                        onClick={() => handleMarkAsRead(notif.id)}
+                                        className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+                                    >
+                                        <Check size={14} />
+                                        Mark as read
+                                    </button>
+                                )}
                             </div>
                         </div>
-                    ))
-                )}
-            </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 };
 
-export default NotificationsPage;
+export default Notifications;

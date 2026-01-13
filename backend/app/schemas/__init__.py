@@ -108,6 +108,7 @@ class PitchBase(BaseModel):
     pitch_file_url: Optional[str] = None
     raising_amount: Optional[str] = None
     equity_percentage: Optional[str] = None
+    valuation: Optional[str] = None
 
 class PitchCreate(PitchBase):
     pass
@@ -126,6 +127,16 @@ class PitchResponse(PitchBase):
     match_score: Optional[int] = None # For displaying match %
     startup_user_id: Optional[int] = None # For connection check
     connection_status: Optional[str] = "not_connected" # Optimized field
+    
+    # Extra fields for frontend
+    location: Optional[str] = None
+    tags: Optional[str] = None # Return as string (comma separated) or list? Frontend does split? Frontend code: tags: [pitch.industry, pitch.stage]... wait, frontend handles tags array itself from industry/stage, BUT it also reads pitch.tags if available? 
+    # Frontend: tags: [pitch.industry, pitch.stage] ... NO wait: tags: [pitch.industry, pitch.stage].filter(Boolean) in BrowsePitches line 48.
+    # But Pitch model has tags field. Let's expose it.
+    tags_list: Optional[List[str]] = None # Better to return list if possible, or just str and let frontend parse
+    # Let's keep it simple: Pitch model has `tags` as string.
+    tags: Optional[str] = None
+    valuation: Optional[str] = None 
 
     class Config:
         from_attributes = True
@@ -225,3 +236,45 @@ class ConnectionStatus(BaseModel):
     status: str # 'not_connected', 'pending', 'accepted', 'rejected'
     request_sent_by_me: Optional[bool] = False
     connection_id: Optional[int] = None
+
+# Pitch Comments
+class PitchCommentCreate(BaseModel):
+    comment: str
+    rating: Optional[int] = Field(None, ge=1, le=5)
+
+class PitchCommentResponse(BaseModel):
+    id: int
+    pitch_id: int
+    user_id: int
+    user_name: Optional[str] = None
+    user_role: Optional[str] = None
+    comment: str
+    rating: Optional[int] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+# Tasks
+class TaskBase(BaseModel):
+    text: str
+    completed: Optional[bool] = False
+    priority: Optional[str] = "Medium"
+    date: Optional[str] = "Today"
+
+class TaskCreate(TaskBase):
+    pass
+
+class TaskUpdate(BaseModel):
+    text: Optional[str] = None
+    completed: Optional[bool] = None
+    priority: Optional[str] = None
+    date: Optional[str] = None
+
+class TaskResponse(TaskBase):
+    id: int
+    user_id: int
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True

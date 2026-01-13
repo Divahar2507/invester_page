@@ -1,9 +1,21 @@
 """
 Script to seed realistic pitch data into the database
 """
-from database import SessionLocal
-from models.core import User, StartupProfile, Pitch
-from utils.security import get_password_hash
+import sys
+import os
+
+# Add the parent directory to sys.path to allow imports if run directly
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+try:
+    from app.database import SessionLocal
+    from app.models.core import User, StartupProfile, Pitch
+    from app.utils.security import get_password_hash
+except ImportError:
+    # Fallback for direct execution within the app folder
+    from database import SessionLocal
+    from models.core import User, StartupProfile, Pitch
+    from utils.security import get_password_hash
 import random
 
 # Sample realistic pitch data
@@ -117,6 +129,61 @@ SAMPLE_PITCHES = [
         "tags": ["PropTech", "AI", "Virtual Tours"],
         "team_size": 10,
         "revenue": "$250K ARR"
+    },
+    {
+        "company": "MediChain Secure",
+        "industry": "Healthcare",
+        "stage": "Seed",
+        "title": "Blockchain Electronic Health Records",
+        "description": "Secure, decentralized patient data exchange for hospitals and insurers. Piloting with 3 major hospital chains in Mumbai.",
+        "amount": 1200000,
+        "tags": ["Blockchain", "HealthTech", "B2B"],
+        "team_size": 14,
+        "revenue": "Pre-revenue"
+    },
+    {
+        "company": "AgriDrone Analytics",
+        "industry": "AgriTech",
+        "stage": "Series A",
+        "title": "Precision Agriculture via Autonomous Drones",
+        "description": "Drones for crop monitoring, spraying, and yield prediction. Reducing pesticide usage by 40% for 500 subscribed farms.",
+        "amount": 1800000,
+        "tags": ["Drones", "AgriTech", "AI"],
+        "team_size": 18,
+        "revenue": "$600K ARR"
+    },
+    {
+        "company": "UrbanMobility E-Bikes",
+        "industry": "Transportation",
+        "stage": "Seed",
+        "title": "Dockless E-Bike Sharing for Metro Cities",
+        "description": "Solving last-mile connectivity. 1000 E-bikes deployed in Bengaluru. 50,000 monthly active riders.",
+        "amount": 900000,
+        "tags": ["Mobility", "CleanTech", "B2C"],
+        "team_size": 22,
+        "revenue": "$45K MRR"
+    },
+    {
+        "company": "SkillUp Vernacular",
+        "industry": "EdTech",
+        "stage": "Pre-Seed",
+        "title": "Tech Upskilling in Regional Indian Languages",
+        "description": "Coding and Data Science courses in Hindi, Tamil, and Telugu. 5000+ enrolled students. 80% placement rate.",
+        "amount": 300000,
+        "tags": ["EdTech", "Vernacular", "Impact"],
+        "team_size": 6,
+        "revenue": "$20K MRR"
+    },
+    {
+        "company": "RetailSense IoT",
+        "industry": "Retail Tech",
+        "stage": "Seed",
+        "title": "Smart Shelf Analytics for Offline Retail",
+        "description": "IoT sensors for real-time inventory tracking and customer behavior analytics. Deployed in 50 supermarkets.",
+        "amount": 700000,
+        "tags": ["IoT", "Retail", "Analytics"],
+        "team_size": 9,
+        "revenue": "$100K ARR"
     }
 ]
 
@@ -124,30 +191,51 @@ def create_startup_and_pitch(db, data):
     """Create a startup user, profile, and pitch"""
     # Create user
     email = f"{data['company'].lower().replace(' ', '')}@startup.com"
-    user = User(
-        email=email,
-        password_hash=get_password_hash("demo123"),
-        role="startup"
-    )
-    db.add(user)
-    db.flush()
     
-    # Create startup profile
-    startup_profile = StartupProfile(
-        user_id=user.id,
-        company_name=data['company'],
-        founder_name=f"{data['company']} Founder",
-        industry=data['industry'],
-        funding_stage=data['stage'],
-        team_size=data['team_size'],
-        location="Chennai, India"
-    )
-    db.add(startup_profile)
-    db.flush()
-    
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        user = User(
+            email=email,
+            password_hash=get_password_hash("demo123"),
+            role="startup"
+        )
+        db.add(user)
+        db.flush()
+        
+        # Create startup profile only if user is new
+        startup_profile = StartupProfile(
+            user_id=user.id,
+            company_name=data['company'],
+            founder_name=f"{data['company']} Founder",
+            industry=data['industry'],
+            funding_stage=data['stage'],
+            city="Chennai"
+        )
+        db.add(startup_profile)
+        db.flush()
+    else:
+        startup_profile = db.query(StartupProfile).filter(StartupProfile.user_id == user.id).first()
+        if not startup_profile:
+             # Should not happen ideally but handle just in case
+            startup_profile = StartupProfile(
+                user_id=user.id,
+                company_name=data['company'],
+                founder_name=f"{data['company']} Founder",
+                industry=data['industry'],
+                funding_stage=data['stage'],
+                city="Chennai"
+            )
+            db.add(startup_profile)
+            db.flush()
+
+    # Check if pitch exists
+    existing_pitch = db.query(Pitch).filter(Pitch.title == data['title'], Pitch.startup_id == startup_profile.id).first()
+    if existing_pitch:
+        return existing_pitch
+
     # Create pitch
     pitch = Pitch(
-        startup_id=user.id,
+        startup_id=startup_profile.id,
         title=data['title'],
         description=data['description'],
         industry=data['industry'],
@@ -156,7 +244,8 @@ def create_startup_and_pitch(db, data):
         business_model="B2B SaaS" if "SaaS" in data['tags'] else "B2C",
         revenue_model=data['revenue'],
         team_size=data['team_size'],
-        tags=",".join(data['tags'])
+        tags=",".join(data['tags']),
+        location="Chennai, India"
     )
     db.add(pitch)
     

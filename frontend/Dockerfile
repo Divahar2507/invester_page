@@ -7,6 +7,9 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
+# Increase memory for Node
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+
 # Install dependencies
 RUN npm install
 
