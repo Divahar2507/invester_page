@@ -19,7 +19,7 @@ export const db = {
     getMessages: (userId) => {
         const key = userId ? `${KEYS.MESSAGES}_${userId}` : KEYS.MESSAGES;
         const stored = localStorage.getItem(key);
-        if (!stored & userId) {
+        if (!stored && userId) {
             return [];
         }
         return JSON.parse(stored || '[]');
@@ -28,8 +28,12 @@ export const db = {
     addMessage: (userId, msg) => {
         const key = userId ? `${KEYS.MESSAGES}_${userId}` : KEYS.MESSAGES;
         const msgs = db.getMessages(userId);
-        msgs.push(msg);
-        localStorage.setItem(key, JSON.stringify(msgs));
+
+        // Prevent duplicates
+        if (!msgs.find(m => m.id === msg.id)) {
+            msgs.push(msg);
+            localStorage.setItem(key, JSON.stringify(msgs));
+        }
         return msgs;
     },
 

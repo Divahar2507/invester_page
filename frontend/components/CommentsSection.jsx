@@ -1,27 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { User, MessageCircle, Star, Send } from 'lucide-react';
-import api from '../services/api';
+import { api } from '../services/api';
 
 export default function CommentsSection({ pitchId }) {
-    const [comments, setComments] = useState([
-        // Mock comments for immediate visual feedback if backend empty
-        {
-            id: 1,
-            user_name: "Sarah Chen",
-            user_role: "investor",
-            comment: "This matches our sustainability thesis perfectly. Would love to see more data on the unit economics.",
-            rating: 5,
-            created_at: "2024-03-15T10:30:00Z"
-        },
-        {
-            id: 2,
-            user_name: "David Miller",
-            user_role: "investor",
-            comment: "Interesting approach, but the market seems crowded. What's your unique moat?",
-            rating: 4,
-            created_at: "2024-03-14T14:20:00Z"
-        }
-    ]);
+    const [comments, setComments] = useState([]);
     const [newComment, setNewComment] = useState("");
     const [rating, setRating] = useState(0);
     const [loading, setLoading] = useState(true);
@@ -33,9 +15,9 @@ export default function CommentsSection({ pitchId }) {
 
     const fetchComments = async () => {
         try {
-            const response = await api.get(`/social/comments/${pitchId}`);
-            if (response.data && response.data.length > 0) {
-                setComments(response.data);
+            const data = await api.getComments(pitchId);
+            if (data) {
+                setComments(data);
             }
         } catch (error) {
             console.error('Error fetching comments:', error);
@@ -50,7 +32,7 @@ export default function CommentsSection({ pitchId }) {
 
         setSubmitting(true);
         try {
-            await api.post('/social/comments', {
+            await api.postComment({
                 pitch_id: pitchId,
                 comment: newComment,
                 rating: rating > 0 ? rating : null

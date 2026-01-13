@@ -78,22 +78,42 @@ def load_data():
                         user_id=user.id,
                         company_name=company_name,
                         industry=industry,
-                        funding_stage="Seed", # Default since not in CSV
-                        vision=description[:500] if description else None, # Use part of desc as vision? Or just leave null.
-                        problem=None,
-                        solution=None,
-                        description=description,
-                        city=row.get("city"),
-                        state=row.get("state"),
-                        pincode=row.get("pincode"),
-                        contact_address=row.get("contact_address"),
-                        mobile=row.get("mobile1"),
+                        funding_stage="Seed",
+                        vision=description[:200] if description else f"Leading the future of {industry}.",
+                        problem=f"Inefficiency in the current {industry} landscape.",
+                        solution=f"Our proprietary technology automates {industry} workflows.",
+                        description=description or f"Revolutionizing {industry} with smart technology.",
+                        city=row.get("city") or "Mumbai",
+                        state=row.get("state") or "Maharashtra",
+                        pincode=row.get("pincode") or "400001",
+                        contact_address=row.get("contact_address") or "India Office",
+                        mobile=row.get("mobile1") or "9876543210",
                         email_verified=parse_bool(row.get("email_verified")),
                         mobile_verified=parse_bool(row.get("mobile_verified"))
                     )
                     
                     db.add(profile)
                     db.commit()
+                    db.refresh(profile)
+
+                    # Create a default Pitch for the startup so it appears in the feed
+                    pitch = Pitch(
+                        startup_id=profile.id,
+                        title=f"{company_name} - {industry} Transformation",
+                        description=description or f"Transforming {industry} with cutting-edge solutions.",
+                        industry=industry,
+                        funding_stage="Seed",
+                        status="active",
+                        raising_amount="$500k",
+                        equity_percentage="10%",
+                        location=f"{row.get('city') or 'Mumbai'}, India",
+                        valuation="$5M",
+                        tags=f"{industry},Innovation,Tech",
+                        pitch_file_url="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
+                    )
+                    db.add(pitch)
+                    db.commit()
+
                     count += 1
                     
                     if count % 10 == 0:

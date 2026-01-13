@@ -7,6 +7,9 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
+# Increase memory for Node
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+
 # Install dependencies
 RUN npm install
 
@@ -14,6 +17,8 @@ RUN npm install
 COPY . .
 
 # Build the application
+ARG VITE_GEMINI_API_KEY
+ENV VITE_GEMINI_API_KEY=$VITE_GEMINI_API_KEY
 RUN npm run build
 
 # Stage 2: Production with Nginx

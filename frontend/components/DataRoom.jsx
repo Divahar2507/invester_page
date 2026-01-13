@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Download, Upload, CheckCircle, AlertCircle } from 'lucide-react';
-import api from '../services/api';
+import { FileText, Download, Upload, CheckCircle, AlertCircle, Eye, X, Shield, Lock, FileSpreadsheet, FilePieChart, Briefcase } from 'lucide-react';
+import { api } from '../services/api';
 
 export default function DataRoom({ pitchId, isOwner = false }) {
     const [documents, setDocuments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
     const [uploadType, setUploadType] = useState(null);
+    const [viewingDoc, setViewingDoc] = useState(null);
 
     useEffect(() => {
         fetchDocuments();
@@ -14,10 +15,11 @@ export default function DataRoom({ pitchId, isOwner = false }) {
 
     const fetchDocuments = async () => {
         try {
-            const response = await api.get(`/pitches/${pitchId}/data-room`);
-            setDocuments(response.data.documents);
+            const data = await api.getDocuments(pitchId);
+            setDocuments(data.documents || []);
         } catch (error) {
             console.error('Error fetching documents:', error);
+            setDocuments([]); // No docs on error
         } finally {
             setLoading(false);
         }
@@ -27,7 +29,6 @@ export default function DataRoom({ pitchId, isOwner = false }) {
         const file = event.target.files[0];
         if (!file) return;
 
-        // Validate file type
         const allowedExtensions = ['.pdf', '.ppt', '.pptx', '.doc', '.docx', '.xlsx', '.xls'];
         const fileExt = '.' + file.name.split('.').pop().toLowerCase();
 
@@ -36,7 +37,6 @@ export default function DataRoom({ pitchId, isOwner = false }) {
             return;
         }
 
-        // Validate file size (max 10MB)
         if (file.size > 10 * 1024 * 1024) {
             alert('File size must be less than 10MB');
             return;
@@ -47,183 +47,196 @@ export default function DataRoom({ pitchId, isOwner = false }) {
             const formData = new FormData();
             formData.append('file', file);
 
-            let endpoint;
-            if (documentType === 'pitch_deck') {
-                endpoint = `/pitches/${pitchId}/upload-pitch-deck`;
-            } else if (documentType === 'financial') {
-                endpoint = `/pitches/${pitchId}/upload-financial-doc`;
-            } else if (documentType === 'business_plan') {
-                endpoint = `/pitches/${pitchId}/upload-business-plan`;
-            }
-
-            await api.post(endpoint, formData, {
+            const response = await fetch(`${import.meta.env.PROD ? '/api' : 'http://127.0.0.1:8000'}/pitches/${pitchId}/upload-${documentType.replace('_', '-')}`, {
+                method: 'POST',
                 headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: formData
             });
 
+            if (!response.ok) throw new Error('Upload failed');
+
             alert('Document uploaded successfully!');
-            fetchDocuments(); // Reload documents
+            fetchDocuments();
             setUploadType(null);
         } catch (error) {
             console.error('Upload error:', error);
-            alert(error.response?.data?.detail || 'Failed to upload document');
+            alert('Failed to upload document');
         } finally {
             setUploading(false);
         }
     };
 
-    const handleDownload = async (downloadUrl, filename) => {
-        try {
-            const response = await api.get(downloadUrl, {
-                responseType: 'blob'
-            });
+    const handleDownload = (downloadUrl, filename) => {
+        if (downloadUrl === '#') {
+            alert("This is a demo file. Real downloads are available for uploaded documents.");
+            return;
+        }
+        const fullUrl = downloadUrl.startsWith('http') ? downloadUrl : `${import.meta.env.PROD ? '' : 'http://127.0.0.1:8000'}/${downloadUrl}`;
+        window.open(fullUrl, '_blank');
+    };
 
-            // Create download link
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', filename);
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-        } catch (error) {
-            console.error('Download error:', error);
-            alert('Failed to download document');
+    const handleView = (doc) => {
+        if (doc.download_url === '#') {
+            alert("This is a demo file. Real viewing is available for uploaded documents.");
+            return;
+        }
+        const fullUrl = doc.download_url.startsWith('http')
+            ? doc.download_url
+            : `${window.location.protocol}//${window.location.host}${doc.download_url.startsWith('/') ? '' : '/'}${doc.download_url}`;
+
+        const ext = doc.filename.split('.').pop().toLowerCase();
+        if (['ppt', 'pptx', 'doc', 'docx', 'xls', 'xlsx'].includes(ext)) {
+            const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(fullUrl)}&embedded=true`;
+            setViewingDoc({ ...doc, viewerUrl });
+        } else {
+            setViewingDoc({ ...doc, viewerUrl: fullUrl });
         }
     };
 
     const getFileIcon = (filename) => {
         const ext = filename.split('.').pop().toLowerCase();
-        if (['pdf'].includes(ext)) return '📄';
-        if (['ppt', 'pptx'].includes(ext)) return '📊';
-        if (['doc', 'docx'].includes(ext)) return '📝';
-        if (['xls', 'xlsx'].includes(ext)) return '📈';
-        return '📁';
+        if (['pdf'].includes(ext)) return <FileText className="text-rose-500" size={24} />;
+        if (['ppt', 'pptx'].includes(ext)) return <FilePieChart className="text-amber-500" size={24} />;
+        if (['doc', 'docx'].includes(ext)) return <Briefcase className="text-blue-500" size={24} />;
+        if (['xls', 'xlsx'].includes(ext)) return <FileSpreadsheet className="text-emerald-500" size={24} />;
+        return <FileText className="text-slate-400" size={24} />;
     };
-
-    const documentTypes = [
-        { id: 'pitch_deck', label: 'Pitch Deck', description: 'Main presentation deck (PDF/PPT)' },
-        { id: 'financial', label: 'Financial Projections', description: 'Revenue, expenses, forecasts' },
-        { id: 'business_plan', label: 'Business Plan', description: 'Detailed business strategy' }
-    ];
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            <div className="flex items-center justify-center py-20 bg-white rounded-[32px] border border-slate-100 shadow-xl">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Encrypting Connection...</p>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-6">
-                <div>
-                    <h2 className="text-2xl font-bold text-gray-900">Data Room</h2>
-                    <p className="text-sm text-gray-500 mt-1">
-                        {documents.length} document{documents.length !== 1 && 's'} available
-                    </p>
+        <div className="bg-white rounded-[32px] border border-slate-100 shadow-2xl shadow-slate-200/50 overflow-hidden font-['Plus Jakarta Sans']">
+            {/* Header */}
+            <div className="px-8 py-6 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
+                <div className="flex items-center gap-3">
+                    <div className="p-2 bg-slate-900 rounded-xl">
+                        <Shield size={20} className="text-white" />
+                    </div>
+                    <div>
+                        <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight">Security Data Room</h2>
+                        <div className="flex items-center gap-2 mt-0.5">
+                            <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                {documents.length} Encrypted Assets Available
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
                 {isOwner && (
                     <button
                         onClick={() => setUploadType(uploadType ? null : 'pitch_deck')}
-                        className="px-4 py-2 bg-blue-600 text-white  rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                        className="p-3 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 transition-all shadow-sm group"
                     >
-                        <Upload size={18} />
-                        Upload Document
+                        <Upload size={18} className="text-slate-400 group-hover:text-blue-600" />
                     </button>
                 )}
             </div>
 
-            {/* Upload Section (Owner only) */}
-            {isOwner && uploadType && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                    <h3 className="font-semibold text-gray-900 mb-3">Upload Document</h3>
-                    <div className="space-y-3">
-                        {documentTypes.map(docType => (
-                            <div key={docType.id} className="flex items-center gap-3">
-                                <input
-                                    type="file"
-                                    id={`upload-${docType.id}`}
-                                    accept=".pdf,.ppt,.pptx,.doc,.docx,.xlsx,.xls"
-                                    onChange={(e) => handleFileUpload(e, docType.id)}
-                                    className="hidden"
-                                    disabled={uploading}
-                                />
-                                <label
-                                    htmlFor={`upload-${docType.id}`}
-                                    className="flex-1 cursor-pointer bg-white border-2 border-dashed border-gray-300 rounded-lg p-4 hover:border-blue-500 hover:bg-blue-50 transition-colors"
-                                >
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <p className="font-medium text-gray-900">{docType.label}</p>
-                                            <p className="text-sm text-gray-500">{docType.description}</p>
-                                        </div>
-                                        <Upload size={20} className="text-gray-400" />
+            <div className="p-8 space-y-4">
+                {documents.length === 0 ? (
+                    <div className="text-center py-16 bg-slate-50/50 rounded-[28px] border-2 border-dashed border-slate-100">
+                        <Lock size={48} className="mx-auto text-slate-200 mb-4" />
+                        <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Zero Access Protocols Active</p>
+                        <p className="text-[10px] text-slate-300 mt-1">Founder has not released documentation yet.</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 gap-4">
+                        {documents.map((doc, index) => (
+                            <div
+                                key={index}
+                                className="flex items-center justify-between p-5 bg-white border border-slate-50 rounded-[24px] hover:border-blue-100 hover:shadow-xl hover:shadow-blue-500/5 transition-all group"
+                            >
+                                <div className="flex items-center gap-5">
+                                    <div className="w-14 h-14 bg-slate-50 rounded-2xl flex items-center justify-center group-hover:bg-blue-50 transition-colors">
+                                        {getFileIcon(doc.filename)}
                                     </div>
-                                </label>
+                                    <div>
+                                        <div className="flex items-center gap-2">
+                                            <p className="font-black text-slate-900 uppercase tracking-tight text-sm italic">{doc.type}</p>
+                                            {doc.category && (
+                                                <span className="px-2 py-0.5 bg-slate-100 text-slate-400 text-[8px] font-black rounded-lg uppercase tracking-tighter">
+                                                    {doc.category}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="flex items-center gap-3 mt-1">
+                                            <p className="text-xs font-bold text-slate-400 truncate max-w-[150px]">{doc.filename}</p>
+                                            <span className="text-[10px] font-black text-slate-300 uppercase">{doc.size || '0.0 MB'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        onClick={() => handleView(doc)}
+                                        className="p-3 bg-slate-50 text-slate-400 rounded-xl hover:bg-blue-600 hover:text-white transition-all active:scale-90"
+                                        title="View Document"
+                                    >
+                                        <Eye size={18} />
+                                    </button>
+                                    <button
+                                        onClick={() => handleDownload(doc.download_url, doc.filename)}
+                                        className="p-3 bg-slate-50 text-slate-400 rounded-xl hover:bg-slate-900 hover:text-white transition-all active:scale-90"
+                                        title="Download Asset"
+                                    >
+                                        <Download size={18} />
+                                    </button>
+                                </div>
                             </div>
                         ))}
                     </div>
+                )}
 
-                    {uploading && (
-                        <div className="mt-3 flex items-center gap-2 text-blue-600">
-                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                            <span className="text-sm">Uploading...</span>
-                        </div>
-                    )}
+                {/* Secure Badge */}
+                <div className="pt-4 flex items-center justify-center gap-2 opacity-30 select-none">
+                    <Lock size={12} className="text-slate-400" />
+                    <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em]">End-to-End SSL Architecture</span>
                 </div>
-            )}
+            </div>
 
-            {/* Documents List */}
-            {documents.length === 0 ? (
-                <div className="text-center py-12">
-                    <FileText size={48} className="mx-auto text-gray-300 mb-3" />
-                    <p className="text-gray-500 font-medium">No documents uploaded yet</p>
-                    {isOwner && (
-                        <p className="text-sm text-gray-400 mt-1">
-                            Upload your pitch deck and financial documents to share with investors
-                        </p>
-                    )}
-                </div>
-            ) : (
-                <div className="space-y-3">
-                    {documents.map((doc, index) => (
-                        <div
-                            key={index}
-                            className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200"
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className="text-3xl">{getFileIcon(doc.filename)}</div>
+            {/* Viewing Modal */}
+            {viewingDoc && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-xl p-8 animate-in fade-in duration-300">
+                    <div className="w-full max-w-6xl h-full bg-white rounded-[40px] overflow-hidden flex flex-col relative shadow-[0_32px_128px_-16px_rgba(0,0,0,0.5)] border border-white/20">
+                        <div className="p-6 border-b border-slate-50 flex justify-between items-center bg-white">
+                            <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white">
+                                    <Eye size={20} />
+                                </div>
                                 <div>
-                                    <p className="font-semibold text-gray-900">{doc.type}</p>
-                                    <p className="text-sm text-gray-500">{doc.filename}</p>
+                                    <h3 className="font-black text-slate-900 uppercase tracking-tight">{viewingDoc.filename}</h3>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Secure Viewer Interface</p>
                                 </div>
                             </div>
-
                             <button
-                                onClick={() => handleDownload(doc.download_url, doc.filename)}
-                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors"
+                                onClick={() => setViewingDoc(null)}
+                                className="p-3 hover:bg-slate-50 rounded-full transition-all active:scale-90"
                             >
-                                <Download size={16} />
-                                Download
+                                <X size={24} className="text-slate-400" />
                             </button>
                         </div>
-                    ))}
+                        <div className="flex-1 bg-slate-100">
+                            <iframe
+                                src={viewingDoc.viewerUrl}
+                                className="w-full h-full border-none"
+                                title="Secure Document Portal"
+                            />
+                        </div>
+                    </div>
                 </div>
             )}
-
-            {/* File Format Info */}
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <p className="text-sm text-gray-600">
-                    <span className="font-semibold">Supported formats:</span> PDF, PPT, PPTX, DOC, DOCX, XLS, XLSX
-                </p>
-                <p className="text-sm text-gray-600 mt-1">
-                    <span className="font-semibold">Max file size:</span> 10 MB per document
-                </p>
-            </div>
         </div>
     );
 }

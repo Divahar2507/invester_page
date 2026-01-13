@@ -16,7 +16,7 @@ const Sidebar = () => {
                     <div className="bg-blue-600 w-8 h-8 rounded-lg flex items-center justify-center shadow-lg shadow-blue-100">
                         <TrendingUp size={18} className="text-white" />
                     </div>
-                    <span className="text-xl font-black text-slate-900 tracking-tight">InvestorHub</span>
+                    <span className="text-xl font-bold text-slate-900 tracking-tight">InvestorHub</span>
                 </div>
 
                 <nav className="space-y-1">
@@ -40,7 +40,7 @@ const Sidebar = () => {
                         );
                     })}
                 </nav>
-            </div>
+            </div >
 
             <div className="mt-auto p-6 border-t border-slate-100 space-y-1">
                 <Link
@@ -63,7 +63,7 @@ const Sidebar = () => {
 
 
             </div>
-        </div>
+        </div >
     );
 };
 

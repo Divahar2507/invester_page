@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
+from app.middleware.rate_limit import limiter
 from app.dependencies import get_db, get_current_user
 from sqlalchemy.orm import Session
 from app.database import SessionLocal
@@ -49,7 +50,8 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     return new_user
 
 @router.post("/login", response_model=Token)
-def login(user_credentials: UserLogin, db: Session = Depends(get_db)):
+@limiter.limit("5/minute")
+def login(request: Request, user_credentials: UserLogin, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == user_credentials.email).first()
     if not user or not verify_password(user_credentials.password, user.password_hash):
         raise HTTPException(
@@ -65,7 +67,8 @@ def login(user_credentials: UserLogin, db: Session = Depends(get_db)):
     return {"access_token": access_token, "token_type": "bearer"}
 
 @router.post("/google-login", response_model=Token)
-def google_login(request: GoogleLoginRequest, db: Session = Depends(get_db)):
+@limiter.limit("5/minute")
+def google_login(request: Request, login_request: GoogleLoginRequest, db: Session = Depends(get_db)):
     try:
         from google.oauth2 import id_token
         from google.auth.transport import requests
@@ -73,7 +76,7 @@ def google_login(request: GoogleLoginRequest, db: Session = Depends(get_db)):
         GOOGLE_CLIENT_ID = "835532330363-8lohj8uk8bvqd37nnlpsfl4rslul8nff.apps.googleusercontent.com"
         
         # Verify the token
-        id_info = id_token.verify_oauth2_token(request.token, requests.Request(), GOOGLE_CLIENT_ID)
+        id_info = id_token.verify_oauth2_token(login_request.token, requests.Request(), GOOGLE_CLIENT_ID)
         
         email = id_info['email']
         name = id_info.get('name', '')
@@ -87,7 +90,7 @@ def google_login(request: GoogleLoginRequest, db: Session = Depends(get_db)):
             user = User(
                 email=email,
                 password_hash=hashed_password,
-                role=request.role
+                role=login_request.role
             )
             db.add(user)
             db.commit()
@@ -144,7 +147,7 @@ def get_current_user_info(current_user: User = Depends(get_current_user)):
     return current_user
 
 @router.post("/forgot-password")
-def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db)):
+async def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == request.email).first()
     if not user:
         # Don't reveal if user exists or not, but for dev we might want to know
@@ -158,9 +161,9 @@ def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db
     
     # MOCK SEND EMAIL
     reset_link = f"http://localhost/#/reset-password?token={reset_token}"
-    print(f"------------ PASSWORD RESET LINK FOR {user.email} ------------")
-    print(reset_link)
-    print("-------------------------------------------------------------")
+    
+    from app.utils.email import send_password_reset_email
+    await send_password_reset_email(user.email, reset_link)
     
     return {"message": "Password reset link sent to email.", "dev_link": reset_link} 
 

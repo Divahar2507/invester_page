@@ -20,6 +20,7 @@ class User(Base):
     sent_connections = relationship("Connection", back_populates="requester", foreign_keys="Connection.requester_id")
     received_connections = relationship("Connection", back_populates="receiver", foreign_keys="Connection.receiver_id")
     watchlist_items = relationship("Watchlist", back_populates="user", cascade="all, delete-orphan")
+    tasks = relationship("Task", back_populates="user", cascade="all, delete-orphan")
 
 class Connection(Base):
     __tablename__ = "connections"
@@ -114,6 +115,7 @@ class Pitch(Base):
     team_size = Column(Integer)
     tags = Column(String)  # Comma-separated tags
     location = Column(String)
+    valuation = Column(String) # e.g. "$10M"
     
     startup = relationship("StartupProfile", back_populates="pitches")
 
@@ -134,6 +136,8 @@ class Message(Base):
     receiver_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     content = Column(Text, nullable=False)
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
+    attachment_url = Column(String)
+    attachment_type = Column(String)
     
     sender = relationship("User", back_populates="sent_messages", foreign_keys=[sender_id])
     receiver = relationship("User", back_populates="received_messages", foreign_keys=[receiver_id])
@@ -159,7 +163,9 @@ class Investment(Base):
     amount = Column(Float, nullable=False)
     date = Column(DateTime)
     round = Column(String)
+    equity_stake = Column(Float, nullable=True) # Percent value
     notes = Column(Text)
+    document_url = Column(String) # URL to uploaded pitch deck/document
     status = Column(String, default="Active") # Active, Exited, Needs Attention
     
     investor = relationship("InvestorProfile", back_populates="investments")
@@ -210,3 +216,15 @@ class Meeting(Base):
     investor = relationship("User", foreign_keys=[investor_id])
     startup = relationship("User", foreign_keys=[startup_id])
     pitch = relationship("Pitch")
+
+class Task(Base):
+    __tablename__ = "tasks"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    text = Column(String, nullable=False)
+    completed = Column(Boolean, default=False)
+    priority = Column(String, default="Medium")
+    date = Column(String, default="Today")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    user = relationship("User", back_populates="tasks")

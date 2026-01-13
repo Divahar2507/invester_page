@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from app.database import get_db
+from app.dependencies import get_db
 from app.models.core import User, Pitch, PitchComment, Meeting, StartupProfile, InvestorProfile
-from app.utils.security import get_current_user
+from app.dependencies import get_current_user
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
@@ -158,7 +158,18 @@ async def schedule_meeting(
     investor_name = current_user.investor_profile.contact_name if current_user.investor_profile else "Investor"
     startup_name = startup_user.startup_profile.company_name if startup_user.startup_profile else "Startup"
     
-    # TODO: Integrate Google Calendar API here to actually create the event
+    # Attempt to create Google Calendar event (Mocking token for now as we don't store OAuth tokens in DB yet)
+    # In a full impl, we would fetch current_user.google_refresh_token
+    # from app.utils.calendar_service import create_google_meet_event
+    # event_res = create_google_meet_event("fake_token", "fake_refresh", {
+    #     "title": meeting.title,
+    #     "start_time": meeting.meeting_time.isoformat(),
+    #     "end_time": (meeting.meeting_time + datetime.timedelta(minutes=meeting.duration_minutes)).isoformat(),
+    #     "attendees": [current_user.email, startup_user.email]
+    # })
+    # if event_res:
+    #     new_meeting.meet_link = event_res.get('meet_link')
+    #     db.commit()
     
     return MeetingResponse(
         id=new_meeting.id,

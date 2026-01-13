@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Calendar, Clock, MapPin, Video, CheckCircle } from 'lucide-react';
-import api from '../services/api';
+import { api } from '../services/api';
 
 export default function MeetingScheduler({ startupId, startupName, pitchId }) {
     const [formData, setFormData] = useState({
@@ -16,13 +16,20 @@ export default function MeetingScheduler({ startupId, startupName, pitchId }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Prevent scheduling for dummy/demo data
+        if (startupId && startupId.toString().startsWith('d')) {
+            alert("This is a demo startup. Logic meeting scheduling is disabled in demo mode.");
+            return;
+        }
+
         setSubmitting(true);
 
         try {
             // Combine date and time
             const meetingTime = new Date(`${formData.date}T${formData.time}`);
 
-            await api.post('/social/meetings/schedule', {
+            await api.scheduleMeeting({
                 startup_id: startupId,
                 pitch_id: pitchId,
                 title: formData.title,
@@ -53,9 +60,18 @@ export default function MeetingScheduler({ startupId, startupName, pitchId }) {
                     <CheckCircle className="h-12 w-12 text-green-500" />
                 </div>
                 <h3 className="text-xl font-bold text-green-800 mb-2">Meeting Scheduled!</h3>
-                <p className="text-green-600">
-                    Invitation sent to {startupName}. A Google Calendar event has been created.
+                <p className="text-green-600 mb-4">
+                    Invitation sent to {startupName}.
                 </p>
+                <a
+                    href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(formData.title)}&details=${encodeURIComponent(formData.description)}&dates=${new Date(`${formData.date}T${formData.time}`).toISOString().replace(/-|:|\.\d\d\d/g, "")}/${new Date(new Date(`${formData.date}T${formData.time}`).getTime() + formData.duration * 60000).toISOString().replace(/-|:|\.\d\d\d/g, "")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium text-sm"
+                >
+                    <Calendar size={16} />
+                    Add to Google Calendar
+                </a>
             </div>
         );
     }
