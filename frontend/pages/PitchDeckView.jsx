@@ -65,14 +65,43 @@ const PitchDeckView = () => {
             try {
                 // Use the dedicated getPitch by ID endpoint
                 const found = await api.getPitch(id);
+
+                // Check if user has uploaded a deck via Log Investment
+                let investmentDeckUrl = null;
+                try {
+                    const myInvestments = await api.getInvestments();
+                    const matchingInv = myInvestments.find(inv =>
+                        inv.startup_name?.toLowerCase() === found.company_name?.toLowerCase()
+                    );
+                    if (matchingInv && matchingInv.document_url) {
+                        investmentDeckUrl = matchingInv.document_url;
+                    }
+                } catch (err) {
+                    console.warn("Could not check investment deck", err);
+                }
+
                 if (found) {
                     setPitch(found);
-                    if (found.pitch_file_url) {
-                        const fullUrl = found.pitch_file_url.startsWith('http')
-                            ? found.pitch_file_url
-                            : `${window.location.protocol}//${window.location.host}${found.pitch_file_url.startsWith('/') ? '' : '/'}${found.pitch_file_url}`;
 
-                        const ext = found.pitch_file_url.split('.').pop().toLowerCase();
+                    // Use investment deck if official one is missing or dummy
+                    let urlToUse = found.pitch_file_url;
+                    if (!urlToUse || urlToUse.includes('dummy')) {
+                        if (investmentDeckUrl) urlToUse = investmentDeckUrl;
+                    }
+
+                    if (urlToUse) {
+                        let fullUrl = urlToUse;
+                        if (!urlToUse.startsWith('http')) {
+                            // Assume backend is on port 8000 for local dev if URL is relative
+                            // Adjust this logic if your deployed env is different
+                            const backendHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                                ? 'http://localhost:8000'
+                                : ''; // In prod, relative URL usually works if served from same domain
+
+                            fullUrl = `${backendHost}${urlToUse.startsWith('/') ? '' : '/'}${urlToUse}`;
+                        }
+
+                        const ext = fullUrl.split('.').pop().toLowerCase();
                         if (['ppt', 'pptx', 'doc', 'docx', 'xls', 'xlsx'].includes(ext)) {
                             setViewingUrl(`https://docs.google.com/viewer?url=${encodeURIComponent(fullUrl)}&embedded=true`);
                         } else {
@@ -94,6 +123,24 @@ const PitchDeckView = () => {
             <div className="flex flex-col items-center gap-4">
                 <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
                 <p className="text-blue-200 font-bold animate-pulse">Loading Pitch Deck...</p>
+            </div>
+        </div>
+    );
+
+    if (!pitch) return (
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center font-['Plus Jakarta Sans']">
+            <div className="text-center space-y-4">
+                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto shadow-sm border border-slate-200">
+                    <Search className="text-slate-400" size={32} />
+                </div>
+                <h2 className="text-2xl font-bold text-slate-900">Pitch Not Found</h2>
+                <p className="text-slate-500">The pitch you are looking for does not exist or has been removed.</p>
+                <button
+                    onClick={() => navigate('/browse')}
+                    className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all"
+                >
+                    Back to Browse
+                </button>
             </div>
         </div>
     );

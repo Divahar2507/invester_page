@@ -52,16 +52,12 @@ const Portfolio = () => {
                 });
             } else {
                 setInvestments(mappedInvestments);
-                const totalInvested = mappedInvestments.reduce((sum, inv) => {
-                    const amount = parseFloat(inv.investedAmount.replace(/[^0-9.-]+/g, ""));
-                    return sum + (isNaN(amount) ? 0 : amount);
-                }, 0);
-
+                const statsData = await api.getInvestmentStats();
                 setStats({
-                    capitalDeployed: totalInvested.toLocaleString('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }),
-                    activeStartups: mappedInvestments.length,
-                    portfolioGrowth: '+28.4%', // Placeholder dynamic calculation if needed
-                    avgEquity: '9.2%' // Placeholder
+                    capitalDeployed: statsData.capital_deployed,
+                    activeStartups: statsData.active_startups,
+                    portfolioGrowth: statsData.portfolio_growth,
+                    avgEquity: statsData.avg_equity
                 });
             }
 

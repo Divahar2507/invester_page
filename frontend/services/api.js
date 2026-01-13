@@ -165,6 +165,25 @@ export const api = {
         return response.json();
     },
 
+    async getInvestmentStats() {
+        const token = localStorage.getItem('token');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+        const response = await fetch(`${API_URL}/investments/stats`, {
+            headers: headers
+        });
+        if (!response.ok) {
+            // Fallback for new users
+            return {
+                capital_deployed: '$0',
+                active_startups: 0,
+                portfolio_growth: '0%',
+                avg_equity: '0%'
+            };
+        }
+        return response.json();
+    },
+
     scheduleMeeting: async (data) => {
         const token = localStorage.getItem('token');
         if (!token) throw new Error('No token found');
@@ -210,6 +229,21 @@ export const api = {
         return response.json();
     },
 
+    searchUsers: async (query) => {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('No token found');
+        // We'll use a new search endpoint or reuse filter endpoint
+        // Assuming backend has /users/search or similar. 
+        // If not, we'll try to implement it or use a workaround.
+        // Actually, let's implement the backend route for this next if needed.
+        // For now, let's assume /users/search exists or create it.
+        const response = await fetch(`${API_URL}/messages/users/search?q=${encodeURIComponent(query)}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Search failed');
+        return response.json();
+    },
+
     getInvestments: async () => {
         const token = localStorage.getItem('token');
         if (!token) throw new Error('No token found');
@@ -226,18 +260,29 @@ export const api = {
         const token = localStorage.getItem('token');
         if (!token) throw new Error('No token found');
 
+        const formData = new FormData();
+        Object.keys(investmentData).forEach(key => {
+            if (investmentData[key] !== null && investmentData[key] !== undefined) {
+                formData.append(key, investmentData[key]);
+            }
+        });
+
         const response = await fetch(`${API_URL}/investments/`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify(investmentData)
+            body: formData
         });
 
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.detail || 'Failed to log investment');
+            const error = await response.json().catch(() => ({}));
+            console.error("Investment Error Details:", JSON.stringify(error));
+
+            const errorMessage = error.detail || error.message || 'Failed to log investment';
+            const errObj = new Error(errorMessage);
+            errObj.status = response.status;
+            throw errObj;
         }
         return response.json();
     },
@@ -483,13 +528,37 @@ export const api = {
     },
 
     // Messaging
-    sendMessage: async (receiverId, content) => {
+    getConversations: async () => {
         const token = localStorage.getItem('token');
         if (!token) throw new Error('No token found');
+        const response = await fetch(`${API_URL}/messages/conversations`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch conversations');
+        return response.json();
+    },
+
+    sendMessage: async (receiverId, content, file = null) => {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('No token found');
+
+        // Ensure receiverId is a valid integer
+        const rId = parseInt(receiverId, 10);
+        if (isNaN(rId)) {
+            throw new Error(`Invalid Receiver ID: ${receiverId}`);
+        }
+
+        const formData = new FormData();
+        formData.append('receiver_id', rId);
+        formData.append('content', content);
+        if (file) {
+            formData.append('file', file);
+        }
+
         const response = await fetch(`${API_URL}/messages/send`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-            body: JSON.stringify({ receiver_id: receiverId, content })
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData
         });
         if (!response.ok) {
             const err = await response.json();

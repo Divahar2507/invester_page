@@ -7,10 +7,7 @@ const InReview = () => {
     const [startups, setStartups] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
 
-    const dummyStartups = [
-        { id: 'd1', name: 'BioLife Systems', stage: 'Series A', description: 'Next-gen CRISPR therapeutics.', logo: 'B', reviewStatus: 'Diligence', reviewProgress: 85 },
-        { id: 'd2', name: 'EcoCharge AI', stage: 'Seed', description: 'AI-driven energy management.', logo: 'E', reviewStatus: 'Screening', reviewProgress: 40 }
-    ];
+
 
     React.useEffect(() => {
         loadData();
@@ -33,11 +30,10 @@ const InReview = () => {
                 reviewProgress: p.match_score || 60
             }));
 
-            // Use dummy data if empty
-            setStartups(mapped.length > 0 ? mapped : dummyStartups);
+            setStartups(mapped);
         } catch (e) {
             console.error(e);
-            setStartups(dummyStartups);
+            setStartups([]);
         } finally {
             setLoading(false);
         }

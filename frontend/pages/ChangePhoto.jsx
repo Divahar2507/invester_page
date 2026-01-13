@@ -1,21 +1,36 @@
 import * as React from 'react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, X, Save, Image as ImageIcon } from 'lucide-react';
+import { Upload, X, Save, Image as ImageIcon, Loader2 } from 'lucide-react';
 
 const ChangePhoto = () => {
     const navigate = useNavigate();
     const [preview, setPreview] = useState(null);
+    const [file, setFile] = useState(null);
+    const [loading, setLoading] = useState(false);
 
     const handleFileChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
+        const selectedFile = e.target.files[0];
+        if (selectedFile) {
+            setFile(selectedFile);
             const reader = new FileReader();
             reader.onloadend = () => {
                 setPreview(reader.result);
             };
-            reader.readAsDataURL(file);
+            reader.readAsDataURL(selectedFile);
         }
+    };
+
+    const handleSave = async () => {
+        if (!file) return;
+        setLoading(true);
+
+        // Simulating API upload for now
+        // In a real app, you would use api.uploadProfilePhoto(file)
+        setTimeout(() => {
+            setLoading(false);
+            navigate('/profile');
+        }, 1500);
     };
 
     return (
@@ -65,9 +80,11 @@ const ChangePhoto = () => {
                             Cancel
                         </button>
                         <button
-                            className="flex items-center gap-2 px-8 py-2.5 bg-blue-600 rounded-xl text-sm font-bold text-white hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all active:scale-95"
+                            onClick={handleSave}
+                            disabled={!file || loading}
+                            className="flex items-center gap-2 px-8 py-2.5 bg-blue-600 rounded-xl text-sm font-bold text-white hover:bg-blue-700 shadow-lg shadow-blue-200 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            <Save size={18} />
+                            {loading ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
                             Save Photo
                         </button>
                     </div>

@@ -60,14 +60,26 @@ const LogInvestment = () => {
                 date: formData.date || new Date().toISOString().split('T')[0],
                 round: formData.round || 'Seed',
                 notes: formData.notes,
-                status: 'Active'
+                status: 'Active',
+                file: file
             });
             setSuccess(true);
             setTimeout(() => {
                 navigate('/portfolio');
             }, 1500);
         } catch (err) {
-            setError(err.message || 'Failed to log investment');
+            console.error(err);
+            const msg = err.message || 'Failed to log investment';
+            // Check for specific duplicate message OR generic 400 which usually implies duplicate in this context
+            if (
+                msg.toLowerCase().includes('already in your portfolio') ||
+                msg.toLowerCase().includes('duplicate') ||
+                err.status === 400
+            ) {
+                setError('You have already added this startup to your portfolio (Duplicate Entry).');
+            } else {
+                setError(msg);
+            }
         } finally {
             setLoading(false);
         }

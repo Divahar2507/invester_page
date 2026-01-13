@@ -136,6 +136,8 @@ class Message(Base):
     receiver_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     content = Column(Text, nullable=False)
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
+    attachment_url = Column(String)
+    attachment_type = Column(String)
     
     sender = relationship("User", back_populates="sent_messages", foreign_keys=[sender_id])
     receiver = relationship("User", back_populates="received_messages", foreign_keys=[receiver_id])
@@ -161,7 +163,9 @@ class Investment(Base):
     amount = Column(Float, nullable=False)
     date = Column(DateTime)
     round = Column(String)
+    equity_stake = Column(Float, nullable=True) # Percent value
     notes = Column(Text)
+    document_url = Column(String) # URL to uploaded pitch deck/document
     status = Column(String, default="Active") # Active, Exited, Needs Attention
     
     investor = relationship("InvestorProfile", back_populates="investments")

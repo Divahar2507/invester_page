@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Body
-from typing import List
+from typing import List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import func, or_
 from app.dependencies import get_db, get_current_user, get_current_user_optional
@@ -62,21 +62,7 @@ def create_pitch(
     db.refresh(new_pitch)
     return new_pitch
 
-@router.get("/{pitch_id}", response_model=PitchResponse)
-def get_pitch(pitch_id: int, db: Session = Depends(get_db)):
-    pitch = db.query(Pitch).filter(Pitch.id == pitch_id).first()
-    if not pitch:
-        raise HTTPException(status_code=404, detail="Pitch not found")
-    
-    # Simple enrichment for response model (simplified compared to feed)
-    resp = PitchResponse.model_validate(pitch)
-    resp.company_name = pitch.startup.company_name
-    resp.industry = pitch.startup.industry
-    resp.stage = pitch.startup.funding_stage
-    resp.startup_user_id = pitch.startup.user_id
-    return resp
-
-@router.get("/my", response_model=list[PitchResponse])
+@router.get("/my", response_model=List[PitchResponse])
 def get_my_pitches(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     if current_user.role != "startup":
         raise HTTPException(status_code=403, detail="Only startups can access this")
@@ -86,9 +72,7 @@ def get_my_pitches(db: Session = Depends(get_db), current_user: User = Depends(g
         
     return db.query(Pitch).filter(Pitch.startup_id == current_user.startup_profile.id).all()
 
-from typing import Optional
-
-@router.get("/feed", response_model=list[PitchResponse])
+@router.get("/feed", response_model=List[PitchResponse])
 def get_pitch_feed(
     industry: str = None,
     stage: str = None,
@@ -191,6 +175,22 @@ def get_pitch_feed(
         response_list.append(resp)
         
     return response_list
+
+    return response_list
+
+@router.get("/{pitch_id}", response_model=PitchResponse)
+def get_pitch(pitch_id: int, db: Session = Depends(get_db)):
+    pitch = db.query(Pitch).filter(Pitch.id == pitch_id).first()
+    if not pitch:
+        raise HTTPException(status_code=404, detail="Pitch not found")
+    
+    # Simple enrichment for response model (simplified compared to feed)
+    resp = PitchResponse.model_validate(pitch)
+    resp.company_name = pitch.startup.company_name
+    resp.industry = pitch.startup.industry
+    resp.stage = pitch.startup.funding_stage
+    resp.startup_user_id = pitch.startup.user_id
+    return resp
 
 @router.post("/{pitch_id}/decision")
 def record_decision(

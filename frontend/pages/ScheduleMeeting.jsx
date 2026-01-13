@@ -19,17 +19,149 @@ const ScheduleMeeting = () => {
     const { id } = useParams();
     const navigate = useNavigate();
 
-    const [selectedDate, setSelectedDate] = useState(18);
+    // State
+    const [pitch, setPitch] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [submitting, setSubmitting] = useState(false);
+    const [success, setSuccess] = useState(false);
+
+    // Form State
+    const [topic, setTopic] = useState("Follow-up on Pitch Deck Review");
+    const [description, setDescription] = useState("");
+    const [duration, setDuration] = useState(30);
+
+    // Calendar State (Dynamic)
+    const today = new Date();
+    const [currentDate, setCurrentDate] = useState(today);
+    const [selectedDay, setSelectedDay] = useState(today.getDate());
     const [selectedTime, setSelectedTime] = useState('10:00 AM');
 
-    // In a real app, fetch startup details by ID
-    const startup = {
-        name: 'EcoCharge',
-        location: 'San Francisco, CA',
-        matchScore: '95%',
-        description: 'Revolutionary solid-state battery technology increasing EV range by 40% with sustainable materials. Currently raising Series A to scale...',
-        tags: ['CleanTech', 'Seed Stage']
+    // Fetch Startup Data
+    React.useEffect(() => {
+        const fetchPitch = async () => {
+            try {
+                const data = await api.getPitch(id);
+                setPitch(data);
+                setTopic(`Follow-up with ${data.company_name}`);
+            } catch (e) {
+                console.error("Failed to load pitch", e);
+                // navigate('/browse'); // Optional: redirect on error
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchPitch();
+    }, [id]);
+
+    // Calendar Helpers
+    const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
+    const getFirstDayOfMonth = (year, month) => new Date(year, month, 1).getDay();
+
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth(); // 0-indexed
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+    const daysInMonth = getDaysInMonth(currentYear, currentMonth);
+    const firstDay = getFirstDayOfMonth(currentYear, currentMonth);
+
+    const handlePrevMonth = () => {
+        const newDate = new Date(currentYear, currentMonth - 1, 1);
+        if (newDate >= new Date(today.getFullYear(), today.getMonth(), 1)) {
+            setCurrentDate(newDate);
+            setSelectedDay(1);
+        }
     };
+
+    const handleNextMonth = () => {
+        setCurrentDate(new Date(currentYear, currentMonth + 1, 1));
+        setSelectedDay(1);
+    };
+
+    const handleConfirm = async () => {
+        if (!pitch) return;
+        setSubmitting(true);
+
+        try {
+            // Parse Time
+            const [timeStr, modifier] = selectedTime.split(' ');
+            let [hours, minutes] = timeStr.split(':');
+            hours = parseInt(hours);
+            if (hours === 12 && modifier === 'AM') hours = 0;
+            if (modifier === 'PM' && hours < 12) hours += 12;
+
+            const meetingDate = new Date(currentYear, currentMonth, selectedDay, hours, parseInt(minutes));
+
+            await api.scheduleMeeting({
+                startup_id: pitch.startup_id,
+                pitch_id: parseInt(id),
+                title: topic,
+                description: description || "Discuss investment opportunity",
+                meeting_time: meetingDate.toISOString(),
+                duration_minutes: duration
+            });
+
+            setSuccess(true);
+        } catch (e) {
+            console.error("Scheduling failed", e);
+            alert("Failed to schedule meeting: " + e.message);
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const getGoogleCalendarLink = () => {
+        // Construct Start/End Dates for Link
+        const [timeStr, modifier] = selectedTime.split(' ');
+        let [hours, minutes] = timeStr.split(':');
+        hours = parseInt(hours);
+        if (hours === 12 && modifier === 'AM') hours = 0;
+        if (modifier === 'PM' && hours < 12) hours += 12;
+
+        const start = new Date(currentYear, currentMonth, selectedDay, hours, parseInt(minutes));
+        const end = new Date(start.getTime() + duration * 60000);
+
+        const formatForLink = (date) => date.toISOString().replace(/-|:|\.\d\d\d/g, "");
+
+        return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(topic)}&details=${encodeURIComponent(description || "")}&dates=${formatForLink(start)}/${formatForLink(end)}`;
+    };
+
+    if (loading) return <div className="min-h-screen bg-slate-50 flex items-center justify-center font-['Plus Jakarta Sans']"><div className="animate-spin w-8 h-8 border-4 border-blue-500 rounded-full border-t-transparent"></div></div>;
+
+    if (success) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center font-['Plus Jakarta Sans'] p-4">
+                <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center space-y-6">
+                    <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
+                        <CheckCircle2 size={32} className="text-green-600" />
+                    </div>
+                    <div>
+                        <h2 className="text-2xl font-bold text-slate-900">Meeting Confirmed!</h2>
+                        <p className="text-slate-500 mt-2">
+                            Invitation sent to {pitch?.company_name}. A calendar invite has been sent to your email.
+                        </p>
+                    </div>
+
+                    <div className="pt-4 border-t border-slate-100">
+                        <a
+                            href={getGoogleCalendarLink()}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center justify-center gap-2 w-full py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all"
+                        >
+                            <CalendarIcon size={18} />
+                            Add to Google Calendar
+                        </a>
+                        <button
+                            onClick={() => navigate('/browse')}
+                            className="mt-3 text-sm font-medium text-slate-500 hover:text-slate-900"
+                        >
+                            Back to Browse
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     const timeSlots = [
         '09:00 AM', '09:30 AM', '10:00 AM',
@@ -48,7 +180,7 @@ const ScheduleMeeting = () => {
                     </button>
                     <div>
                         <h1 className="text-2xl font-bold text-slate-900">Schedule Meeting</h1>
-                        <p className="text-slate-500 text-sm">with <span className="font-semibold text-slate-900">{startup.name} Team</span></p>
+                        <p className="text-slate-500 text-sm">with <span className="font-semibold text-slate-900">{pitch?.company_name} Team</span></p>
                     </div>
                 </div>
 
@@ -68,17 +200,23 @@ const ScheduleMeeting = () => {
                                     <label className="text-sm font-semibold text-slate-700">Topic</label>
                                     <input
                                         type="text"
-                                        defaultValue="Follow-up on Pitch Deck Review"
+                                        value={topic}
+                                        onChange={(e) => setTopic(e.target.value)}
                                         className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm"
                                     />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-semibold text-slate-700">Duration</label>
                                     <div className="relative">
-                                        <select className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm appearance-none">
-                                            <option>30 min</option>
-                                            <option>45 min</option>
-                                            <option>60 min</option>
+                                        <select
+                                            value={duration}
+                                            onChange={(e) => setDuration(Number(e.target.value))}
+                                            className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm appearance-none"
+                                        >
+                                            <option value={15}>15 min</option>
+                                            <option value={30}>30 min</option>
+                                            <option value={45}>45 min</option>
+                                            <option value={60}>60 min</option>
                                         </select>
                                         <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
                                     </div>
@@ -88,6 +226,8 @@ const ScheduleMeeting = () => {
                             <div className="space-y-2">
                                 <label className="text-sm font-semibold text-slate-700">Agenda</label>
                                 <textarea
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
                                     placeholder="Outline the main points you want to discuss..."
                                     rows={4}
                                     className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm resize-none"
@@ -99,20 +239,16 @@ const ScheduleMeeting = () => {
                                 <div className="border border-slate-200 rounded-xl p-4 space-y-3 bg-slate-50/50">
                                     <div className="flex flex-wrap gap-2">
                                         <div className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-lg shadow-sm">
-                                            <div className="w-5 h-5 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-[10px] font-bold">JD</div>
-                                            <span className="text-xs font-semibold text-slate-700">John Doe (You)</span>
+                                            <div className="w-5 h-5 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center text-[10px] font-bold">ME</div>
+                                            <span className="text-xs font-semibold text-slate-700">You</span>
                                         </div>
                                         <div className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-lg shadow-sm">
-                                            <div className="w-5 h-5 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-[10px] font-bold">EC</div>
-                                            <span className="text-xs font-semibold text-slate-700">EcoCharge Founders</span>
-                                            <button className="ml-1 text-slate-300 hover:text-slate-500 transition-colors"><X size={12} /></button>
+                                            <div className="w-5 h-5 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-[10px] font-bold">
+                                                {(pitch?.company_name || 'S').charAt(0)}
+                                            </div>
+                                            <span className="text-xs font-semibold text-slate-700">{pitch?.company_name} Founders</span>
                                         </div>
                                     </div>
-                                    <input
-                                        type="text"
-                                        placeholder="Add email addresses..."
-                                        className="w-full bg-transparent border-none focus:ring-0 p-0 text-sm placeholder:text-slate-400"
-                                    />
                                 </div>
                             </div>
                         </div>
@@ -125,9 +261,9 @@ const ScheduleMeeting = () => {
                                     <h2 className="text-lg font-bold text-slate-900">Select Availability</h2>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <button className="p-1.5 hover:bg-slate-50 rounded-lg transition-colors"><ChevronLeft size={16} className="text-slate-500" /></button>
-                                    <span className="text-sm font-semibold text-slate-700">October 2023</span>
-                                    <button className="p-1.5 hover:bg-slate-50 rounded-lg transition-colors"><ChevronRight size={16} className="text-slate-500" /></button>
+                                    <button onClick={handlePrevMonth} className="p-1.5 hover:bg-slate-50 rounded-lg transition-colors"><ChevronLeft size={16} className="text-slate-500" /></button>
+                                    <span className="text-sm font-semibold text-slate-700">{monthNames[currentMonth]} {currentYear}</span>
+                                    <button onClick={handleNextMonth} className="p-1.5 hover:bg-slate-50 rounded-lg transition-colors"><ChevronRight size={16} className="text-slate-500" /></button>
                                 </div>
                             </div>
 
@@ -138,21 +274,28 @@ const ScheduleMeeting = () => {
                                         {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => (
                                             <div key={day} className="text-center py-1 text-xs font-semibold text-slate-400 uppercase">{day}</div>
                                         ))}
-                                        {[...Array(24)].map((_, i) => (
-                                            <div key={i} className="text-center py-2 text-sm text-slate-300 pointer-events-none">{i + 1}</div>
+                                        {/* Empty slots for start of month */}
+                                        {[...Array(firstDay)].map((_, i) => (
+                                            <div key={`empty-${i}`} className="text-center py-2"></div>
                                         ))}
-                                        {[...Array(7)].map((_, i) => {
-                                            const day = 25 + i;
+                                        {/* Days */}
+                                        {[...Array(daysInMonth)].map((_, i) => {
+                                            const day = i + 1;
+                                            const isSelected = selectedDay === day;
+                                            const isToday = day === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear();
+                                            const isPast = (currentYear < today.getFullYear()) || (currentYear === today.getFullYear() && currentMonth < today.getMonth()) || (currentYear === today.getFullYear() && currentMonth === today.getMonth() && day < today.getDate());
+
                                             return (
                                                 <button
                                                     key={day}
-                                                    onClick={() => setSelectedDate(day)}
+                                                    disabled={isPast}
+                                                    onClick={() => !isPast && setSelectedDay(day)}
                                                     className={`w-8 h-8 mx-auto flex items-center justify-center rounded-lg text-sm font-medium transition-all
-                                                        ${selectedDate === day
+                                                        ${isSelected
                                                             ? 'bg-blue-600 text-white shadow-sm'
-                                                            : 'text-slate-700 hover:bg-slate-100'
+                                                            : isPast ? 'text-slate-300 cursor-not-allowed' : 'text-slate-700 hover:bg-slate-100'
                                                         }
-                                                        ${day === 18 ? 'relative after:absolute after:bottom-1 after:w-1 after:h-1 after:bg-blue-600 after:rounded-full' : ''}
+                                                        ${isToday && !isSelected ? 'relative after:absolute after:bottom-1 after:w-1 after:h-1 after:bg-blue-600 after:rounded-full' : ''}
                                                     `}
                                                 >
                                                     {day}
@@ -164,7 +307,7 @@ const ScheduleMeeting = () => {
 
                                 {/* Time Slots */}
                                 <div className="space-y-4">
-                                    <p className="text-xs font-semibold text-slate-500">Available times for Oct {selectedDate}</p>
+                                    <p className="text-xs font-semibold text-slate-500">Available times for {monthNames[currentMonth].substring(0, 3)} {selectedDay}</p>
                                     <div className="grid grid-cols-2 gap-2">
                                         {timeSlots.map(time => (
                                             <button
@@ -193,9 +336,11 @@ const ScheduleMeeting = () => {
                         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
                             <div className="aspect-[3/2] bg-slate-900 relative flex items-center justify-center p-6">
                                 <div className="text-center space-y-2">
-                                    <div className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center font-bold text-white border border-white/20 mx-auto">EC</div>
-                                    <h3 className="text-lg font-bold text-white tracking-tight">{startup.name}</h3>
-                                    <p className="text-xs text-slate-300 font-medium">Pitch Deck v2.4</p>
+                                    <div className="w-12 h-12 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center font-bold text-white border border-white/20 mx-auto">
+                                        {(pitch?.company_name || 'S').charAt(0)}
+                                    </div>
+                                    <h3 className="text-lg font-bold text-white tracking-tight">{pitch?.company_name}</h3>
+                                    <p className="text-xs text-slate-300 font-medium">{pitch?.stage || 'Series A'}</p>
                                 </div>
                             </div>
                             <div className="p-6 space-y-4">
@@ -203,17 +348,17 @@ const ScheduleMeeting = () => {
                                     <h4 className="text-sm font-bold text-slate-900">Startup Summary</h4>
                                     <div className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full border border-emerald-100">
                                         <CheckCircle2 size={12} className="text-emerald-600" />
-                                        <span className="text-xs font-semibold">{startup.matchScore} Match</span>
+                                        <span className="text-xs font-semibold">{pitch?.match_score || 95}% Match</span>
                                     </div>
                                 </div>
                                 <div>
-                                    <p className="text-xs font-semibold text-slate-500">{startup.location}</p>
-                                    <p className="text-sm text-slate-600 leading-relaxed mt-2">
-                                        {startup.description}
+                                    <p className="text-xs font-semibold text-slate-500">{pitch?.location || 'Remote'}</p>
+                                    <p className="text-sm text-slate-600 leading-relaxed mt-2 line-clamp-3">
+                                        {pitch?.description || 'No description available.'}
                                     </p>
                                 </div>
                                 <div className="flex flex-wrap gap-2">
-                                    {startup.tags.map(tag => (
+                                    {(pitch?.tags ? pitch.tags.split(',') : ['Technology']).map(tag => (
                                         <span key={tag} className="px-2.5 py-1 bg-slate-50 text-slate-600 text-xs font-medium rounded-lg border border-slate-200">
                                             {tag}
                                         </span>
@@ -241,8 +386,12 @@ const ScheduleMeeting = () => {
                         </div>
 
                         {/* CTA Button */}
-                        <button className="w-full py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-md hover:shadow-lg transition-all active:scale-95 text-sm">
-                            Confirm Meeting
+                        <button
+                            onClick={handleConfirm}
+                            disabled={submitting}
+                            className={`w-full py-4 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 text-sm ${submitting ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+                        >
+                            {submitting ? 'Scheduling...' : 'Confirm Meeting'}
                         </button>
                     </div>
                 </div>

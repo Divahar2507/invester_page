@@ -173,7 +173,7 @@ const Dashboard = () => {
                         </Link>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {startups.slice(0, 2).map((startup) => (
+                        {startups.slice(0, 4).map((startup) => (
                             <div key={startup.id} className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-1 transition-all group flex flex-col">
                                 <div className="h-40 bg-slate-900 relative">
                                     <div className="absolute inset-0 bg-gradient-to-br from-blue-900/50 to-slate-900"></div>
@@ -199,11 +199,12 @@ const Dashboard = () => {
                             </div>
                         ))}
                     </div>
+
                 </div>
 
                 {/* Right: Sidebar */}
-                <div className="lg:col-span-4 space-y-8">
-                    <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                <div className="lg:col-span-4 flex flex-col gap-6">
+                    <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm shrink-0">
                         <div className="flex items-center justify-between mb-6">
                             <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Watchlist</h2>
                             <Link to="/watchlist" className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-colors">
@@ -230,11 +231,13 @@ const Dashboard = () => {
                         </div>
                     </div>
 
-                    <ActionRegistry />
+                    <div className="flex-1 min-h-0">
+                        <ActionRegistry />
+                    </div>
                 </div>
             </div>
 
-            {/* Asset Performance Table */}
+            {/* Asset Performance Table - Full Width */}
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
                 <div className="p-6 border-b border-slate-100 flex items-center justify-between">
                     <div>
@@ -291,6 +294,7 @@ const Dashboard = () => {
                     </table>
                 </div>
             </div>
+
         </div>
     );
 };

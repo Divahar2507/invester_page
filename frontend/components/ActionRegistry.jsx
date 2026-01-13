@@ -77,7 +77,7 @@ const ActionRegistry = () => {
     };
 
     return (
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden font-['Plus Jakarta Sans'] flex flex-col h-full">
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden font-['Plus Jakarta Sans'] flex flex-col">
             <div className="p-6 border-b border-slate-100 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                     <div className="p-2 bg-slate-100 rounded-lg">
@@ -125,7 +125,7 @@ const ActionRegistry = () => {
             </form>
 
             {/* Task List */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-2 max-h-[350px]">
+            <div className="flex-1 overflow-y-auto p-4 space-y-2 max-h-[250px]">
                 {isLoading ? (
                     <div className="text-center py-12">
                         <Loader2 className="animate-spin mx-auto text-blue-500 mb-2" size={24} />

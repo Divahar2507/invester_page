@@ -164,8 +164,14 @@ class MessageResponse(BaseModel):
     receiver_id: int
     content: str
     timestamp: datetime
+    attachment_url: Optional[str] = None
+    attachment_type: Optional[str] = None
     sender_name: Optional[str] = None
     receiver_name: Optional[str] = None
+    sender_role: Optional[str] = None
+    receiver_role: Optional[str] = None
+    sender_extra: Optional[str] = None # e.g. "FinTech" or "Investor"
+    receiver_extra: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -196,7 +202,9 @@ class InvestmentBase(BaseModel):
     amount: float
     date: datetime
     round: str
+    equity_stake: Optional[float] = None
     notes: Optional[str] = None
+    document_url: Optional[str] = None
     status: Optional[str] = "Active"
 
 class InvestmentCreate(InvestmentBase):
@@ -208,6 +216,12 @@ class InvestmentResponse(InvestmentBase):
 
     class Config:
         from_attributes = True
+
+class InvestmentStats(BaseModel):
+    capital_deployed: str
+    active_startups: int
+    portfolio_growth: str
+    avg_equity: str
 
 # Connection
 class ConnectionCreate(BaseModel):
