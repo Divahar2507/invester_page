@@ -78,7 +78,36 @@ export const api = {
         });
 
         if (!response.ok) throw new Error('Failed to fetch user profile');
-        return response.json();
+        const user = await response.json();
+
+        // Attempt to fetch specific profile to get `profile_photo` or other details
+        try {
+            let profileData = null;
+            if (user.role === 'startup') {
+                // We don't have a direct "get my profile" for startup that returns JSON in this file yet (except getMyStartupProfile which might be it)
+                // Let's assume getMyStartupProfile works if mapped correctly.
+                // Actually, checking `getMyStartupProfile`:
+                const startupRes = await fetch(`${API_URL}/startup/profile/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (startupRes.ok) profileData = await startupRes.json();
+
+            } else if (user.role === 'investor') {
+                const investorRes = await fetch(`${API_URL}/investors/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (investorRes.ok) profileData = await investorRes.json();
+            }
+
+            if (profileData && profileData.profile_photo) {
+                user.profile_photo = profileData.profile_photo;
+            }
+        } catch (e) {
+            // Ignore if profile fetch fails, return basic user
+            console.warn("Failed to fetch extended profile details for user", e);
+        }
+
+        return user;
     },
 
     getPitchFeed: async (industry = 'All', stage = 'All', query = '', status = null, sortBy = 'newest') => {

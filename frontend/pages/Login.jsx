@@ -48,8 +48,34 @@ const Login = ({ role }) => {
         try {
             const data = await api.login(email, password);
             localStorage.setItem('token', data.access_token);
-            navigate('/dashboard');
+
+            // Verify role dynamically to ensure correct redirection
+            try {
+                const userProfile = await api.getMe();
+                console.log("Verified User Role:", userProfile.role);
+
+                if (userProfile.role === 'startup') {
+                    window.location.href = `http://localhost:3001?token=${data.access_token}`;
+                    return;
+                }
+
+                if (userProfile.role === 'investor') {
+                    navigate('/dashboard');
+                    return;
+                }
+            } catch (profileErr) {
+                console.warn("Profile fetch failed, used fallback logic", profileErr);
+            }
+
+            // Fallback: Use prop or default
+            if (role === 'startup') {
+                window.location.href = `http://localhost:3001?token=${data.access_token}`;
+            } else {
+                navigate('/dashboard');
+            }
+
         } catch (err) {
+            console.error(err);
             setError('Invalid credentials');
         } finally {
             setLoading(false);
@@ -202,7 +228,23 @@ const Login = ({ role }) => {
                                                 const roleToUse = role || 'investor'; // Default to investor if not specified
                                                 const data = await api.googleLogin(credentialResponse.credential, roleToUse);
                                                 localStorage.setItem('token', data.access_token);
-                                                navigate('/dashboard');
+
+                                                // Verify role dynamically
+                                                try {
+                                                    const userProfile = await api.getMe();
+                                                    if (userProfile.role === 'startup') {
+                                                        window.location.href = "http://localhost:3001";
+                                                        return;
+                                                    }
+                                                } catch (e) {
+                                                    console.warn("Profile check failed for Google Login", e);
+                                                }
+
+                                                if (roleToUse === 'startup') {
+                                                    window.location.href = "http://localhost:3001";
+                                                } else {
+                                                    navigate('/dashboard');
+                                                }
                                             } catch (err) {
                                                 console.error('Google Backend Login Failed', err);
                                                 alert('Google Login Failed: ' + err.message);
@@ -230,7 +272,7 @@ const Login = ({ role }) => {
                             <div className="bg-slate-50 border border-slate-100 rounded-[32px] p-8 flex items-center justify-between">
                                 <span className="text-sm font-bold text-slate-600">New user?</span>
                                 <Link to={registerLink} className="px-8 py-3 bg-white border border-slate-200 text-slate-900 font-black rounded-xl hover:bg-slate-50 transition-all shadow-sm text-sm tracking-tight active:scale-95">
-                                    Sign In
+                                    Sign Up
                                 </Link>
                             </div>
 

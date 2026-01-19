@@ -53,7 +53,7 @@ const Navbar = () => {
                     <div className="w-9 h-9 bg-slate-100 rounded-full flex items-center justify-center text-slate-600 group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors overflow-hidden border border-slate-200">
                         {user?.name ? (
                             <img
-                                src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`}
+                                src={localStorage.getItem('user_profile_photo') || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=random`}
                                 alt="User"
                                 className="w-full h-full object-cover"
                             />

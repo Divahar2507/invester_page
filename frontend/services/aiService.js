@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const getAI = () => {
     // Try standard Vite env var first, then the defined process.env
@@ -7,16 +7,16 @@ const getAI = () => {
         console.warn("Gemini API Key matches 'undefined' or is missing.");
         return null;
     }
-    return new GoogleGenAI({ apiKey: key });
+    return new GoogleGenerativeAI(key);
 };
 
 const mockAI = {
     models: {
-        generateContent: async () => ({ text: "I'm sorry, I can't think right now. (AI API Key is missing in .env)" })
+        generateContent: async () => ({ response: { text: () => "I'm sorry, I can't think right now. (AI API Key is missing in .env)" } })
     },
     chats: {
         create: () => ({
-            sendMessage: async () => ({ text: "I'm offline. Please configure GEMINI_API_KEY in the .env file to enable me." })
+            sendMessage: async () => ({ response: { text: () => "I'm offline. Please configure GEMINI_API_KEY in the .env file to enable me." } })
         })
     }
 };
@@ -25,7 +25,7 @@ export const aiService = {
     analyzeStartup: async (startup) => {
         try {
             const ai = getAI();
-            if (!ai) return mockAI.models.generateContent().then(r => r.text);
+            if (!ai) return (await mockAI.models.generateContent()).response.text();
 
             const prompt = `Analyze this startup for a Venture Capital investment:
     Name: ${startup.name}
@@ -40,32 +40,26 @@ export const aiService = {
     3. Investment recommendation (Pass, Watch, or High Interest).
     Keep it professional and concise.`;
 
-            const response = await ai.models.generateContent({
-                model: 'gemini-1.5-flash',
-                contents: prompt,
-            });
-
-            return response.text || "Unable to generate analysis at this time.";
+            const model = ai.getGenerativeModel({ model: "gemini-pro" });
+            const result = await model.generateContent(prompt);
+            return result.response.text() || "Unable to generate analysis at this time.";
         } catch (e) {
             console.warn("AI Error:", e);
-            return "AI Analysis temporarily unavailable.";
+            return "AI Analysis temporarily unavailable. " + (e.message || "");
         }
     },
 
     getMarketInsight: async (portfolio) => {
         try {
             const ai = getAI();
-            if (!ai) return mockAI.models.generateContent().then(r => r.text);
+            if (!ai) return (await mockAI.models.generateContent()).response.text();
 
             const sectors = portfolio.map(s => s.sector).join(", ");
             const prompt = `Based on a portfolio concentrated in these sectors: ${sectors}, what are the top 3 emerging trends or risks an investor should watch out for in the next 6 months? Use a professional, data-driven tone.`;
 
-            const response = await ai.models.generateContent({
-                model: 'gemini-1.5-flash',
-                contents: prompt,
-            });
-
-            return response.text || "Insight unavailable.";
+            const model = ai.getGenerativeModel({ model: "gemini-pro" });
+            const result = await model.generateContent(prompt);
+            return result.response.text() || "Insight unavailable.";
         } catch (e) {
             console.warn("AI Error:", e);
             return "Market insights unavailable.";
@@ -75,33 +69,40 @@ export const aiService = {
     chat: async (history, message) => {
         try {
             const ai = getAI();
-            if (!ai) return mockAI.chats.create().sendMessage().then(r => r.text);
+            if (!ai) return (await mockAI.chats.create().sendMessage()).response.text();
 
-            // Using gemini-1.5-flash as default
-            const modelName = 'gemini-1.5-flash';
+            // Fallback to gemini-pro if flash is 404ing
+            const modelName = 'gemini-pro';
 
-            // Fix: Map history to the exact structure expected by SDK (role + parts array)
+            // Map history to the exact structure expected by SDK (role + parts array)
             const formattedHistory = history.map(h => ({
                 role: h.role === 'user' ? 'user' : 'model',
                 parts: [{ text: h.content }]
             }));
 
-            const chat = ai.getGenerativeModel({
-                model: modelName,
-                systemInstruction: "You are VentureBot, an AI Investment Analyst for VentureFlow. You help VCs analyze deals, understand market trends, and manage their portfolio. Be insightful, slightly conservative in risk assessment, and professional."
-            }).startChat({
-                history: formattedHistory
+            const model = ai.getGenerativeModel({
+                model: modelName
+                // Removed systemInstruction for gemini-pro compatibility just in case
             });
 
-            // Fix: Pass message as a simple string or proper object. 
-            // The SDK startChat().sendMessage() usually takes a string or Array<string | Part>.
-            // We'll pass the string directly as it's the most standard way, effectively 'user' role content.
+            const chat = model.startChat({
+                history: [
+                    {
+                        role: 'user',
+                        parts: [{ text: "You are VentureBot, an AI Investment Analyst. Help VCs analyze deals. Be professional." }]
+                    },
+                    {
+                        role: 'model',
+                        parts: [{ text: "Understood. I am VentureBot, ready to assist." }]
+                    },
+                    ...formattedHistory
+                ]
+            });
+
             const result = await chat.sendMessage(message);
-            const response = await result.response;
-            return response.text();
+            return result.response.text();
         } catch (e) {
             console.error("AI Error:", e);
-            // Return the actual error message to help debug
             return `I'm having trouble connecting. Error: ${e.message || e.toString()}`;
         }
     }

@@ -184,7 +184,7 @@ const Profile = () => {
                         <div className="flex flex-col items-center gap-4">
                             <div className={`w-32 h-32 bg-orange-100 rounded-full overflow-hidden border-4 border-white shadow-md group relative ${!isEditing && 'opacity-90 grayscale-[0.2]'}`}>
                                 <img
-                                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(formData.name || 'User')}&background=FDBA74&color=7C2D12&size=128`}
+                                    src={localStorage.getItem('user_profile_photo') || `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.name || 'User')}&background=FDBA74&color=7C2D12&size=128`}
                                     alt="Profile"
                                     className="w-full h-full object-cover"
                                 />

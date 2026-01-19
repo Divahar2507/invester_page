@@ -71,7 +71,9 @@ const LogInvestment = () => {
             console.error(err);
             const msg = err.message || 'Failed to log investment';
             // Check for specific duplicate message OR generic 400 which usually implies duplicate in this context
-            if (
+            if (err.status === 403) {
+                setError('Permission Denied: You must be logged in as an Investor to perform this action.');
+            } else if (
                 msg.toLowerCase().includes('already in your portfolio') ||
                 msg.toLowerCase().includes('duplicate') ||
                 err.status === 400

@@ -181,6 +181,14 @@ const BrowsePitches = () => {
                                     </button>
                                 </div>
 
+                                <button
+                                    onClick={() => navigate('/messages', { state: { conversationStart: selectedPitch.name } })}
+                                    className="w-full py-3 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-all shadow-sm flex items-center justify-center gap-2"
+                                >
+                                    <MessageCircle size={16} className="text-blue-500" />
+                                    Message Founder
+                                </button>
+
                                 {/* Data Room */}
                                 <DataRoom pitchId={selectedPitch.id} />
                             </div>
