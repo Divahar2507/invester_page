@@ -34,6 +34,11 @@ const Messages = () => {
         }
     ]);
 
+    // Search State
+    const [userSearchQuery, setUserSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [isSearching, setIsSearching] = useState(false);
+
     const scrollRef = useRef(null);
 
     const fetchData = async () => {
@@ -338,13 +343,82 @@ const Messages = () => {
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                         <input
                             type="text"
-                            placeholder="Search messages..."
+                            placeholder="Search people..."
+                            value={userSearchQuery}
+                            onChange={async (e) => {
+                                const q = e.target.value;
+                                setUserSearchQuery(q);
+                                if (q.length > 2) {
+                                    setIsSearching(true);
+                                    try {
+                                        const results = await api.searchUsers(q);
+                                        setSearchResults(results.map(u => ({
+                                            id: u.id,
+                                            name: u.name || 'User ' + u.id,
+                                            role: u.role === 'startup' ? (u.extra || 'Startup') : 'Investor',
+                                            avatar: <User size={20} />,
+                                            avatarBg: u.role === 'startup' ? 'bg-emerald-600' : 'bg-slate-500',
+                                            isAi: false,
+                                            lastMessage: 'Start a new conversation',
+                                            lastTime: '',
+                                            isSearch: true
+                                        })));
+                                    } catch (err) {
+                                        console.error(err);
+                                    } finally {
+                                        setIsSearching(false);
+                                    }
+                                } else {
+                                    setSearchResults([]);
+                                }
+                            }}
                             className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                         />
                     </div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto px-2 space-y-1">
+                    {/* Search Results Section */}
+                    {userSearchQuery.length > 2 && (
+                        <div className="mb-4">
+                            <h3 className="px-3 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                                {isSearching ? 'Searching...' : 'Search Results'}
+                            </h3>
+                            {searchResults.length === 0 && !isSearching ? (
+                                <p className="px-3 text-xs text-slate-400">No users found.</p>
+                            ) : (
+                                searchResults.map(user => (
+                                    <div
+                                        key={`search-${user.id}`}
+                                        onClick={() => {
+                                            // Check if already in contacts
+                                            const existing = contacts.find(c => c.id === user.id);
+                                            if (existing) {
+                                                setActiveContact(existing);
+                                            } else {
+                                                const newContact = { ...user, isSearch: false };
+                                                setContacts(prev => [newContact, ...prev]);
+                                                setActiveContact(newContact);
+                                            }
+                                            setUserSearchQuery('');
+                                            setSearchResults([]);
+                                        }}
+                                        className="p-3 rounded-xl cursor-pointer flex gap-3 hover:bg-slate-50 text-slate-700 mb-1"
+                                    >
+                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white shadow-sm ${user.avatarBg}`}>
+                                            <span className="font-bold text-xs">{user.name.charAt(0)}</span>
+                                        </div>
+                                        <div className="flex-1 min-w-0 flex flex-col justify-center">
+                                            <h3 className="text-sm font-semibold truncate text-slate-900">{user.name}</h3>
+                                            <p className="text-xs text-slate-500">{user.role}</p>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                            <div className="border-b border-slate-100 my-2"></div>
+                        </div>
+                    )}
+
                     {contacts.map(contact => (
                         <div
                             key={contact.id}

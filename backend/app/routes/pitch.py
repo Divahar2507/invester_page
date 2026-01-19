@@ -239,10 +239,21 @@ def record_decision(
         pitch.status = "declined"
         
     elif decision == "In Review" or decision == "Review":
-        pitch.status = "under_review"
-        # Logic to 'backup' or save state could be adding to a specific list
-        # But 'under_review' status on pitch is good state persistence.
+        # pitch.status = "under_review"  <-- REMOVED: Global status change
         
+        # Add to Watchlist (Personalized 'In Review' list)
+        from app.models.core import Watchlist
+        existing = db.query(Watchlist).filter(
+            Watchlist.user_id == current_user.id,
+            Watchlist.startup_id == pitch.startup_id
+        ).first()
+        
+        if not existing:
+            item = Watchlist(user_id=current_user.id, startup_id=pitch.startup_id)
+            db.add(item)
+            
+        return {"message": f"Added to In Review (Watchlist)", "status": "in_review_personal"}
+
     db.commit()
     return {"message": f"Decision {decision} recorded", "status": pitch.status}
 

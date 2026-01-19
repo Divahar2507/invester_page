@@ -40,6 +40,14 @@ const MainLayout = () => (
     </div>
 );
 
+const PublicRoute = ({ children }) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+        return <Navigate to="/dashboard" replace />;
+    }
+    return children;
+};
+
 const RequireAuth = ({ children }) => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -55,16 +63,16 @@ const App = () => {
         <GoogleOAuthProvider clientId="835532330363-8lohj8uk8bvqd37nnlpsfl4rslul8nff.apps.googleusercontent.com">
             <Router>
                 <Routes>
-                    <Route path="/" element={<Landing />} />
+                    <Route path="/" element={<PublicRoute><Landing /></PublicRoute>} />
 
                     {/* Unified Login/Register Routes that accept logic via props or URL params */}
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/login/investor" element={<Login role="investor" />} />
-                    <Route path="/login/startup" element={<Login role="startup" />} />
+                    <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+                    <Route path="/login/investor" element={<PublicRoute><Login role="investor" /></PublicRoute>} />
+                    <Route path="/login/startup" element={<PublicRoute><Login role="startup" /></PublicRoute>} />
 
-                    <Route path="/register" element={<Register />} />
-                    <Route path="/register/investor" element={<Register role="investor" />} />
-                    <Route path="/register/startup" element={<Register role="startup" />} />
+                    <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+                    <Route path="/register/investor" element={<PublicRoute><Register role="investor" /></PublicRoute>} />
+                    <Route path="/register/startup" element={<PublicRoute><Register role="startup" /></PublicRoute>} />
 
                     <Route path="/contact-support" element={<ContactSupport />} />
 

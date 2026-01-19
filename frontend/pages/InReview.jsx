@@ -15,22 +15,60 @@ const InReview = () => {
 
     const loadData = async () => {
         try {
-            const [me, pitches] = await Promise.all([
+            const [me, requests, connections, watchlist] = await Promise.all([
                 api.getMe(),
-                api.getPitchFeed(null, null, '', 'under_review')
+                api.getIncomingRequests(),
+                api.getConnections(),
+                api.getWatchlist()
             ]);
 
-            const mapped = pitches.map(p => ({
-                id: p.id,
-                name: p.company_name,
-                stage: p.stage,
-                description: p.description,
-                logo: (p.company_name || 'S').charAt(0),
-                reviewStatus: 'Screening',
-                reviewProgress: p.match_score || 60
+            // Map incoming requests to pipeline items
+            const requestItems = requests.map(req => ({
+                id: `req-${req.id}`,
+                realId: req.requester_id,
+                name: req.requester_name || "Startup Request",
+                stage: "Seed",
+                description: "Incoming connection request",
+                logo: (req.requester_name || 'S').charAt(0),
+                reviewStatus: 'Pending Request',
+                reviewProgress: 10,
+                type: 'request'
             }));
 
-            setStartups(mapped);
+            // Map active connections to pipeline items
+            const connectionItems = connections.map(conn => ({
+                id: `conn-${conn.id}`,
+                realId: conn.receiver_id === me.id ? conn.requester_id : conn.receiver_id,
+                name: conn.requester_name || "Connected Startup",
+                stage: "Series A",
+                description: "Connected Portfolio/Pipeline",
+                logo: (conn.requester_name || 'C').charAt(0),
+                reviewStatus: 'In Discussion',
+                reviewProgress: 40,
+                type: 'connection'
+            }));
+
+            // Map watchlist items to pipeline items
+            const watchlistItems = watchlist.map(item => ({
+                id: `watch-${item.id}`,
+                realId: item.startup_id, // Watchlist uses startup_id (profile id) usually, but check API. 
+                // Wait, WatchlistResponse has startup_id (StartupProfile ID) and startup_name.
+                // But we typically need User ID for messaging. 
+                // Let's assume for now we just show it.
+                // Watchlist model links to StartupProfile.
+                name: item.startup_name || "Watched Startup",
+                stage: item.stage || "Early",
+                description: "Bookmarked for Review",
+                logo: (item.startup_name || 'W').charAt(0),
+                reviewStatus: 'In Review',
+                reviewProgress: 25,
+                type: 'watchlist'
+            }));
+
+            // Dedup by name or ID if necessary, but for now just concat
+            // Prioritize Connections > Requests > Watchlist if dupes exist?
+            // Simple spread for now.
+            setStartups([...requestItems, ...connectionItems, ...watchlistItems]);
         } catch (e) {
             console.error(e);
             setStartups([]);

@@ -4,7 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { Loader2, Eye, EyeOff, TrendingUp, CheckCircle2 } from 'lucide-react';
 
-const Register = () => {
+const Register = ({ role }) => {
     const [fullName, setFullName] = useState('');
     const [mobileNumber, setMobileNumber] = useState('');
     const [email, setEmail] = useState('');
@@ -14,6 +14,26 @@ const Register = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
+
+    // Theme Configuration
+    const isStartup = role === 'startup';
+    const activeRole = role || 'investor';
+
+    // Dynamic Content
+    const title = isStartup ? "Create Founder Account" : "Create Investor Account";
+    const subtitle = isStartup ? "Register to start your fundraising journey." : "Register to access exclusive deal flow and startup pitches.";
+    const badgeText = isStartup ? "For Founders" : "Investor Portal";
+    const heroTitle = isStartup ? "Build the Future" : "Discover the Next Unicorn";
+    const heroDesc = isStartup ? "Connect with world-class investors who share your vision." : "Join the world's most exclusive network of startup investors.";
+    const activeCountText = isStartup ? "Active Investors" : "Active Startups"; // Invert for appeal
+
+    // Colors
+    const accentColor = isStartup ? "bg-purple-600" : "bg-blue-600";
+    const accentHover = isStartup ? "hover:bg-purple-700" : "hover:bg-blue-700";
+    const accentShadow = isStartup ? "shadow-purple-200" : "shadow-blue-200";
+    const accentFocusRing = isStartup ? "focus:ring-purple-500/10" : "focus:ring-blue-500/10";
+    const accentBorder = isStartup ? "focus:border-purple-500" : "focus:border-blue-500";
+    const badgeColor = isStartup ? "text-purple-400" : "text-blue-400";
 
     const handleRegister = async (e) => {
         e.preventDefault();
@@ -25,8 +45,8 @@ const Register = () => {
         setLoading(true);
         setError(null);
         try {
-            await api.register(email, password, 'investor', fullName);
-            navigate('/login');
+            await api.register(email, password, activeRole, fullName);
+            navigate(isStartup ? '/login/startup' : '/login/investor');
         } catch (err) {
             setError(err.message || 'Registration failed');
         } finally {
@@ -39,14 +59,14 @@ const Register = () => {
             {/* Top Navbar */}
             <div className="w-full px-8 py-5 flex items-center justify-between border-b border-slate-50">
                 <div className="flex items-center gap-2">
-                    <div className="bg-blue-600 w-8 h-8 rounded-lg flex items-center justify-center">
+                    <div className={`${accentColor} w-8 h-8 rounded-lg flex items-center justify-center`}>
                         <TrendingUp size={18} className="text-white" />
                     </div>
                     <span className="text-xl font-black text-slate-900 tracking-tight">StartupPitch</span>
                 </div>
                 <div className="flex items-center gap-8">
                     <Link to="/" className="text-sm font-bold text-slate-500 hover:text-slate-900 transition-colors">Return to Home</Link>
-                    <Link to="/contact-support" className="px-6 py-2.5 bg-blue-50 text-blue-600 font-bold rounded-xl hover:bg-blue-100 transition-all text-sm">
+                    <Link to="/contact-support" className={`px-6 py-2.5 ${isStartup ? 'bg-purple-50 text-purple-600' : 'bg-blue-50 text-blue-600'} font-bold rounded-xl hover:opacity-80 transition-all text-sm`}>
                         Contact Support
                     </Link>
                 </div>
@@ -63,20 +83,20 @@ const Register = () => {
                             alt="Modern office buildings"
                             className="absolute inset-0 w-full h-full object-cover opacity-50 mix-blend-multiply"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/40 via-blue-900/20 to-transparent"></div>
+                        <div className={`absolute inset-0 bg-gradient-to-br ${isStartup ? 'from-purple-900/40 via-purple-900/20' : 'from-blue-900/40 via-blue-900/20'} to-transparent`}></div>
 
                         <div className="relative z-10 w-full p-16 flex flex-col justify-between">
                             <div className="inline-flex items-center gap-2.5 px-4 py-2 bg-white/10 backdrop-blur-md rounded-full border border-white/20 w-fit">
-                                <TrendingUp size={16} className="text-blue-400" />
-                                <span className="text-[10px] font-black text-white uppercase tracking-widest">Investor Portal</span>
+                                <TrendingUp size={16} className={badgeColor} />
+                                <span className="text-[10px] font-black text-white uppercase tracking-widest">{badgeText}</span>
                             </div>
 
                             <div className="space-y-6">
                                 <h2 className="text-6xl font-black text-white leading-tight tracking-tight">
-                                    Discover the <br />Next Unicorn
+                                    {isStartup ? "Build the Future" : "Discover the Next Unicorn"}
                                 </h2>
                                 <p className="text-xl text-slate-300 font-medium max-w-md leading-relaxed">
-                                    Join the world's most exclusive network of startup investors. Access curated deal flow and manage your portfolio with real-time insights.
+                                    {heroDesc}
                                 </p>
                             </div>
 
@@ -87,12 +107,12 @@ const Register = () => {
                                             <img src={`https://i.pravatar.cc/150?img=${i + 10}`} alt="Investor" />
                                         </div>
                                     ))}
-                                    <div className="w-12 h-12 rounded-full border-4 border-slate-900 bg-blue-600 flex items-center justify-center text-xs font-bold text-white relative z-10">
+                                    <div className={`w-12 h-12 rounded-full border-4 border-slate-900 ${accentColor} flex items-center justify-center text-xs font-bold text-white relative z-10`}>
                                         +2k
                                     </div>
                                 </div>
                                 <div>
-                                    <p className="text-sm font-bold text-white">Active Investors</p>
+                                    <p className="text-sm font-bold text-white">{activeCountText}</p>
                                     <p className="text-xs text-slate-400 font-medium">Joined this month</p>
                                 </div>
                             </div>
@@ -103,8 +123,8 @@ const Register = () => {
                     <div className="w-full lg:w-1/2 p-12 lg:p-16 flex flex-col justify-center">
                         <div className="max-w-md w-full mx-auto space-y-8">
                             <div>
-                                <h1 className="text-4xl font-black text-slate-900 tracking-tight">Create Investor Account</h1>
-                                <p className="text-slate-500 font-medium mt-3">Register to access exclusive deal flow and startup pitches.</p>
+                                <h1 className="text-4xl font-black text-slate-900 tracking-tight">{title}</h1>
+                                <p className="text-slate-500 font-medium mt-3">{subtitle}</p>
                             </div>
 
                             <form onSubmit={handleRegister} className="space-y-5">
@@ -115,7 +135,7 @@ const Register = () => {
                                         value={fullName}
                                         onChange={(e) => setFullName(e.target.value)}
                                         placeholder="invester name"
-                                        className="w-full px-6 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium text-slate-900 placeholder:text-slate-300 shadow-sm"
+                                        className={`w-full px-6 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:outline-none focus:ring-4 ${accentFocusRing} ${accentBorder} transition-all font-medium text-slate-900 placeholder:text-slate-300 shadow-sm`}
                                         required
                                     />
                                 </div>
@@ -127,7 +147,7 @@ const Register = () => {
                                         value={mobileNumber}
                                         onChange={(e) => setMobileNumber(e.target.value)}
                                         placeholder="+91 012 345 6789"
-                                        className="w-full px-6 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium text-slate-900 placeholder:text-slate-300 shadow-sm"
+                                        className={`w-full px-6 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:outline-none focus:ring-4 ${accentFocusRing} ${accentBorder} transition-all font-medium text-slate-900 placeholder:text-slate-300 shadow-sm`}
                                         required
                                     />
                                 </div>
@@ -139,7 +159,7 @@ const Register = () => {
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         placeholder="invester@gmail.com"
-                                        className="w-full px-6 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all font-medium text-slate-900 placeholder:text-slate-300 shadow-sm"
+                                        className={`w-full px-6 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:outline-none focus:ring-4 ${accentFocusRing} ${accentBorder} transition-all font-medium text-slate-900 placeholder:text-slate-300 shadow-sm`}
                                         required
                                     />
                                 </div>
@@ -187,7 +207,7 @@ const Register = () => {
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="w-full py-5 bg-blue-600 text-white font-black rounded-2xl hover:bg-blue-700 shadow-2xl shadow-blue-200 transition-all active:scale-95 flex items-center justify-center gap-3 text-lg tracking-tight"
+                                    className={`w-full py-5 ${accentColor} text-white font-black rounded-2xl ${accentHover} shadow-2xl ${accentShadow} transition-all active:scale-95 flex items-center justify-center gap-3 text-lg tracking-tight`}
                                 >
                                     {loading ? <Loader2 className="animate-spin" /> : 'Create Account'}
                                 </button>
@@ -195,7 +215,7 @@ const Register = () => {
 
                             <div className="bg-slate-50 border border-slate-100 rounded-[32px] p-6 lg:p-8 flex items-center justify-between">
                                 <span className="text-sm font-bold text-slate-600">Already have an account?</span>
-                                <Link to="/login" className="px-8 py-3 bg-white border border-slate-200 text-slate-900 font-black rounded-xl hover:bg-slate-50 transition-all shadow-sm text-sm tracking-tight active:scale-95">
+                                <Link to={isStartup ? "/login/startup" : "/login/investor"} className="px-8 py-3 bg-white border border-slate-200 text-slate-900 font-black rounded-xl hover:bg-slate-50 transition-all shadow-sm text-sm tracking-tight active:scale-95">
                                     Log In
                                 </Link>
                             </div>

@@ -22,11 +22,17 @@ const ChangePhoto = () => {
     };
 
     const handleSave = async () => {
-        if (!file) return;
+        if (!file || !preview) return;
         setLoading(true);
 
         // Simulating API upload for now
         // In a real app, you would use api.uploadProfilePhoto(file)
+
+        // Store in localStorage for demo persistence
+        localStorage.setItem('user_profile_photo', preview);
+        // Force a storage event for other tabs/components listening
+        window.dispatchEvent(new Event('storage'));
+
         setTimeout(() => {
             setLoading(false);
             navigate('/profile');

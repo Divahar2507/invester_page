@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { PieChart, Briefcase, Eye, DollarSign, ChevronDown, Download, CheckCircle2, Circle, Loader2, FileText, Zap, ShieldCheck } from 'lucide-react';
 import { api } from '../services/api';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const reportTypes = [
     {
@@ -52,122 +54,169 @@ const ExportReports = () => {
     const handleExport = async () => {
         setIsGenerating(true);
 
-        // Simulate sophisticated data aggregation
-        setTimeout(async () => {
-            try {
-                let reportData = "";
-                let fileName = `${selectedReport}_report_${new Date().toISOString().split('T')[0]}`;
-                const investorName = user?.email?.split('@')[0] || 'Investor';
+        try {
+            console.log("Starting export process v4 - Robust");
+            let dataToUse = [];
+            let columns = [];
+            let rows = [];
+            const investorName = user?.email?.split('@')[0] || 'Investor';
+            const timestamp = new Date().toLocaleString();
 
-                // Header based on format
-                if (exportFormat === 'PDF') {
-                    reportData = "==================================================\n";
-                    reportData += `       INVESTOR HUB - ${selectedReport.toUpperCase()} REPORT\n`;
-                    reportData += "==================================================\n";
-                    reportData += `Generated on: ${new Date().toLocaleString()}\n`;
-                    reportData += `Prepared for: ${investorName}\n`;
-                    reportData += `Range: ${dateRange}\n`;
-                    reportData += "--------------------------------------------------\n\n";
+            console.log("Fetching data for:", selectedReport);
+
+            // Fetch Real Data
+            if (selectedReport === 'portfolio') {
+                const investments = await api.getInvestments();
+                if (!investments || investments.length === 0) {
+                    alert("No portfolio data to export.");
+                    setIsGenerating(false);
+                    return;
+                }
+                dataToUse = investments;
+                columns = ["Startup Name", "Deployment", "Round", "Date", "Status"];
+                rows = dataToUse.map(inv => [
+                    inv.startup_name || 'Unnamed',
+                    inv.amount ? `$${Number(inv.amount).toLocaleString()}` : '$0',
+                    inv.round || 'N/A',
+                    inv.date ? new Date(inv.date).toLocaleDateString() : 'N/A',
+                    inv.status || 'Active'
+                ]);
+            } else if (selectedReport === 'watchlist') {
+                const watchlist = await api.getWatchlist();
+                if (!watchlist || watchlist.length === 0) {
+                    alert("No watchlist items to export.");
+                    setIsGenerating(false);
+                    return;
+                }
+                dataToUse = watchlist;
+                columns = ["Company", "Sector", "Phase", "Added On"];
+                rows = dataToUse.map(item => [
+                    item.startup_name || 'Unknown',
+                    item.industry || 'N/A',
+                    item.stage || 'N/A',
+                    item.added_at ? new Date(item.added_at).toLocaleDateString() : 'N/A'
+                ]);
+            } else if (selectedReport === 'deal-flow') {
+                const connections = await api.getMyConnections();
+                if (!connections || connections.length === 0) {
+                    alert("No deal flow data to export.");
+                    setIsGenerating(false);
+                    return;
+                }
+                dataToUse = connections;
+                columns = ["Counterparty", "Role", "Status", "Date"];
+                rows = dataToUse.map(c => [
+                    c.requester_name || 'Unknown',
+                    c.requester_role || 'N/A',
+                    c.status ? c.status.toUpperCase() : 'PENDING',
+                    c.created_at ? new Date(c.created_at).toLocaleDateString() : 'N/A'
+                ]);
+            } else {
+                columns = ["Metric", "Value", "Velocity"];
+                rows = [
+                    ["Alpha Analysis", "98%", "High"],
+                    ["Market Capture", "44%", "Steady"],
+                    ["Risk Index", "12%", "Low"]
+                ];
+            }
+
+            console.log(`Data prepared. Rows: ${rows.length}`);
+
+            // Generate File
+            const fileName = `${selectedReport}_report_${new Date().toISOString().split('T')[0]}`;
+
+            if (exportFormat === 'PDF') {
+                console.log("Generating PDF...");
+
+                // Defensive Constructor Check
+                const DocClass = jsPDF.jsPDF || jsPDF;
+                if (!DocClass) {
+                    throw new Error("jsPDF library not loaded correctly.");
                 }
 
-                if (selectedReport === 'portfolio') {
-                    const investments = await api.getInvestments();
-                    const dataToUse = investments;
+                const doc = new DocClass();
+                console.log("jsPDF instance created");
 
-                    if (exportFormat === 'CSV' || exportFormat === 'EXCEL') {
-                        reportData += "Startup Name,Deployment,Round,Date,Status\n";
-                        dataToUse.forEach(inv => {
-                            reportData += `${inv.startup_name},${inv.amount},${inv.round},${inv.date},${inv.status}\n`;
-                        });
-                    } else {
-                        dataToUse.forEach(inv => {
-                            reportData += `ENTITY: ${inv.startup_name}\n`;
-                            reportData += `ASSET: ${inv.amount} | ROUND: ${inv.round}\n`;
-                            reportData += `TIMESTAMP: ${inv.date} | STATUS: ${inv.status}\n`;
-                            reportData += "--------------------------------------------------\n";
-                        });
-                    }
-                } else if (selectedReport === 'watchlist') {
-                    const watchlist = await api.getWatchlist();
-                    const dataToUse = watchlist;
+                // Header
+                doc.setFontSize(20);
+                doc.setTextColor(40, 40, 40);
+                doc.text("INVESTOR HUB REPORT", 14, 22);
 
-                    if (exportFormat === 'CSV' || exportFormat === 'EXCEL') {
-                        reportData += "Entity Name,Sector,Phase,Timestamp\n";
-                        dataToUse.forEach(item => {
-                            reportData += `${item.startup_name},${item.industry},${item.stage},${item.added_at}\n`;
-                        });
-                    } else {
-                        dataToUse.forEach(item => {
-                            reportData += `TARGET: ${item.startup_name}\n`;
-                            reportData += `SECTOR: ${item.industry} | PHASE: ${item.stage}\n`;
-                            reportData += `MONITORING SINCE: ${item.added_at}\n`;
-                            reportData += "--------------------------------------------------\n";
-                        });
-                    }
-                } else if (selectedReport === 'deal-flow') {
-                    // Use Connections as Deal Flow proxy
-                    const connections = await api.getMyConnections();
-                    const dataToUse = connections;
+                doc.setFontSize(11);
+                doc.setTextColor(100);
+                doc.text(`Type: ${selectedReport.toUpperCase().replace('-', ' ')}`, 14, 32);
+                doc.text(`Generated For: ${investorName}`, 14, 38);
+                doc.text(`Date: ${timestamp}`, 14, 44);
 
-                    if (exportFormat === 'CSV' || exportFormat === 'EXCEL') {
-                        reportData += "Company,Status,Connection Date\n";
-                        dataToUse.forEach(c => {
-                            // Handle cases where user might be requester or receiver
-                            const companyName = c.receiver?.startup_profile?.company_name || c.requester?.startup_profile?.company_name || c.receiver?.full_name || 'Unknown';
-                            reportData += `${companyName},${c.status},${c.created_at || 'N/A'}\n`;
+                // Line
+                doc.setDrawColor(200, 200, 200);
+                doc.line(14, 48, 196, 48);
+
+                console.log("Adding table via autoTable...");
+
+                // Table
+                if (typeof autoTable === 'function') {
+                    try {
+                        autoTable(doc, {
+                            startY: 55,
+                            head: [columns],
+                            body: rows,
+                            theme: 'grid',
+                            headStyles: { fillColor: [41, 128, 185], textColor: 255 },
+                            styles: { fontSize: 9, cellPadding: 3 },
+                            alternateRowStyles: { fillColor: [245, 245, 245] }
                         });
-                    } else {
-                        reportData += "PIPELINE ACTIVITY\n\n";
-                        dataToUse.forEach(c => {
-                            const companyName = c.receiver?.startup_profile?.company_name || c.requester?.startup_profile?.company_name || c.receiver?.full_name || 'Unknown';
-                            reportData += `SOURCE: ${companyName}\n`;
-                            reportData += `STATUS: ${c.status.toUpperCase()} | DATE: ${c.created_at ? new Date(c.created_at).toLocaleDateString() : 'N/A'}\n`;
-                            reportData += "--------------------------------------------------\n";
-                        });
+                        console.log("Table added successfully");
+                    } catch (tableErr) {
+                        console.error("autoTable failed:", tableErr);
+                        doc.text("Error rendering table.", 14, 60);
                     }
                 } else {
-                    // Tax (Keep Dummy)
-                    if (exportFormat === 'CSV' || exportFormat === 'EXCEL') {
-                        reportData += "METRIC,VALUE,VELOCITY\nAlpha Analysis,98%,High\nMarket Capture,44%,Steady\nRisk Index,12%,Low\n";
-                    } else {
-                        reportData += "METRIC ANALYSIS\n";
-                        reportData += "Alpha Analysis: 98% (High Velocity)\n";
-                        reportData += "Market Capture: 44% (Steady Growth)\n";
-                        reportData += "Risk Index: 12% (Tier 1 Stability)\n";
-                        reportData += "\n(Note: Tax data requires external integration)\n";
-                    }
+                    console.warn("autoTable is not a function:", typeof autoTable);
+                    doc.text("Table plugin missing.", 14, 60);
                 }
 
-                const mimeTypes = {
-                    'CSV': 'text/csv',
-                    'EXCEL': 'application/vnd.ms-excel',
-                    'PDF': 'text/plain'
-                };
-                const extensions = {
-                    'CSV': 'csv',
-                    'EXCEL': 'xls',
-                    'PDF': 'pdf'
-                };
+                // Footer
+                const pageCount = doc.internal.getNumberOfPages();
+                for (let i = 1; i <= pageCount; i++) {
+                    doc.setPage(i);
+                    doc.setFontSize(8);
+                    doc.setTextColor(150);
+                    doc.text(`Page ${i} of ${pageCount} - Confidential Property of ${investorName}`, 105, 290, { align: 'center' });
+                }
 
-                const blob = new Blob([reportData], { type: mimeTypes[exportFormat] });
-                const url = window.URL.createObjectURL(blob);
+                console.log("Saving PDF file...");
+                doc.save(`${fileName}.pdf`);
+                console.log("PDF download triggered");
+
+            } else if (exportFormat === 'CSV' || exportFormat === 'EXCEL') {
+                // Generate CSV Content
+                let csvContent = columns.join(",") + "\n";
+                rows.forEach(row => {
+                    const cleanRow = row.map(cell => `"${String(cell).replace(/"/g, '""')}"`); // Escape quotes
+                    csvContent += cleanRow.join(",") + "\n";
+                });
+
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `${fileName}.${extensions[exportFormat]}`;
+                a.download = `${fileName}.csv`; // Always .csv for text data
                 document.body.appendChild(a);
                 a.click();
 
                 setTimeout(() => {
-                    window.URL.revokeObjectURL(url);
+                    URL.revokeObjectURL(url);
                     document.body.removeChild(a);
-                    setIsGenerating(false);
                 }, 100);
-            } catch (e) {
-                console.error(e);
-                setIsGenerating(false);
-                alert("Protocol Exception: Data aggregation failed.");
             }
-        }, 2000);
+
+        } catch (e) {
+            console.error("CRITICAL EXPORT ERROR:", e);
+            alert(`Export Failed: ${e.message}`);
+        } finally {
+            setIsGenerating(false);
+        }
     };
 
     return (
