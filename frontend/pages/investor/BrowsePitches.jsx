@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Filter, Grid, List, ChevronDown, Star, X, TrendingUp, Sparkles, Loader2, FileText, MessageCircle, Calendar, Bookmark, Zap, MapPin, ChevronRight, Eye } from 'lucide-react';
-import { api } from '../services/api';
-import { aiService } from '../services/aiService';
-import CommentsSection from '../components/CommentsSection';
-import MeetingScheduler from '../components/MeetingScheduler';
-import DataRoom from '../components/DataRoom';
+import { api } from '../../services/api';
+import { aiService } from '../../services/aiService';
+import CommentsSection from '../../components/CommentsSection';
+import MeetingScheduler from '../../components/MeetingScheduler';
+import DataRoom from '../../components/DataRoom';
 
 const BrowsePitches = () => {
     const navigate = useNavigate();
@@ -94,7 +94,11 @@ const BrowsePitches = () => {
             }
         } catch (error) {
             console.error('Decision failed:', error);
-            alert('Failed to record decision');
+            if (error.message && error.message.includes('403')) {
+                alert('Permission Denied: Only Investors can perform this action.');
+            } else {
+                alert('Failed to record decision. Please try again.');
+            }
         }
     };
 
@@ -322,9 +326,19 @@ const BrowsePitches = () => {
                             </div>
 
                             {viewMode === 'grid' && (
-                                <div className="p-4 pt-0 mt-auto">
-                                    <button className="w-full py-2.5 bg-slate-50 text-slate-700 rounded-xl text-sm font-semibold hover:bg-slate-900 hover:text-white transition-all">
+                                <div className="p-4 pt-0 mt-auto flex gap-2">
+                                    <button
+                                        className="flex-1 py-2.5 bg-slate-50 text-slate-700 rounded-xl text-sm font-semibold hover:bg-slate-900 hover:text-white transition-all"
+                                        onClick={(e) => { e.stopPropagation(); setSelectedPitch(startup); }}
+                                    >
                                         View Details
+                                    </button>
+                                    <button
+                                        className="w-12 flex items-center justify-center bg-slate-50 text-slate-400 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition-all border border-transparent hover:border-blue-100"
+                                        title="Save to Watchlist"
+                                        onClick={(e) => { e.stopPropagation(); handleAddToWatchlist(startup.startupId || startup.id); }}
+                                    >
+                                        <Bookmark size={18} />
                                     </button>
                                 </div>
                             )}

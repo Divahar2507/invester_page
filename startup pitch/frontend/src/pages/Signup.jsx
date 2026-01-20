@@ -4,7 +4,7 @@ import { api } from "../api.js";
 
 export default function Signup() {
   const navigate = useNavigate();
-  
+
   // Form State
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -35,14 +35,15 @@ export default function Signup() {
     setBusy(true);
     try {
       // Construct payload matching backend schema
-      await api.register({ 
-        full_name: `${firstName} ${lastName}`.trim(), 
+      await api.register({
+        full_name: `${firstName} ${lastName}`.trim(),
         company_name: companyName,
-        email, 
+        email,
         mobile_number: mobile,
         password,
         confirm_password: confirmPassword,
-        agree_terms: agreeTerms 
+        agree_terms: agreeTerms,
+        role: "startup"
       });
       navigate("/login");
     } catch (err) {

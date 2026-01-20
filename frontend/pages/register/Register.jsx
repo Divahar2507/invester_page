@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { api } from '../services/api';
+import { api } from '../../services/api';
 import { Loader2, Eye, EyeOff, TrendingUp, CheckCircle2 } from 'lucide-react';
 
 const Register = ({ role }) => {

@@ -30,7 +30,7 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     if user.role == "investor":
         investor_profile = InvestorProfile(
             user_id=new_user.id,
-            firm_name=user.full_name, # Use provided name as Firm Name for display
+            firm_name=user.company_name if user.company_name else user.full_name, 
             contact_name=user.full_name,
             preferred_stage="Seed"
         )
@@ -38,12 +38,33 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     elif user.role == "startup":
         startup_profile = StartupProfile(
             user_id=new_user.id,
-            company_name=user.full_name, # Use provided name as Company Name for display
+            company_name=user.company_name if user.company_name else user.full_name,
             founder_name=user.full_name,
+            mobile=user.mobile_number,
             industry="Technology",
             funding_stage="Pre-Seed"
         )
         db.add(startup_profile)
+        db.commit() # Commit to get ID
+        db.refresh(startup_profile)
+
+        # Create Default Pitch so they appear in Browse Pitches
+        from app.models.core import Pitch
+        default_pitch = Pitch(
+            startup_id=startup_profile.id,
+            title=f"{startup_profile.company_name} - Seed Round",
+            description="We are building the next big thing.",
+            industry="Technology",
+            funding_stage="Pre-Seed",
+            amount_seeking=100000,
+            status="active",
+            location="Remote",
+            raising_amount="$100k",
+            equity_percentage="10%",
+            valuation="$1M",
+            pitch_file_url="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
+        )
+        db.add(default_pitch)
     
     db.commit()
     

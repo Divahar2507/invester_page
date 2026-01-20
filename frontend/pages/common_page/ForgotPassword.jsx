@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { api } from '../services/api'; // I'll need to update api.js too
+import { api } from '../../services/api'; // I'll need to update api.js too
 import { Loader2, ArrowLeft, Mail } from 'lucide-react';
 
 const ForgotPassword = () => {

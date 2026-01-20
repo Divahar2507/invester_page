@@ -8,6 +8,116 @@ from app.schemas import MessageCreate, MessageResponse, UserResponse
 
 router = APIRouter(prefix="/messages", tags=["Messaging"])
 
+@router.get("/conversations", response_model=list[dict])
+def get_conversations(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # Get all messages for current user
+    messages = db.query(Message).filter(
+        or_(
+            Message.sender_id == current_user.id,
+            Message.receiver_id == current_user.id
+        )
+    ).order_by(Message.timestamp.desc()).all()
+
+    # Group by partner
+    conversations = {}
+    for msg in messages:
+        is_sender = msg.sender_id == current_user.id
+        partner_id = msg.receiver_id if is_sender else msg.sender_id
+        
+        if partner_id not in conversations:
+            partner = msg.receiver if is_sender else msg.sender
+            
+            # Get clean name/role
+            name = partner.email.split('@')[0]
+            extra = ""
+            if partner.role == "startup" and partner.startup_profile:
+                name = partner.startup_profile.company_name
+                extra = partner.startup_profile.industry
+            elif partner.role == "investor" and partner.investor_profile:
+                name = partner.investor_profile.firm_name
+                extra = "Investor"
+            
+            # Use isoformat for datetime to ensure JSON serialization
+            conversations[partner_id] = {
+                "id": partner_id,
+                "name": name,
+                "role": partner.role,
+                "extra": extra,
+                "last_message": msg.content,
+                "last_time": msg.timestamp, # Pydantic will handle this if response_model set, but dict might be tricky.
+                "unread": 0
+            }
+    
+    return list(conversations.values())
+
+@router.get("/history", response_model=list[MessageResponse])
+def get_message_history(
+    partner_id: Optional[int] = None,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # If partner_id is provided, get thread with that partner
+    # If not, get ALL history (legacy support for frontend)
+    
+    query = db.query(Message).filter(
+        or_(
+            Message.sender_id == current_user.id,
+            Message.receiver_id == current_user.id
+        )
+    )
+    
+    if partner_id:
+        query = query.filter(
+            or_(
+                Message.sender_id == partner_id,
+                Message.receiver_id == partner_id
+            )
+        )
+        
+    messages = query.order_by(Message.timestamp.asc()).all()
+    
+    # Helper to get user info
+    def get_info(u):
+        info = {"name": "Unknown", "role": "user", "extra": ""}
+        if not u: return info
+        
+        info["role"] = u.role
+        if u.role == "startup" and u.startup_profile:
+            info["name"] = u.startup_profile.company_name
+            info["extra"] = u.startup_profile.industry
+        elif u.role == "investor" and u.investor_profile:
+            info["name"] = u.investor_profile.firm_name
+            info["extra"] = "Investor"
+        else:
+            info["name"] = u.email.split('@')[0]
+        return info
+
+    results = []
+    for msg in messages:
+        s_info = get_info(msg.sender)
+        r_info = get_info(msg.receiver)
+        
+        results.append(MessageResponse(
+            id=msg.id,
+            sender_id=msg.sender_id,
+            receiver_id=msg.receiver_id,
+            content=msg.content,
+            timestamp=msg.timestamp,
+            sender_name=s_info["name"],
+            receiver_name=r_info["name"],
+            sender_role=s_info["role"],
+            receiver_role=r_info["role"],
+            sender_extra=s_info["extra"],
+            receiver_extra=r_info["extra"],
+            attachment_url=msg.attachment_url,
+            attachment_type=msg.attachment_type
+        ))
+    
+    return results
+
 @router.get("/users/search", response_model=list[UserResponse])
 def search_users(
     q: str, 
@@ -37,46 +147,22 @@ def search_users(
 
 @router.post("/send", response_model=MessageResponse)
 def send_message(
-    message: MessageCreate, 
+    receiver_id: int = Form(...),
+    content: str = Form(...),
+    file: Optional[UploadFile] = File(None),
     db: Session = Depends(get_db), 
     current_user: User = Depends(get_current_user)
 ):
-    receiver = db.query(User).filter(User.id == message.receiver_id).first()
+    receiver = db.query(User).filter(User.id == receiver_id).first()
     if not receiver:
         raise HTTPException(status_code=404, detail="Receiver not found")
-        
 
-    # Strict Connection Check
-    # connection = db.query(Connection).filter(
-    #     or_(
-    #         and_(Connection.requester_id == current_user.id, Connection.receiver_id == receiver.id),
-    #         and_(Connection.requester_id == receiver.id, Connection.receiver_id == current_user.id)
-    #     )
-    # ).first()
-
-    # if not connection or connection.status != "accepted":
-    #     raise HTTPException(status_code=403, detail="You must be connected to send messages")
-
-    # Handle File Upload
     attachment_url = None
     attachment_type = None
 
     if file:
-        import os
-        import shutil
-        from datetime import datetime
-
-        upload_dir = "uploads/messages"
-        os.makedirs(upload_dir, exist_ok=True)
-
-        safe_filename = "".join([c for c in file.filename if c.isalpha() or c.isdigit() or c in ('.', '_', '-')]).strip()
-        filename = f"msg_{current_user.id}_{int(datetime.now().timestamp())}_{safe_filename}"
-        filepath = os.path.join(upload_dir, filename)
-
-        with open(filepath, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-
-        attachment_url = f"/uploads/messages/{filename}"
+        from app.utils.storage import upload_file as store_file
+        attachment_url = store_file(file)
         attachment_type = file.content_type
 
     # 1. Save to DB
@@ -88,10 +174,31 @@ def send_message(
         attachment_type=attachment_type
     )
     db.add(new_message)
+    
+    # Create Notification
+    from app.models.core import Notification
+    sender_name = "Someone"
+    if current_user.role == "startup" and current_user.startup_profile:
+        sender_name = current_user.startup_profile.company_name
+    elif current_user.role == "investor" and current_user.investor_profile:
+        sender_name = current_user.investor_profile.firm_name
+        
+    notification_desc = content
+    if not notification_desc and attachment_url:
+        notification_desc = "Sent an attachment"
+        
+    new_notif = Notification(
+        user_id=receiver_id,
+        title=f"New message from {sender_name}",
+        description=notification_desc[:50] + "..." if len(notification_desc) > 50 else notification_desc,
+        type="message",
+        related_id=new_message.id
+    )
+    db.add(new_notif)
+
     db.commit()
     db.refresh(new_message)
 
-    # 2. Return Response directly (no websocket manager here in this snippet, but logic would be similar)
     return new_message
 
 @router.get("/{user_id}", response_model=list[MessageResponse])
@@ -151,46 +258,30 @@ def get_messages(
     return results
 
 
-@router.get("/conversations", response_model=list[dict])
-def get_conversations(
+# Removed old get_conversations from bottom since we moved it up
+# Removed old get_messages (user_id) to avoid conflict and ambiguity, or keep as deprecated
+
+@router.delete("/conversations/{partner_id}")
+def delete_conversation(
+    partner_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # Get all messages for current user
+    # Retrieve messages between current user and partner
     messages = db.query(Message).filter(
         or_(
-            Message.sender_id == current_user.id,
-            Message.receiver_id == current_user.id
+            and_(Message.sender_id == current_user.id, Message.receiver_id == partner_id),
+            and_(Message.sender_id == partner_id, Message.receiver_id == current_user.id)
         )
-    ).order_by(Message.timestamp.desc()).all()
-
-    # Group by partner
-    conversations = {}
-    for msg in messages:
-        is_sender = msg.sender_id == current_user.id
-        partner_id = msg.receiver_id if is_sender else msg.sender_id
-        
-        if partner_id not in conversations:
-            partner = msg.receiver if is_sender else msg.sender
-            
-            # Get clean name/role
-            name = partner.email.split('@')[0]
-            extra = ""
-            if partner.role == "startup" and partner.startup_profile:
-                name = partner.startup_profile.company_name
-                extra = partner.startup_profile.industry
-            elif partner.role == "investor" and partner.investor_profile:
-                name = partner.investor_profile.firm_name
-                extra = "Investor"
-                
-            conversations[partner_id] = {
-                "id": partner_id,
-                "name": name,
-                "role": partner.role,
-                "extra": extra,
-                "last_message": msg.content,
-                "last_time": msg.timestamp,
-                "unread": 0 # TODO: Implement read status
-            }
+    ).all()
     
-    return list(conversations.values())
+    if not messages:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+        
+    # Delete them
+    for msg in messages:
+        db.delete(msg)
+    
+    db.commit()
+    
+    return {"message": "Conversation deleted successfully"}

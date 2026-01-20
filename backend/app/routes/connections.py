@@ -44,6 +44,24 @@ def send_connection_request(request: ConnectionCreate, db: Session = Depends(get
         status="pending"
     )
     db.add(new_connection)
+    
+    # Create Notification
+    from app.models.core import Notification
+    requester_name = "Someone"
+    if current_user.role == "startup" and current_user.startup_profile:
+        requester_name = current_user.startup_profile.company_name
+    elif current_user.role == "investor" and current_user.investor_profile:
+        requester_name = current_user.investor_profile.firm_name
+        
+    new_notif = Notification(
+        user_id=receiver.id,
+        title="New Connection Request",
+        description=f"{requester_name} wants to connect with you.",
+        type="connection_request",
+        related_id=new_connection.id
+    )
+    db.add(new_notif)
+
     db.commit()
     db.refresh(new_connection)
     return new_connection
@@ -98,6 +116,24 @@ def respond_to_request(response: ConnectionRespond, db: Session = Depends(get_db
     # The action is "accept" or "reject" (mapped to 'accepted' | 'rejected')
     new_status = "accepted" if response.action == "accept" else "rejected"
     connection.status = new_status
+    
+    if new_status == "accepted":
+        from app.models.core import Notification
+        responder_name = "Someone"
+        if current_user.role == "startup" and current_user.startup_profile:
+            responder_name = current_user.startup_profile.company_name
+        elif current_user.role == "investor" and current_user.investor_profile:
+            responder_name = current_user.investor_profile.firm_name
+            
+        new_notif = Notification(
+            user_id=connection.requester_id,
+            title="Connection Request Accepted",
+            description=f"{responder_name} accepted your connection request.",
+            type="connection_accepted",
+            related_id=connection.id
+        )
+        db.add(new_notif)
+
     db.commit()
     db.refresh(connection)
     

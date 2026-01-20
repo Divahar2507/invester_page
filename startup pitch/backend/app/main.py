@@ -24,7 +24,7 @@ app = FastAPI(title="StartupPitch API")
 # CORS configuration - allow multiple origins
 origins = [o.strip() for o in settings.CORS_ORIGINS.split(",") if o.strip()]
 if not origins:
-    origins = ["http://localhost:5173", "http://127.0.0.1:5173"]
+    origins = ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:8001", "http://127.0.0.1:8001", "http://localhost:8000", "http://127.0.0.1:8000", "http://localhost:8002", "http://127.0.0.1:8002", "http://localhost:8003", "http://127.0.0.1:8003"]
 
 logger.info(f"CORS Origins configured: {origins}")
 
@@ -217,8 +217,8 @@ def on_startup():
                 existing = db.query(Investor).count()
                 if existing == 0:
                     logger.info("Seeding dummy investors")
-                    inv1 = Investor(name="Acme Ventures", bio="Early-stage focused firm investing in SaaS startups.", focus="SaaS, marketplaces")
-                    inv2 = Investor(name="Greenfield Capital", bio="Growth-stage investor with a strong operations team.", focus="Fintech, B2B")
+                    inv1 = Investor(investor_name="Acme Ventures", bio="Early-stage focused firm investing in SaaS startups.", preferred_industries="SaaS, marketplaces")
+                    inv2 = Investor(investor_name="Greenfield Capital", bio="Growth-stage investor with a strong operations team.", preferred_industries="Fintech, B2B")
                     db.add_all([inv1, inv2])
                     db.commit()
 
@@ -382,3 +382,12 @@ def change_password(payload: schemas.ChangePasswordRequest, db: Session = Depend
         return {"ok": True}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/dev/seed-investors")
+async def seed_investors_endpoint():
+    try:
+        from app.seed_investors import seed_investors
+        seed_investors()
+        return {"message": "Started seeding investors."}
+    except Exception as e:
+        return {"error": str(e)}

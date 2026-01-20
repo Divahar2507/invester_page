@@ -1,13 +1,11 @@
 import * as React from 'react';
 import { Search, ChevronRight, MessageCircle, MoreVertical, Star, XCircle, Loader2, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { api } from '../services/api';
+import { api } from '../../services/api';
 
 const InReview = () => {
     const [startups, setStartups] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
-
-
 
     React.useEffect(() => {
         loadData();
@@ -15,12 +13,44 @@ const InReview = () => {
 
     const loadData = async () => {
         try {
-            const [me, requests, connections, watchlist] = await Promise.all([
-                api.getMe(),
-                api.getIncomingRequests(),
-                api.getConnections(),
-                api.getWatchlist()
-            ]);
+            console.log("InReview: Starting data load...");
+
+            // Fetch User
+            let me = null;
+            try {
+                me = await api.getMe();
+                console.log("InReview: Me:", me);
+            } catch (err) {
+                console.error("InReview: Failed to fetch Me", err);
+                // If we can't get 'me', we can't compute realId for connections properly, but let's proceed
+            }
+
+            // Fetch Requests
+            let requests = [];
+            try {
+                requests = await api.getIncomingRequests();
+                console.log("InReview: Requests:", requests);
+            } catch (err) {
+                console.error("InReview: Failed to fetch Requests", err);
+            }
+
+            // Fetch Connections
+            let connections = [];
+            try {
+                connections = await api.getConnections();
+                console.log("InReview: Connections:", connections);
+            } catch (err) {
+                console.error("InReview: Failed to fetch Connections", err);
+            }
+
+            // Fetch Watchlist
+            let watchlist = [];
+            try {
+                watchlist = await api.getWatchlist();
+                console.log("InReview: Watchlist:", watchlist);
+            } catch (err) {
+                console.error("InReview: Failed to fetch Watchlist", err);
+            }
 
             // Map incoming requests to pipeline items
             const requestItems = requests.map(req => ({
@@ -36,41 +66,52 @@ const InReview = () => {
             }));
 
             // Map active connections to pipeline items
-            const connectionItems = connections.map(conn => ({
-                id: `conn-${conn.id}`,
-                realId: conn.receiver_id === me.id ? conn.requester_id : conn.receiver_id,
-                name: conn.requester_name || "Connected Startup",
-                stage: "Series A",
-                description: "Connected Portfolio/Pipeline",
-                logo: (conn.requester_name || 'C').charAt(0),
-                reviewStatus: 'In Discussion',
-                reviewProgress: 40,
-                type: 'connection'
-            }));
+            const connectionItems = connections.map(conn => {
+                // Safely determine realId
+                let rId = conn.receiver_id;
+                if (me && conn.receiver_id === me.id) {
+                    rId = conn.requester_id;
+                } else if (!me) {
+                    // Fallback heuristics if 'me' failed? 
+                    // We might not know who is the 'other' person if we don't know who 'we' are.
+                    // But usually getConnections returns 'requester_name' as the *other* person's name 
+                    // (if my backend logic was: "name = other_user...").
+                    // Let's assume the backend already standardized `requester_name` as the display name.
+                }
+
+                return {
+                    id: `conn-${conn.id}`,
+                    realId: rId,
+                    name: conn.requester_name || "Connected Startup", // This field from backend seems to hold the partner name based on my previous read of connections.py
+                    stage: "Series A",
+                    description: "Connected Portfolio/Pipeline",
+                    logo: (conn.requester_name || 'C').charAt(0),
+                    reviewStatus: 'In Discussion',
+                    reviewProgress: 40,
+                    type: 'connection'
+                };
+            });
 
             // Map watchlist items to pipeline items
             const watchlistItems = watchlist.map(item => ({
                 id: `watch-${item.id}`,
-                realId: item.startup_id, // Watchlist uses startup_id (profile id) usually, but check API. 
-                // Wait, WatchlistResponse has startup_id (StartupProfile ID) and startup_name.
-                // But we typically need User ID for messaging. 
-                // Let's assume for now we just show it.
-                // Watchlist model links to StartupProfile.
+                realId: item.startup_id,
                 name: item.startup_name || "Watched Startup",
                 stage: item.stage || "Early",
                 description: "Bookmarked for Review",
                 logo: (item.startup_name || 'W').charAt(0),
                 reviewStatus: 'In Review',
                 reviewProgress: 25,
-                type: 'watchlist'
+                type: 'watchlist',
+                pitchId: item.pitch_id
             }));
 
-            // Dedup by name or ID if necessary, but for now just concat
-            // Prioritize Connections > Requests > Watchlist if dupes exist?
-            // Simple spread for now.
-            setStartups([...requestItems, ...connectionItems, ...watchlistItems]);
+            const allItems = [...requestItems, ...connectionItems, ...watchlistItems];
+            console.log("InReview: Combined Items:", allItems);
+            setStartups(allItems);
+
         } catch (e) {
-            console.error(e);
+            console.error("InReview: Critical Error in loadData", e);
             setStartups([]);
         } finally {
             setLoading(false);
@@ -180,10 +221,62 @@ const InReview = () => {
                                     </td>
                                     <td className="px-8 py-6">
                                         <div className="flex items-center justify-end gap-3">
-                                            <Link to={`/pitch/${startup.id}`} className="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-lg hover:bg-slate-800 transition-all shadow-sm">
-                                                Review
-                                            </Link>
-                                            <button className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"><XCircle size={18} /></button>
+                                            {startup.type === 'request' ? (
+                                                <>
+                                                    <button
+                                                        onClick={async () => {
+                                                            try {
+                                                                const connId = startup.id.split('-')[1];
+                                                                await api.respondToRequest(connId, 'accept');
+                                                                loadData();
+                                                            } catch (e) { alert("Failed: " + e.message); }
+                                                        }}
+                                                        className="px-3 py-2 bg-emerald-600 text-white text-xs font-bold rounded-lg hover:bg-emerald-700 transition-all shadow-sm">
+                                                        Accept
+                                                    </button>
+                                                    <button
+                                                        onClick={async () => {
+                                                            if (!window.confirm("Reject connection request?")) return;
+                                                            try {
+                                                                const connId = startup.id.split('-')[1];
+                                                                await api.respondToRequest(connId, 'reject');
+                                                                loadData();
+                                                            } catch (e) { alert("Failed: " + e.message); }
+                                                        }}
+                                                        className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all" title="Reject Request">
+                                                        <XCircle size={18} />
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    {startup.pitchId ? (
+                                                        <Link to={`/pitch/${startup.pitchId}`} className="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-lg hover:bg-slate-800 transition-all shadow-sm">
+                                                            Review
+                                                        </Link>
+                                                    ) : (
+                                                        startup.type !== 'connection' && (
+                                                            <button className="px-4 py-2 bg-slate-200 text-slate-500 text-xs font-bold rounded-lg cursor-not-allowed">
+                                                                No Pitch
+                                                            </button>
+                                                        )
+                                                    )}
+
+                                                    {startup.type === 'watchlist' && (
+                                                        <button
+                                                            onClick={async () => {
+                                                                try {
+                                                                    await api.removeFromWatchlist(startup.realId);
+                                                                    loadData();
+                                                                } catch (e) { alert("Failed: " + e.message); }
+                                                            }}
+                                                            className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
+                                                            title="Remove from Watchlist"
+                                                        >
+                                                            <XCircle size={18} />
+                                                        </button>
+                                                    )}
+                                                </>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>
@@ -197,4 +290,3 @@ const InReview = () => {
 };
 
 export default InReview;
-

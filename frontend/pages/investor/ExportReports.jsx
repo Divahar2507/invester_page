@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PieChart, Briefcase, Eye, DollarSign, ChevronDown, Download, CheckCircle2, Circle, Loader2, FileText, Zap, ShieldCheck } from 'lucide-react';
-import { api } from '../services/api';
+import { api } from '../../services/api';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 

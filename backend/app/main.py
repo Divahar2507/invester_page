@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.database import engine, Base, SessionLocal
-from app.models.core import User, StartupProfile, InvestorProfile
+from app.models.core import User, StartupProfile, InvestorProfile, Pitch
 from app.utils.security import get_password_hash
 from app.routes import auth, startup, investor, pitch, matching, messaging, notifications, images_check, investment, connections, watchlist, file_upload, social
 from app.middleware.error_handlers import setup_exception_handlers
@@ -74,6 +74,9 @@ app.include_router(watchlist.router)
 app.include_router(file_upload.router)
 app.include_router(social.router)
 
+from app.routes import chat_ws
+app.include_router(chat_ws.router)
+
 from app.routes import tasks
 app.include_router(tasks.router)
 
@@ -82,6 +85,9 @@ app.include_router(ai_analysis.router)
 
 from app.routes import admin
 app.include_router(admin.router)
+
+from app.routes import startup_fend_compat
+app.include_router(startup_fend_compat.router)
 
 # Health Check Endpoint
 @app.get("/health")
@@ -360,5 +366,66 @@ def seed_data():
     finally:
         db.close()
 
+# Manual Seed Endpoint
+@app.post("/dev/seed")
+async def manual_seed():
+    try:
+        seed_data()
+        db = SessionLocal()
+        count = db.query(Pitch).count()
+        db.close()
+        return {"message": f"Seeding complete. Total pitches: {count}"}
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.post("/dev/sync")
+async def sync_pitches_endpoint():
+    db = SessionLocal()
+    try:
+        from app.models.core import StartupProfile, Pitch
+        profiles = db.query(StartupProfile).all()
+        count = 0
+        created = 0
+        for sp in profiles:
+            existing_pitch = db.query(Pitch).filter(Pitch.startup_id == sp.id).first()
+            if not existing_pitch:
+                new_pitch = Pitch(
+                    startup_id=sp.id,
+                    title=f"{sp.company_name} - Seed Round",
+                    description=sp.description or sp.vision or "Innovative startup seeking funding.",
+                    industry=sp.industry or "Technology",
+                    funding_stage=sp.funding_stage or "Seed",
+                    amount_seeking=500000,
+                    status="active",
+                    location=sp.city or "India",
+                    pitch_file_url="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+                    tags=f"{sp.industry}, Tech, Startup",
+                    raising_amount="$500,000",
+                    equity_percentage="10%",
+                    valuation="$5M"
+                )
+                db.add(new_pitch)
+                created += 1
+            else:
+                if existing_pitch.status != 'active':
+                    existing_pitch.status = 'active'
+                    count += 1
+        db.commit()
+        return {"message": f"Synced. Created {created} new pitches, Activated {count} existing."}
+    except Exception as e:
+        return {"error": str(e)}
+    finally:
+        db.close()
+
+@app.post("/dev/seed-50-startups")
+async def seed_50_startups_endpoint():
+    try:
+        from app.seed_50_startups import seed_custom_startups
+        seed_custom_startups()
+        return {"message": "Started seeding 50 startups (check logs or database)"}
+    except Exception as e:
+        return {"error": str(e)}
+
 # Run seed on startup
-# seed_data()
+seed_data()
+

@@ -10,6 +10,9 @@ class UserCreate(UserBase):
     password: str
     role: str = Field(..., pattern="^(startup|investor)$")
     full_name: str
+    company_name: Optional[str] = None
+    mobile_number: Optional[str] = None
+    agree_terms: Optional[bool] = False
 
 class UserLogin(UserBase):
     password: str

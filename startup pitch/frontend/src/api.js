@@ -1,12 +1,20 @@
 import { getToken, clearAuth } from "./auth.js";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8001";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000"; // Point to Main Backend
 const MAIN_API_URL = "http://localhost:8000";
 
 async function request(path, { method = "GET", body } = {}, baseUrl = API_URL) {
   const token = getToken();
 
-  const res = await fetch(`${baseUrl}${path}`, {
+  // Handle path mapping for Main Backend migration
+  let finalPath = path;
+
+  // Mapping logic
+  if (path === "/me") finalPath = "/auth/me";
+  if (path === "/me/profile") finalPath = "/startup/profile/me";
+  if (path === "/investors") finalPath = "/investors/"; // Backend adds slash often
+
+  const res = await fetch(`${baseUrl}${finalPath}`, {
     method,
     headers: {
       "Content-Type": "application/json",
@@ -24,10 +32,8 @@ async function request(path, { method = "GET", body } = {}, baseUrl = API_URL) {
   }
 
   if (res.status === 401) {
-    // If it's the main login check, maybe don't clear immediately or handle gracefully
-    // But generally 401 means session dead.
-    // clearAuth();
-    // throw new Error(data?.detail || "Unauthorized or expired session. Please sign in again.");
+    // Session expired
+    // clearAuth(); 
   }
 
   if (!res.ok) {
@@ -37,43 +43,50 @@ async function request(path, { method = "GET", body } = {}, baseUrl = API_URL) {
   return data;
 }
 
-// Helper for Main Backend calls
+// Helper for Main Backend calls (now same as request)
 const mainRequest = (path, options) => request(path, options, MAIN_API_URL);
 
 export const api = {
   register: (payload) => request("/auth/register", { method: "POST", body: payload }),
   login: (payload) => request("/auth/login", { method: "POST", body: payload }),
 
-  // Settings / profile (Startup Backend)
+  // Settings / profile
   me: async () => {
-    const user = await request("/me");
-    // Attempt to merge company name if missing
-    try {
-      const profile = await request("/me/profile");
-      if (profile && profile.company_name) {
-        user.company_name = profile.company_name;
-        user.name = profile.company_name; // Use company name as display name
-      }
-    } catch (e) { /* ignore */ }
+    const user = await request("/me"); // Mapped to /auth/me
+    // Main backend /auth/me returns {id, email, role, name...}
+    // Startup Profile might need to be fetched separately to get company name if not in user object
+    if (!user.name || user.name === user.email) {
+      try {
+        const profile = await request("/me/profile"); // Mapped to /startup/profile/me
+        if (profile && profile.company_name) {
+          user.company_name = profile.company_name;
+          user.name = profile.company_name;
+          user.id = profile.user_id; // Ensure ID matches
+        }
+      } catch (e) { /* ignore */ }
+    }
     return user;
   },
-  updateMe: (payload) => request("/me", { method: "PATCH", body: payload }),
-  changePassword: (payload) => request("/me/change-password", { method: "POST", body: payload }),
-  contactSales: (payload) => request("/contact-sales", { method: "POST", body: payload }),
-  confirmEnterprise: (payload) => request("/enterprise/confirm", { method: "POST", body: payload }),
-  getEnterpriseSuccess: () => request("/enterprise/success-details"),
-  shareProfile: (payload) => request("/company/share", { method: "POST", body: payload }),
 
-  // Company profile (Startup Backend)
+  updateMe: (payload) => request("/startup/profile", { method: "PUT", body: payload }), // Updated path from /me
+  changePassword: (payload) => request("/auth/reset-password", { method: "POST", body: payload }), // Approximation
+
+  // Enterprise / Sales (Mock or map to existing)
+  contactSales: (payload) => Promise.resolve({ success: true }),
+  confirmEnterprise: (payload) => Promise.resolve({ success: true }),
+  getEnterpriseSuccess: () => Promise.resolve({}),
+  shareProfile: (payload) => Promise.resolve({ success: true }),
+
+  // Company profile
   getProfile: () => request("/me/profile"),
-  updateProfile: (payload) => request("/me/profile", { method: "PATCH", body: payload }),
-  inviteTeamMember: (payload) => request("/team/invite", { method: "POST", body: payload }),
+  updateProfile: (payload) => request("/startup/profile", { method: "PUT", body: payload }),
+  inviteTeamMember: (payload) => Promise.resolve({ success: true }),
 
-  // --- Community & Networking (Main Backend - Port 8000) ---
+  // --- Community & Networking ---
 
   // Investors
   getInvestors: () => mainRequest("/investors/"),
-  searchUsers: (query) => mainRequest(`/messages/users/search?q=${query}`),
+  searchUsers: (query) => mainRequest(`/messages/users/search?q=${encodeURIComponent(query)}`),
   getInvestor: (id) => mainRequest(`/investors/${id}`),
 
   // Connections
@@ -85,6 +98,38 @@ export const api = {
 
   // Messaging
   getConversations: () => mainRequest("/messages/conversations"),
-  getMessages: (userId) => mainRequest(`/messages/${userId}`),
-  sendMessage: (receiverId, content) => mainRequest("/messages/send", { method: "POST", body: { receiver_id: receiverId, content } }),
+  // getMessages: (userId) => mainRequest(`/messages/${userId}`), // Deprecated
+  getMessageHistory: (partnerId) => {
+    let path = "/messages/history";
+    if (partnerId) path += `?partner_id=${partnerId}`;
+    return mainRequest(path);
+  },
+  sendMessage: async (receiverId, content, file = null) => {
+    const token = getToken();
+    const formData = new FormData();
+    formData.append('receiver_id', parseInt(receiverId));
+    formData.append('content', content);
+    if (file) {
+      formData.append('file', file);
+    }
+
+    const res = await fetch(`${MAIN_API_URL}/messages/send`, {
+      method: 'POST',
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: formData,
+    });
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.detail || 'Failed to send message');
+    }
+    return res.json();
+  },
+
+  deleteConversation: (partnerId) => mainRequest(`/messages/conversations/${partnerId}`, { method: "DELETE" }),
+
+  // Notifications
+  getNotifications: () => mainRequest("/notifications/"),
+  markNotificationAsRead: (id) => mainRequest(`/notifications/${id}/read`, { method: "PUT" }),
 };

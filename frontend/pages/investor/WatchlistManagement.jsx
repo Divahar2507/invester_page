@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { Rocket, ShoppingCart, TestTube, Cpu, Trash2, Eye, History, Loader2, Zap, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { api } from '../services/api';
+import { api } from '../../services/api';
 
 const WatchlistManagement = () => {
     const [watchlist, setWatchlist] = useState([]);

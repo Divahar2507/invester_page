@@ -71,10 +71,17 @@ class InvestorProfile(Base):
     user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
     firm_name = Column(String, nullable=False)
     focus_industries = Column(String) # Comma-separated or JSON string
+    preferred_industries = Column(String) # Alias/New field from user request
     preferred_stage = Column(String, nullable=False)
+    
+    # New fields from User Request
+    investor_type = Column(String)
+    location = Column(String)
+    investment_range = Column(String)
     
     # Personal & Work Details
     contact_name = Column(String)
+    investor_name = Column(String) # New field from user request
     bio = Column(Text)
     website_url = Column(String)
     linkedin_url = Column(String)
