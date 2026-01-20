@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import ShareModal from '../components/ShareModal';
-import CommentsSection from '../components/CommentsSection';
-import DataRoom from '../components/DataRoom';
-import { api } from '../services/api';
+import ShareModal from '../../components/ShareModal';
+import CommentsSection from '../../components/CommentsSection';
+import DataRoom from '../../components/DataRoom';
+import { api } from '../../services/api';
 import {
     ArrowLeft,
     Share2,

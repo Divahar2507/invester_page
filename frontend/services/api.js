@@ -285,6 +285,18 @@ export const api = {
         return response.json();
     },
 
+    getInvestment: async (id) => {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('No token found');
+
+        const response = await fetch(`${API_URL}/investments/${id}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch investment details');
+        return response.json();
+    },
+
     createInvestment: async (investmentData) => {
         const token = localStorage.getItem('token');
         if (!token) throw new Error('No token found');
@@ -596,13 +608,31 @@ export const api = {
         return response.json();
     },
 
-    getMessages: async (userId) => {
+    getMessageHistory: async (partnerId = null) => {
         const token = localStorage.getItem('token');
         if (!token) throw new Error('No token found');
-        const response = await fetch(`${API_URL}/messages/${userId}`, {
+
+        let url = `${API_URL}/messages/history`;
+        if (partnerId) {
+            url += `?partner_id=${partnerId}`;
+        }
+        const response = await fetch(url, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!response.ok) throw new Error('Failed to fetch messages');
+        return response.json();
+    },
+
+    deleteConversation: async (partnerId) => {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('No token found');
+
+        const response = await fetch(`${API_URL}/messages/conversations/${partnerId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!response.ok) throw new Error('Failed to delete conversation');
         return response.json();
     }
 };

@@ -68,9 +68,35 @@ class Investor(Base):
     __tablename__ = "investors"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    investor_name: Mapped[str] = mapped_column(String(200), nullable=False)
+    firm_name: Mapped[str] = mapped_column(String(200), nullable=True)
+    investor_type: Mapped[str] = mapped_column(String(50), nullable=True)
+    location: Mapped[str] = mapped_column(String(50), nullable=True)
+    investment_range: Mapped[str] = mapped_column(String(50), nullable=True)
+    preferred_industries: Mapped[str] = mapped_column(String(200), nullable=True)
+    email: Mapped[str] = mapped_column(String(120), nullable=True)
     bio: Mapped[str] = mapped_column(Text, nullable=True)
-    focus: Mapped[str] = mapped_column(String(200), nullable=True)
+    
+    # Backward compatibility for existing code trying to access 'name' or 'focus'
+    # Use properties or duplicate columns if strictly needed, but better to update logic.
+    # For now, we will map 'name' to 'investor_name' if needed in schemas, but let's stick to model first.
+
+    # Backward compatibility
+    @property
+    def name(self):
+        return self.investor_name
+    
+    @name.setter
+    def name(self, value):
+        self.investor_name = value
+        
+    @property
+    def focus(self):
+        return self.preferred_industries
+    
+    @focus.setter
+    def focus(self, value):
+        self.preferred_industries = value
 
     recent_investments: Mapped[list["RecentInvestment"]] = relationship("RecentInvestment", back_populates="investor")
 

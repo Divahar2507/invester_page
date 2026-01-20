@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { DollarSign, Briefcase, Activity, TrendingUp, Search, Bell, Download, Plus, Sparkles, Loader2, Filter, MoreHorizontal, ChevronRight, Settings, Star, Zap } from 'lucide-react';
-import StatCard from '../components/StatCard';
-import ActionRegistry from '../components/ActionRegistry';
-import { api } from '../services/api';
-import { aiService } from '../services/aiService';
+import StatCard from '../../components/StatCard';
+import ActionRegistry from '../../components/ActionRegistry';
+import { api } from '../../services/api';
+import { aiService } from '../../services/aiService';
 import { Link } from 'react-router-dom';
 
 const Dashboard = () => {

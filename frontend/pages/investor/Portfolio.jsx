@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Plus, Filter, ChevronDown, ExternalLink, MessageCircle, FileText, LayoutGrid, LayoutList, TrendingUp, Loader2, Star, Zap, Briefcase } from 'lucide-react';
-import { api } from '../services/api';
+import { api } from '../../services/api';
 
 const Portfolio = () => {
     const [activeTab, setActiveTab] = useState('investments');
@@ -35,9 +35,10 @@ const Portfolio = () => {
                 logo: (inv.startup_name || 'S').charAt(0),
                 status: inv.status === 'Active' ? 'Trending Up' : 'Needs Review',
                 investedAmount: `$${inv.amount.toLocaleString()}`,
-                currentValue: `$${(inv.amount * 1.25).toLocaleString()}`,
-                growth: '+25%',
-                reviewStatus: 'Completed'
+                currentValue: `$${(inv.amount * 1.25).toLocaleString()}`, // Dummy logic for now
+                growth: inv.equity_stake ? `${inv.equity_stake}% Equity` : '+25%', // Showing equity if available
+                reviewStatus: 'Completed',
+                documentUrl: inv.document_url // Store document URL for use
             }));
 
             // Use API data
@@ -155,7 +156,11 @@ const Portfolio = () => {
                                 className="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
                             />
                         </div>
-                        <Link to="/log-investment" className="flex items-center gap-2 px-6 py-2.5 bg-slate-900 rounded-xl text-sm font-medium text-white hover:bg-slate-800 shadow-sm transition-all whitespace-nowrap">
+                        <Link
+                            to="/log-investment"
+                            state={{ startupName: '' }}
+                            className="flex items-center gap-2 px-6 py-2.5 bg-slate-900 rounded-xl text-sm font-medium text-white hover:bg-slate-800 shadow-sm transition-all whitespace-nowrap"
+                        >
                             <Plus size={18} />
                             Log New Investment
                         </Link>
@@ -204,14 +209,26 @@ const Portfolio = () => {
                                     </div>
 
                                     <div className="grid grid-cols-3 divide-x divide-slate-100 border-t border-slate-100">
-                                        <Link to={`/pitch/${startup.id}`} className="py-3 flex flex-col items-center justify-center hover:bg-slate-50 transition-colors">
+                                        <Link to={`/investment/${startup.id}`} className="py-3 flex flex-col items-center justify-center hover:bg-slate-50 transition-colors">
                                             <ExternalLink size={18} className="text-slate-400 mb-1" />
                                             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">View</span>
                                         </Link>
-                                        <Link to={`/pitch/${startup.id}`} className="py-3 flex flex-col items-center justify-center hover:bg-slate-50 transition-colors">
+                                        <button
+                                            onClick={() => {
+                                                if (startup.documentUrl) {
+                                                    const url = startup.documentUrl.startsWith('http')
+                                                        ? startup.documentUrl
+                                                        : `http://localhost:8000${startup.documentUrl}`;
+                                                    window.open(url, '_blank');
+                                                } else {
+                                                    alert("No documents uploaded for this investment.");
+                                                }
+                                            }}
+                                            className="py-3 flex flex-col items-center justify-center hover:bg-slate-50 transition-colors cursor-pointer w-full"
+                                        >
                                             <FileText size={18} className="text-slate-400 mb-1" />
                                             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Docs</span>
-                                        </Link>
+                                        </button>
                                         <Link to="/messages" state={{ conversationStart: startup.name }} className="py-3 flex flex-col items-center justify-center hover:bg-slate-50 transition-colors">
                                             <MessageCircle size={18} className="text-slate-400 mb-1" />
                                             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Chat</span>

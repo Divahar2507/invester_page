@@ -71,8 +71,8 @@ export const aiService = {
             const ai = getAI();
             if (!ai) return (await mockAI.chats.create().sendMessage()).response.text();
 
-            // Fallback to gemini-pro if flash is 404ing
-            const modelName = 'gemini-pro';
+            // Use newer flash model
+            const modelName = 'gemini-1.5-flash';
 
             // Map history to the exact structure expected by SDK (role + parts array)
             const formattedHistory = history.map(h => ({
@@ -82,7 +82,6 @@ export const aiService = {
 
             const model = ai.getGenerativeModel({
                 model: modelName
-                // Removed systemInstruction for gemini-pro compatibility just in case
             });
 
             const chat = model.startChat({
@@ -103,6 +102,9 @@ export const aiService = {
             return result.response.text();
         } catch (e) {
             console.error("AI Error:", e);
+            if (e.message.includes('404')) {
+                return "I'm having trouble connecting (Model Not Found). Please check your API key validity.";
+            }
             return `I'm having trouble connecting. Error: ${e.message || e.toString()}`;
         }
     }

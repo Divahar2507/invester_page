@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { api } from '../services/api';
+import { api } from '../../services/api';
 import { User, Mail, Building2, Briefcase, Info, Shield, Bell, Plus, X, Loader2, Save, CheckCircle2 } from 'lucide-react';
 
 const Profile = () => {

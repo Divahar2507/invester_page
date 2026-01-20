@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, MessageSquare, Briefcase, Info, Check, CheckCircle2 } from 'lucide-react';
-import { api } from '../services/api';
+import { Bell, MessageSquare, Briefcase, Info, Check, UserPlus, CheckCircle2 } from 'lucide-react';
+import { api } from '../../services/api';
 
 const Notifications = () => {
     const [notifications, setNotifications] = useState([]);
@@ -38,6 +38,8 @@ const Notifications = () => {
         switch (type) {
             case 'message': return <MessageSquare size={18} className="text-blue-500" />;
             case 'match': return <Briefcase size={18} className="text-emerald-500" />;
+            case 'connection_request': return <UserPlus size={18} className="text-amber-500" />;
+            case 'connection_accepted': return <CheckCircle2 size={18} className="text-emerald-500" />;
             case 'system': return <Info size={18} className="text-slate-500" />;
             default: return <Bell size={18} className="text-orange-500" />;
         }

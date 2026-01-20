@@ -91,8 +91,8 @@ services:
     restart: unless-stopped
     environment:
       DATABASE_URL: postgresql+psycopg://postgres:password@startup-db:5432/startuppitch
-      SECRET_KEY: startup-secret-key
-      JWT_SECRET: startup-secret-key
+      SECRET_KEY: ${SECRET_KEY:-your-super-secret-key-change-in-production}
+      JWT_SECRET: ${SECRET_KEY:-your-super-secret-key-change-in-production}
       CORS_ORIGINS: "http://localhost:3001,http://127.0.0.1:3001,http://localhost:5173,http://127.0.0.1:5173"
     ports:
       - "8001:8000"
@@ -111,7 +111,7 @@ services:
     ports:
       - "3001:5173"
     environment:
-      - VITE_API_URL=http://localhost:8001
+      - VITE_API_URL=http://localhost:8000
     depends_on:
       - startup-backend
     networks:

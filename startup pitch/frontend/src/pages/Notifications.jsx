@@ -1,156 +1,144 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import DashShell from "../components/DashShell.jsx";
-
-// --- Icons ---
-const EyeIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-    <circle cx="12" cy="12" r="3" />
-  </svg>
-);
-
-const MsgIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-  </svg>
-);
-
-const MegaIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 2l3 6h4a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-4l-3 6" />
-    <path d="M12 2H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6" />
-  </svg>
-);
-
-const DownloadIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-    <polyline points="7 10 12 15 17 10" />
-    <line x1="12" y1="15" x2="12" y2="3" />
-  </svg>
-);
-
-// --- Dummy Data ---
-const NOTIFICATIONS = [
-  {
-    id: 1,
-    type: "view",
-    // Using inline styles for bolding specific parts of the text to match screenshot
-    title: <span>New view on <span style={{ color: "#1d4ed8", fontWeight: 700 }}>TechNova Series A Deck</span></span>,
-    desc: <span><span style={{ fontWeight: 700 }}>Venture Capital Partners</span> viewed your pitch deck from the simplified link.</span>,
-    time: "2m ago",
-    iconColor: "#eff6ff", // Blue background
-    iconFill: "#1d4ed8",  // Blue icon
-    Icon: EyeIcon
-  },
-  {
-    id: 2,
-    type: "msg",
-    title: <span>Message from <span style={{ fontWeight: 700 }}>Sarah Jenkins</span></span>,
-    desc: <span>"Hi team, we reviewed the deck and have a few questions regarding the go-to-market strategy..."</span>,
-    time: "1h ago",
-    iconColor: "#ecfdf5", // Green background
-    iconFill: "#059669",  // Green icon
-    Icon: MsgIcon
-  },
-  {
-    id: 3,
-    type: "feature",
-    title: <span>New Feature: <span style={{ fontWeight: 700 }}>AI Pitch Analysis</span></span>,
-    desc: "Get instant feedback on your pitch deck structure and content with our new AI tools.",
-    time: "4h ago",
-    iconColor: "#fffbeb", // Amber background
-    iconFill: "#d97706",  // Amber icon
-    Icon: MegaIcon
-  },
-  {
-    id: 4,
-    type: "view",
-    title: <span>New view on <span style={{ color: "#1d4ed8", fontWeight: 700 }}>TechNova Series A Deck</span></span>,
-    desc: <span><span style={{ fontWeight: 700 }}>Sequoia Capital</span> viewed your pitch deck.</span>,
-    time: "Yesterday",
-    iconColor: "#eff6ff",
-    iconFill: "#1d4ed8",
-    Icon: EyeIcon
-  },
-  {
-    id: 5,
-    type: "download",
-    title: <span style={{ fontWeight: 700 }}>Deck Downloaded</span>,
-    desc: <span><span style={{ fontWeight: 700 }}>Michael Chen</span> downloaded "TechNova Financials Q3".</span>,
-    time: "2 days ago",
-    iconColor: "#f3edff", // Purple background
-    iconFill: "#7c3aed",  // Purple icon
-    Icon: DownloadIcon
-  }
-];
+import { api } from "../api.js";
+import { Bell, MessageSquare, Briefcase, Info, Check, Eye, UserPlus, CheckCircle2, Loader2 } from 'lucide-react';
 
 export default function Notifications() {
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchNotifications = async () => {
+    try {
+      setLoading(true);
+      const data = await api.getIncomingRequests(); // Fallback/merge logic if needed, but we'll use actual notifications endpoint if available
+      // Let's assume we have api.getNotifications() in api.js too or we'll add it
+      let notifs = [];
+      try {
+        // Check if api.getNotifications exists
+        if (api.getNotifications) {
+          notifs = await api.getNotifications();
+        } else {
+          // We'll use request to /notifications if not in api.js object
+          // But let's check api.js again.
+        }
+      } catch (e) { console.error(e); }
+
+      setNotifications(notifs);
+    } catch (error) {
+      console.error("Failed to fetch notifications", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Since I might not have added getNotifications to startup api.js, let's check it.
+  // I previously saw it in the investor api.js. 
+  // Wait, let me check startup pitch/frontend/src/api.js again.
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  const handleMarkAsRead = async (id) => {
+    try {
+      // Assuming markNotificationAsRead exists or we use request
+      if (api.markNotificationAsRead) {
+        await api.markNotificationAsRead(id);
+      }
+      setNotifications(notifications.map(n =>
+        n.id === id ? { ...n, is_read: true } : n
+      ));
+    } catch (error) {
+      console.error("Failed to mark as read", error);
+    }
+  };
+
+  const getIcon = (type) => {
+    switch (type) {
+      case 'message': return <MessageSquare size={18} className="text-blue-500" />;
+      case 'match': return <Briefcase size={18} className="text-emerald-500" />;
+      case 'view': return <Eye size={18} className="text-indigo-500" />;
+      case 'connection_request': return <UserPlus size={18} className="text-amber-500" />;
+      case 'connection_accepted': return <CheckCircle2 size={18} className="text-emerald-500" />;
+      case 'system': return <Info size={18} className="text-slate-500" />;
+      default: return <Bell size={18} className="text-orange-500" />;
+    }
+  };
+
+  const getBgColor = (type) => {
+    switch (type) {
+      case 'message': return 'bg-blue-50';
+      case 'match': return 'bg-emerald-50';
+      case 'view': return 'bg-indigo-50';
+      case 'connection_request': return 'bg-amber-50';
+      case 'connection_accepted': return 'bg-emerald-50';
+      default: return 'bg-slate-50';
+    }
+  };
+
   return (
     <DashShell>
-      <div className="dash-content" style={{ maxWidth: 880, margin: "0 auto", padding: "32px 24px" }}>
-        
-        {/* Header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 32 }}>
+      <div className="p-8 max-w-4xl mx-auto space-y-8 font-['Plus Jakarta Sans'] animate-in fade-in duration-500">
+        <div className="flex items-center justify-between">
           <div>
-            <h1 style={{ fontSize: 28, fontWeight: 700, margin: "0 0 8px 0", color: "#0f172a" }}>Notifications</h1>
-            <p style={{ color: "#64748b", margin: 0 }}>Stay updated on your pitch activity and messages.</p>
-          </div>
-          
-          <div style={{ position: "relative" }}>
-            <select style={{ 
-              appearance: "none", padding: "10px 36px 10px 16px", borderRadius: 8, 
-              border: "1px solid #e2e8f0", background: "#fff", fontWeight: 600, color: "#334155",
-              fontSize: 13, cursor: "pointer", outline: "none"
-            }}>
-              <option>All Notifications</option>
-              <option>Unread</option>
-              <option>Mentions</option>
-            </select>
-            <div style={{ position: "absolute", right: 14, top: 12, pointerEvents: "none", fontSize: 10 }}>▼</div>
+            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Notifications</h1>
+            <p className="text-slate-500 mt-1 text-base">Stay updated on your pitch activity and investor interests.</p>
           </div>
         </div>
 
-        {/* Notification List */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {NOTIFICATIONS.map(n => (
-            <div key={n.id} style={{
-              display: "flex", alignItems: "flex-start", gap: 16,
-              background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12,
-              padding: 20, transition: "box-shadow 0.2s"
-            }}>
-              {/* Icon */}
-              <div style={{
-                width: 44, height: 44, borderRadius: "50%",
-                background: n.iconColor, color: n.iconFill,
-                display: "grid", placeItems: "center",
-                flexShrink: 0
-              }}>
-                <n.Icon />
-              </div>
-              
-              {/* Content */}
-              <div style={{ flex: 1, paddingTop: 2 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                  <div style={{ fontSize: 15, color: "#0f172a", lineHeight: 1.4 }}>
-                    {n.title}
-                  </div>
-                  <div style={{ fontSize: 12, color: "#94a3b8", fontWeight: 500, whiteSpace: "nowrap", marginLeft: 12 }}>
-                    {n.time}
-                  </div>
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-4">
+            <Loader2 className="animate-spin text-blue-600" size={40} />
+            <p className="text-sm font-medium text-slate-500">Loading notifications...</p>
+          </div>
+        ) : notifications.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-dashed border-slate-200 p-16 text-center shadow-sm">
+            <Bell size={48} className="mx-auto text-slate-200 mb-4" />
+            <h3 className="text-lg font-bold text-slate-900">No notifications yet</h3>
+            <p className="text-slate-400 text-sm mt-1 max-w-xs mx-auto">We'll let you know when an investor views your pitch or sends you a message.</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {notifications.map((notif) => (
+              <div
+                key={notif.id}
+                className={`flex gap-5 p-5 rounded-2xl border transition-all duration-300 ${notif.is_read ? 'bg-white border-slate-100' : 'bg-blue-50/30 border-blue-100 shadow-sm ring-1 ring-blue-50'}`}
+              >
+                <div className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 shadow-sm border border-white ${getBgColor(notif.type)}`}>
+                  {getIcon(notif.type)}
                 </div>
-                
-                <div style={{ marginTop: 4, color: "#64748b", fontSize: 14, lineHeight: 1.5 }}>
-                  {n.desc}
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-start mb-1">
+                    <h3 className={`text-base font-bold truncate ${notif.is_read ? 'text-slate-700' : 'text-slate-900'}`}>
+                      {notif.title}
+                    </h3>
+                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider ml-4">
+                      {new Date(notif.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <p className="text-sm text-slate-500 leading-relaxed font-medium">
+                    {notif.description}
+                  </p>
+                  {!notif.is_read && (
+                    <button
+                      onClick={() => handleMarkAsRead(notif.id)}
+                      className="mt-4 flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors bg-white px-3 py-1.5 rounded-lg border border-blue-50 shadow-sm"
+                    >
+                      <Check size={14} />
+                      Mark as read
+                    </button>
+                  )}
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
-        <div style={{ textAlign: "center", marginTop: 40, fontSize: 13, color: "#94a3b8" }}>
-          End of notifications
-        </div>
+        {!loading && notifications.length > 0 && (
+          <div className="text-center pt-8">
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">End of notifications</p>
+          </div>
+        )}
       </div>
     </DashShell>
   );

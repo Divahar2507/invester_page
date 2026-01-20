@@ -20,10 +20,14 @@ def create_investment(
     db: Session = Depends(get_db), 
     current_user: User = Depends(get_current_user)
 ):
+    print(f"DEBUG: create_investment called by User ID {current_user.id}, Role: {current_user.role}")
+    
     if current_user.role != "investor":
+        print(f"DEBUG: Access denied. Role is {current_user.role}")
         raise HTTPException(status_code=403, detail="Only investors can log investments")
     
     if not current_user.investor_profile:
+        print(f"DEBUG: Investor profile missing for User ID {current_user.id}")
         raise HTTPException(status_code=400, detail="Investor profile not found")
 
     # Prevent duplicate entries for the same startup
@@ -132,3 +136,22 @@ def get_investment_stats(
         portfolio_growth=growth,
         avg_equity=equity
     )
+
+@router.get("/{investment_id}", response_model=InvestmentResponse)
+def get_investment_by_id(
+    investment_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    if current_user.role != "investor":
+         raise HTTPException(status_code=403, detail="Only investors can view investment details")
+    
+    investment = db.query(Investment).filter(Investment.id == investment_id).first()
+    if not investment:
+        raise HTTPException(status_code=404, detail="Investment not found")
+        
+    # Ensure the user owns this investment
+    if investment.investor_id != current_user.investor_profile.id:
+        raise HTTPException(status_code=403, detail="Access denied")
+        
+    return investment

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { api } from '../services/api';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { api } from '../../services/api';
 import { Loader2, ArrowLeft, CheckCircle2, Upload, ChevronDown, DollarSign, Calendar, Percent, FileText, Briefcase, Zap } from 'lucide-react';
 
 const LogInvestment = () => {
@@ -11,13 +11,14 @@ const LogInvestment = () => {
     const [success, setSuccess] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const [file, setFile] = useState(null);
+    const location = useLocation(); // Import useLocation
     const fileInputRef = React.useRef(null);
 
     const [formData, setFormData] = useState({
-        startup_name: '',
+        startup_name: location.state?.startupName || '',
         round: '',
         amount: '',
-        date: '',
+        date: new Date().toISOString().split('T')[0],
         equity_stake: '',
         notes: ''
     });
@@ -59,6 +60,7 @@ const LogInvestment = () => {
                 amount: parseFloat(formData.amount),
                 date: formData.date || new Date().toISOString().split('T')[0],
                 round: formData.round || 'Seed',
+                equity_stake: parseFloat(formData.equity_stake) || 0,
                 notes: formData.notes,
                 status: 'Active',
                 file: file

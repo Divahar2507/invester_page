@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { api } from '../services/api';
+import { api } from '../../services/api';
 import { Loader2, Lock, CheckCircle2, AlertCircle } from 'lucide-react';
 
 const ResetPassword = () => {

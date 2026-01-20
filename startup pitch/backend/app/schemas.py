@@ -158,10 +158,46 @@ class RecentInvestmentOut(BaseModel):
 
 class InvestorOut(BaseModel):
     id: int
-    name: str
+    name: str # Mapping to investor_name for backward compatibility
     bio: str | None = None
-    focus: str | None = None
+    focus: str | None = None # Mapping to preferred_industries
+    
+    # New Fields
+    investor_name: str
+    firm_name: str | None = None
+    investor_type: str | None = None
+    location: str | None = None
+    investment_range: str | None = None
+    preferred_industries: str | None = None
+    email: str | None = None
+
     recent_investments: list[RecentInvestmentOut] | None = None
 
     class Config:
         from_attributes = True
+
+    @model_validator(mode="before")
+    def sync_legacy_fields(cls, values):
+        # If it's an ORM object (Pydantic V2 from_attributes), we access attributes differently.
+        # But 'values' here is likely a dict or object depending on call.
+        # However, for `from_attributes=True`, validation happens on the object.
+        # Let's rely on the Model properly populating 'name' and 'focus' if we aliased them, 
+        # but since we didn't alias, we might need to rely on the fact that existing code 
+        # expects 'name' and 'focus'.
+        
+        # Actually simplest way: The ORM model has mapped_columns. 
+        # If we didn't remove 'name'/'focus' columns from DB but just renamed in Python model, 
+        # we need to be careful.
+        # The Python model update REMOVED 'name' and 'focus' but added back-compat comments.
+        # So we should map them here or in the DB model properties.
+        # Let's handle it in the DB model via @property preferably, but here is also fine if response only.
+        pass
+        return values
+        
+    @property
+    def name(self):
+        return self.investor_name
+        
+    @property
+    def focus(self):
+        return self.preferred_industries

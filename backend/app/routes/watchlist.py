@@ -11,13 +11,17 @@ router = APIRouter(prefix="/watchlist", tags=["Watchlist"])
 class WatchlistAdd(BaseModel):
     startup_id: int
 
+from typing import Optional
+from app.models.core import Pitch
+
 class WatchlistResponse(BaseModel):
     id: int
     startup_id: int
     startup_name: str
-    industry: str
-    stage: str
+    industry: Optional[str] = None
+    stage: Optional[str] = None
     added_at: datetime.datetime
+    pitch_id: Optional[int] = None
 
 @router.get("/", response_model=List[WatchlistResponse])
 def get_watchlist(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
@@ -28,13 +32,19 @@ def get_watchlist(db: Session = Depends(get_db), current_user: User = Depends(ge
         # Fetch startup details
         startup = db.query(StartupProfile).filter(StartupProfile.id == item.startup_id).first()
         if startup:
+            # Find associated pitch (prefer active)
+            pitch = db.query(Pitch).filter(Pitch.startup_id == startup.id, Pitch.status == 'active').first()
+            if not pitch:
+                pitch = db.query(Pitch).filter(Pitch.startup_id == startup.id).order_by(Pitch.created_at.desc()).first()
+
             results.append({
                 "id": item.id,
                 "startup_id": item.startup_id,
                 "startup_name": startup.company_name,
                 "industry": startup.industry,
                 "stage": startup.funding_stage,
-                "added_at": item.created_at
+                "added_at": item.created_at,
+                "pitch_id": pitch.id if pitch else None
             })
     return results
 

@@ -176,7 +176,7 @@ def get_pitch_feed(
         
     return response_list
 
-    return response_list
+
 
 @router.get("/{pitch_id}", response_model=PitchResponse)
 def get_pitch(pitch_id: int, db: Session = Depends(get_db)):
@@ -252,6 +252,7 @@ def record_decision(
             item = Watchlist(user_id=current_user.id, startup_id=pitch.startup_id)
             db.add(item)
             
+        db.commit()
         return {"message": f"Added to In Review (Watchlist)", "status": "in_review_personal"}
 
     db.commit()

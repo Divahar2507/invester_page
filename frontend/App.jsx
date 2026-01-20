@@ -3,28 +3,29 @@ import * as React from 'react';
 import { HashRouter as Router, Routes, Route, Outlet, Navigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Navbar from './components/Navbar';
-import Dashboard from './pages/Dashboard';
-import BrowsePitches from './pages/BrowsePitches';
-import Portfolio from './pages/Portfolio';
-import InReview from './pages/InReview';
-import Messages from './pages/Messages';
-import Login from './pages/Login';
-import Register from './pages/Register';
+import Dashboard from './pages/common_page/Dashboard';
+import BrowsePitches from './pages/investor/BrowsePitches';
+import Portfolio from './pages/investor/Portfolio';
+import InReview from './pages/investor/InReview';
+import Messages from './pages/common_page/Messages';
+import Login from './pages/login/Login';
+import Register from './pages/register/Register';
 // Placeholder for missing components to ensure build works
-import Settings from './pages/Settings';
-import LogInvestment from './pages/LogInvestment';
-import ExportReports from './pages/ExportReports';
-import Profile from './pages/Profile';
-import ChangePhoto from './pages/ChangePhoto';
-import ChangePassword from './pages/ChangePassword';
-import NotificationsPage from './pages/Notifications';
-import WatchlistManagement from './pages/WatchlistManagement';
-import PitchDeckView from './pages/PitchDeckView';
-import ScheduleMeeting from './pages/ScheduleMeeting';
-import Landing from './pages/Landing';
-import ContactSupport from './pages/ContactSupport';
-import ForgotPassword from './pages/ForgotPassword';
-import ResetPassword from './pages/ResetPassword';
+import Settings from './pages/common_page/Settings';
+import LogInvestment from './pages/investor/LogInvestment';
+import InvestmentDetails from './pages/investor/InvestmentDetails';
+import ExportReports from './pages/investor/ExportReports';
+import Profile from './pages/common_page/Profile';
+import ChangePhoto from './pages/common_page/ChangePhoto';
+import ChangePassword from './pages/common_page/ChangePassword';
+import NotificationsPage from './pages/common_page/Notifications';
+import WatchlistManagement from './pages/investor/WatchlistManagement';
+import PitchDeckView from './pages/investor/PitchDeckView';
+import ScheduleMeeting from './pages/common_page/ScheduleMeeting';
+import Landing from './pages/common_page/Landing';
+import ContactSupport from './pages/common_page/ContactSupport';
+import ForgotPassword from './pages/common_page/ForgotPassword';
+import ResetPassword from './pages/common_page/ResetPassword';
 
 // const SettingsPage = () => <div className="p-8 text-2xl font-bold">Settings Page (Coming Soon)</div>; // Removed placeholder
 
@@ -96,6 +97,7 @@ const App = () => {
                         <Route path="/notifications" element={<NotificationsPage />} />
                         <Route path="/watchlist" element={<WatchlistManagement />} />
                         <Route path="/pitch/:id" element={<PitchDeckView />} />
+                        <Route path="/investment/:id" element={<InvestmentDetails />} />
                         <Route path="/schedule-meeting/:id" element={<ScheduleMeeting />} />
                     </Route>
                 </Routes>
