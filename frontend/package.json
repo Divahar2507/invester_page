@@ -6,7 +6,7 @@
   "scripts": {
     "start": "vite",
     "dev": "vite",
-    "build": "vite build --logLevel error",
+    "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {

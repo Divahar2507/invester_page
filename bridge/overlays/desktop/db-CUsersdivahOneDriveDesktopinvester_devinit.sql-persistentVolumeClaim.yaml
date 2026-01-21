@@ -1,0 +1,9 @@
+#! db-C:\Users\divah\OneDrive\Desktop\invester_dev\init.sql-persistentVolumeClaim.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+    name: db-c--users-divah-onedrive-desktop-invester-dev-init-sql
+    namespace: invester-dev
+spec:
+    storageClassName: "hostpath" # see docker/desktop-storage-provisioner

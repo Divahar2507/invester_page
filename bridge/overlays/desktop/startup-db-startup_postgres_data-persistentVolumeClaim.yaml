@@ -1,0 +1,9 @@
+#! startup-db-startup_postgres_data-persistentVolumeClaim.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+    name: startup-db-startup-postgres-data
+    namespace: invester-dev
+spec:
+    storageClassName: "hostpath" # see docker/desktop-storage-provisioner

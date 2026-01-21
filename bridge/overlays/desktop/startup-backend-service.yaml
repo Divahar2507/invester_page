@@ -1,0 +1,11 @@
+#! startup-backend-service.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: Service
+metadata:
+    name: startup-backend-published
+    namespace: invester-dev
+spec:
+    type: LoadBalancer
+
+# check if there is at least one published port

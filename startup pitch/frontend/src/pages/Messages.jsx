@@ -46,7 +46,7 @@ const Messages = () => {
             content: m.content,
             timestamp: m.timestamp ? new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleTimeString(),
             isMe: isMe,
-            avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(m.sender_name || 'User')}`,
+            avatar: m.sender_photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(m.sender_name || 'User')}`,
             contactId: contactId,
             attachment_url: m.attachment_url,
             attachment_type: m.attachment_type,
@@ -388,8 +388,12 @@ const Messages = () => {
                         {contacts.map(contact => (
                             <div key={contact.id} onClick={() => setActiveContact(contact)} className={`p-3 rounded-xl cursor-pointer flex gap-3 transition-all ${String(activeContact.id) === String(contact.id) ? 'bg-blue-50 text-blue-900 border-l-4 border-blue-600' : 'hover:bg-slate-50 text-slate-700'}`}>
                                 <div className="relative shrink-0">
-                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white shadow-sm ${contact.avatarBg}`}>
-                                        {contact.name ? <span className="font-bold text-xs">{contact.name.charAt(0)}</span> : <User size={18} />}
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white shadow-sm overflow-hidden ${contact.avatarBg}`}>
+                                        {contact.profile_photo ? (
+                                            <img src={contact.profile_photo} alt={contact.name} className="w-full h-full object-cover" />
+                                        ) : (
+                                            contact.name ? <span className="font-bold text-xs">{contact.name.charAt(0)}</span> : <User size={18} />
+                                        )}
                                     </div>
                                 </div>
                                 <div className="flex-1 min-w-0 flex flex-col justify-center">
@@ -410,8 +414,12 @@ const Messages = () => {
                         <>
                             <div className="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between shrink-0 sticky top-0 z-20 shadow-sm">
                                 <div className="flex items-center gap-3">
-                                    <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white shadow-sm ${activeContact.avatarBg}`}>
-                                        {activeContact.name ? <span className="font-bold text-xs">{activeContact.name.charAt(0)}</span> : <User size={18} />}
+                                    <div className={`w-9 h-9 rounded-full flex items-center justify-center text-white shadow-sm overflow-hidden ${activeContact.avatarBg}`}>
+                                        {activeContact.profile_photo ? (
+                                            <img src={activeContact.profile_photo} alt={activeContact.name} className="w-full h-full object-cover" />
+                                        ) : (
+                                            activeContact.name ? <span className="font-bold text-xs">{activeContact.name.charAt(0)}</span> : <User size={18} />
+                                        )}
                                     </div>
                                     <div>
                                         <div className="flex items-center gap-2">

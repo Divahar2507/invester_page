@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig(({ mode }) => {
     // Load env from parent directory (project root)
-    const env = loadEnv(mode, '../', '');
+    const env = loadEnv(mode, process.cwd(), '');
 
     return {
         server: {
@@ -18,7 +18,7 @@ export default defineConfig(({ mode }) => {
         },
         resolve: {
             alias: {
-                '@': path.resolve('.', '.'),
+                '@': path.resolve(process.cwd(), './src'),
             }
         }
     };

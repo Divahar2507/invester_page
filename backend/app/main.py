@@ -427,5 +427,9 @@ async def seed_50_startups_endpoint():
         return {"error": str(e)}
 
 # Run seed on startup
-seed_data()
+try:
+    seed_data()
+except Exception as e:
+    logger.error(f"Error seeding data: {e}")
+
 

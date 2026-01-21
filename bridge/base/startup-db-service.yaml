@@ -1,0 +1,21 @@
+#! startup-db-service.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: Service
+metadata:
+    name: startup-db-published
+    namespace: invester-dev
+    labels:
+        com.docker.compose.project: invester_dev
+        com.docker.compose.service: startup-db
+spec:
+    selector:
+        com.docker.compose.project: invester_dev
+        com.docker.compose.service: startup-db
+    ports:
+        - name: startup-db-5434
+          port: 5434
+          protocol: TCP
+          targetPort: startup-db-5432
+
+# check if there is at least one published port

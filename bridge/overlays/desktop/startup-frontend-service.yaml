@@ -1,0 +1,9 @@
+#! startup-frontend-service.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: Service
+metadata:
+    name: startup-frontend-published
+    namespace: invester-dev
+spec:
+    type: LoadBalancer

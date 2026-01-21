@@ -1,0 +1,42 @@
+#! startup-backend-deployment.yaml
+# Generated code, do not edit
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: startup-backend
+    namespace: invester-dev
+    labels:
+        com.docker.compose.project: invester_dev
+        com.docker.compose.service: startup-backend
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            com.docker.compose.project: invester_dev
+            com.docker.compose.service: startup-backend
+    strategy:
+        type: Recreate
+    template:
+        metadata:
+            labels:
+                com.docker.compose.project: invester_dev
+                com.docker.compose.service: startup-backend
+                com.docker.compose.network.pitch_network: "true"
+        spec:
+            restartPolicy: unless-stopped
+            containers:
+                - name: startup-pitch-backend
+                  image: invester_dev-startup-backend
+                  imagePullPolicy: IfNotPresent
+                  env:
+                    - name: CORS_ORIGINS
+                      value: "http://localhost:3001,http://127.0.0.1:3001,http://localhost:5173,http://127.0.0.1:5173"
+                    - name: DATABASE_URL
+                      value: "postgresql+psycopg://postgres:password@startup-db:5432/startuppitch"
+                    - name: JWT_SECRET
+                      value: "your-super-secret-key-change-in-production"
+                    - name: SECRET_KEY
+                      value: "your-super-secret-key-change-in-production"
+                  ports:
+                    - name: startup-ba-8000
+                      containerPort: 8000

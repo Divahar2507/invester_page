@@ -1,0 +1,36 @@
+#! startup-frontend-deployment.yaml
+# Generated code, do not edit
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: startup-frontend
+    namespace: invester-dev
+    labels:
+        com.docker.compose.project: invester_dev
+        com.docker.compose.service: startup-frontend
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            com.docker.compose.project: invester_dev
+            com.docker.compose.service: startup-frontend
+    strategy:
+        type: Recreate
+    template:
+        metadata:
+            labels:
+                com.docker.compose.project: invester_dev
+                com.docker.compose.service: startup-frontend
+                com.docker.compose.network.pitch_network: "true"
+        spec:
+            restartPolicy: unless-stopped
+            containers:
+                - name: startup-pitch-frontend
+                  image: invester_dev-startup-frontend
+                  imagePullPolicy: IfNotPresent
+                  env:
+                    - name: VITE_API_URL
+                      value: "http://localhost:8000"
+                  ports:
+                    - name: startup-fr-5173
+                      containerPort: 5173

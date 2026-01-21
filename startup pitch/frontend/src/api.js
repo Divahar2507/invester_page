@@ -121,8 +121,16 @@ export const api = {
       body: formData,
     });
     if (!res.ok) {
-      const error = await res.json().catch(() => ({}));
-      throw new Error(error.detail || 'Failed to send message');
+      let errorDetail = 'Failed to send message';
+      try {
+        const error = await res.json();
+        errorDetail = error.detail || JSON.stringify(error);
+      } catch (e) {
+        const text = await res.text();
+        errorDetail = `Status ${res.status}: ${text.substring(0, 100)}`;
+      }
+      console.error("SendMessage Error:", errorDetail);
+      throw new Error(errorDetail);
     }
     return res.json();
   },

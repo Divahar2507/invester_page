@@ -1,0 +1,18 @@
+#! backend-C:\Users\divah\OneDrive\Desktop\invester_dev\backend\uploads-persistentVolumeClaim.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+    name: backend-c--users-divah-onedrive-desktop-invester-dev-backend-uploads
+    namespace: invester-dev
+    labels:
+        com.docker.compose.service: backend
+        com.docker.compose.volume: C:\Users\divah\OneDrive\Desktop\invester_dev\backend\uploads
+spec:
+    accessModes:
+        # TODO would need to check which services use this volume
+        - ReadWriteOnce
+    volumeMode: Filesystem
+    resources:
+        requests:
+            storage: 100Mi

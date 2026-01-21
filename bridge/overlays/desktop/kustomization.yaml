@@ -1,0 +1,18 @@
+#! kustomization.yaml
+# Generated code, do not edit
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+    - ../../base
+patches:
+    - path: backend-C:\Users\divah\OneDrive\Desktop\invester_dev\backend\data-persistentVolumeClaim.yaml
+    - path: backend-C:\Users\divah\OneDrive\Desktop\invester_dev\backend\uploads-persistentVolumeClaim.yaml
+    - path: backend-service.yaml
+    - path: db-C:\Users\divah\OneDrive\Desktop\invester_dev\init.sql-persistentVolumeClaim.yaml
+    - path: db-postgres_data_v3-persistentVolumeClaim.yaml
+    - path: db-service.yaml
+    - path: frontend-service.yaml
+    - path: startup-backend-service.yaml
+    - path: startup-db-service.yaml
+    - path: startup-db-startup_postgres_data-persistentVolumeClaim.yaml
+    - path: startup-frontend-service.yaml

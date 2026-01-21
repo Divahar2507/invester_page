@@ -46,6 +46,8 @@ def get_conversations(
                 "name": name,
                 "role": partner.role,
                 "extra": extra,
+                "extra": extra,
+                "profile_photo": (partner.startup_profile.profile_photo if partner.startup_profile else None) if partner.role == "startup" else (partner.investor_profile.profile_photo if partner.investor_profile else None),
                 "last_message": msg.content,
                 "last_time": msg.timestamp, # Pydantic will handle this if response_model set, but dict might be tricky.
                 "unread": 0
@@ -93,6 +95,15 @@ def get_message_history(
             info["extra"] = "Investor"
         else:
             info["name"] = u.email.split('@')[0]
+        
+        # Determine profile photo
+        if u.role == "startup" and u.startup_profile:
+            info["profile_photo"] = u.startup_profile.profile_photo
+        elif u.role == "investor" and u.investor_profile:
+            info["profile_photo"] = u.investor_profile.profile_photo
+        else:
+            info["profile_photo"] = None
+            
         return info
 
     results = []
@@ -113,7 +124,9 @@ def get_message_history(
             sender_extra=s_info["extra"],
             receiver_extra=r_info["extra"],
             attachment_url=msg.attachment_url,
-            attachment_type=msg.attachment_type
+            attachment_type=msg.attachment_type,
+            sender_photo=s_info.get("profile_photo"),
+            receiver_photo=r_info.get("profile_photo")
         ))
     
     return results
@@ -138,10 +151,13 @@ def search_users(
     for u in users:
         if u.startup_profile:
             u.name = u.startup_profile.company_name
+            u.profile_image = u.startup_profile.profile_photo
         elif u.investor_profile:
             u.name = u.investor_profile.firm_name
+            u.profile_image = u.investor_profile.profile_photo
         else:
             u.name = u.email.split('@')[0]
+            u.profile_image = None
             
     return users
 
@@ -198,8 +214,35 @@ def send_message(
 
     db.commit()
     db.refresh(new_message)
+    
+    # Construct response with details
+    s_photo = None
+    if current_user.role == "startup" and current_user.startup_profile:
+        s_photo = current_user.startup_profile.profile_photo
+    elif current_user.role == "investor" and current_user.investor_profile:
+        s_photo = current_user.investor_profile.profile_photo
 
-    return new_message
+    r_photo = None
+    if receiver.role == "startup" and receiver.startup_profile:
+        r_photo = receiver.startup_profile.profile_photo
+    elif receiver.role == "investor" and receiver.investor_profile:
+        r_photo = receiver.investor_profile.profile_photo
+
+    return MessageResponse(
+        id=new_message.id,
+        sender_id=new_message.sender_id,
+        receiver_id=new_message.receiver_id,
+        content=new_message.content,
+        timestamp=new_message.timestamp,
+        sender_name=sender_name,  # Already computed above
+        receiver_name=receiver.email.split('@')[0], # Fallback or fetch properly if needed, but sender is main
+        sender_role=current_user.role,
+        receiver_role=receiver.role,
+        attachment_url=new_message.attachment_url,
+        attachment_type=new_message.attachment_type,
+        sender_photo=s_photo,
+        receiver_photo=r_photo
+    )
 
 @router.get("/{user_id}", response_model=list[MessageResponse])
 def get_messages(
@@ -232,6 +275,15 @@ def get_messages(
             info["extra"] = "Investor"
         else:
             info["name"] = u.email.split('@')[0]
+        
+        # Determine profile photo
+        if u.role == "startup" and u.startup_profile:
+            info["profile_photo"] = u.startup_profile.profile_photo
+        elif u.role == "investor" and u.investor_profile:
+            info["profile_photo"] = u.investor_profile.profile_photo
+        else:
+            info["profile_photo"] = None
+            
         return info
 
     results = []
@@ -252,7 +304,9 @@ def get_messages(
             sender_extra=s_info["extra"],
             receiver_extra=r_info["extra"],
             attachment_url=msg.attachment_url,
-            attachment_type=msg.attachment_type
+            attachment_type=msg.attachment_type,
+            sender_photo=s_info.get("profile_photo"),
+            receiver_photo=r_info.get("profile_photo")
         ))
     
     return results

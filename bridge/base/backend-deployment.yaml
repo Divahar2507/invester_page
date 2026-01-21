@@ -1,0 +1,54 @@
+#! backend-deployment.yaml
+# Generated code, do not edit
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: backend
+    namespace: invester-dev
+    labels:
+        com.docker.compose.project: invester_dev
+        com.docker.compose.service: backend
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            com.docker.compose.project: invester_dev
+            com.docker.compose.service: backend
+    strategy:
+        type: Recreate
+    template:
+        metadata:
+            labels:
+                com.docker.compose.project: invester_dev
+                com.docker.compose.service: backend
+                com.docker.compose.network.pitch_network: "true"
+        spec:
+            restartPolicy: unless-stopped
+            containers:
+                - name: pitch-platform-backend
+                  image: invester_dev-backend
+                  imagePullPolicy: IfNotPresent
+                  env:
+                    - name: ACCESS_TOKEN_EXPIRE_MINUTES
+                      value: "30"
+                    - name: ALGORITHM
+                      value: "HS256"
+                    - name: DATABASE_URL
+                      value: "postgresql://postgres:Diva%402004@db:5432/pitch_platform"
+                    - name: SECRET_KEY
+                      value: "your-super-secret-key-change-in-production"
+                  ports:
+                    - name: backend-8000
+                      containerPort: 8000
+                  volumeMounts:
+                    - name: app-uploads
+                      mountPath: /app/uploads
+                    - name: app-data
+                      mountPath: /app/data
+            volumes:
+                - name: app-uploads
+                  hostPath:
+                    path: C:\Users\divah\OneDrive\Desktop\invester_dev\backend\uploads
+                - name: app-data
+                  hostPath:
+                    path: C:\Users\divah\OneDrive\Desktop\invester_dev\backend\data

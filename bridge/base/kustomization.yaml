@@ -1,0 +1,30 @@
+#! kustomization.yaml
+# Generated code, do not edit
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+    - 0-invester-dev-namespace.yaml
+    - backend-C:\Users\divah\OneDrive\Desktop\invester_dev\backend\data-persistentVolumeClaim.yaml
+    - backend-C:\Users\divah\OneDrive\Desktop\invester_dev\backend\uploads-persistentVolumeClaim.yaml
+    - backend-deployment.yaml
+    - backend-expose.yaml
+    - backend-service.yaml
+    - db-C:\Users\divah\OneDrive\Desktop\invester_dev\init.sql-persistentVolumeClaim.yaml
+    - db-deployment.yaml
+    - db-expose.yaml
+    - db-postgres_data_v3-persistentVolumeClaim.yaml
+    - db-service.yaml
+    - frontend-deployment.yaml
+    - frontend-expose.yaml
+    - frontend-service.yaml
+    - pitch_network-network-policy.yaml
+    - startup-backend-deployment.yaml
+    - startup-backend-expose.yaml
+    - startup-backend-service.yaml
+    - startup-db-deployment.yaml
+    - startup-db-expose.yaml
+    - startup-db-service.yaml
+    - startup-db-startup_postgres_data-persistentVolumeClaim.yaml
+    - startup-frontend-deployment.yaml
+    - startup-frontend-expose.yaml
+    - startup-frontend-service.yaml
