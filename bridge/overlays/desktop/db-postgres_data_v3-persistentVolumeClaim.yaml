@@ -1,0 +1,9 @@
+#! db-postgres_data_v3-persistentVolumeClaim.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+    name: db-postgres-data-v3
+    namespace: invester-dev
+spec:
+    storageClassName: "hostpath" # see docker/desktop-storage-provisioner

@@ -1,0 +1,8 @@
+#! 0-invester-dev-namespace.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: invester-dev
+    labels:
+        com.docker.compose.project: invester_dev

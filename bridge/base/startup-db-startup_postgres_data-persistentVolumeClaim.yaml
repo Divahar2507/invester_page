@@ -1,0 +1,18 @@
+#! startup-db-startup_postgres_data-persistentVolumeClaim.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+    name: startup-db-startup-postgres-data
+    namespace: invester-dev
+    labels:
+        com.docker.compose.service: startup-db
+        com.docker.compose.volume: startup_postgres_data
+spec:
+    accessModes:
+        # TODO would need to check which services use this volume
+        - ReadWriteOnce
+    volumeMode: Filesystem
+    resources:
+        requests:
+            storage: 100Mi

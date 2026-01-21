@@ -1,0 +1,18 @@
+#! startup-db-expose.yaml
+# Generated code, do not edit
+apiVersion: v1
+kind: Service
+metadata:
+    name: startup-db
+    namespace: invester-dev
+    labels:
+        com.docker.compose.project: invester_dev
+        com.docker.compose.service: startup-db
+spec:
+    selector:
+        com.docker.compose.project: invester_dev
+        com.docker.compose.service: startup-db
+    ports:
+        - name: startup-db-5432
+          port: 5432
+          targetPort: startup-db-5432

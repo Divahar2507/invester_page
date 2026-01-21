@@ -10,8 +10,33 @@ class UserCreate(UserBase):
     password: str
     role: str = Field(..., pattern="^(startup|investor)$")
     full_name: str
-    company_name: Optional[str] = None
+    
+    # Extended Registration Fields
     mobile_number: Optional[str] = None
+    gender: Optional[str] = None
+    linkedin_url: Optional[str] = None
+    
+    # Startup Specific
+    brand_name: Optional[str] = None
+    legal_name: Optional[str] = None
+    website_url: Optional[str] = None
+    startup_sector: Optional[str] = None
+    startup_stage: Optional[str] = None
+    city: Optional[str] = None
+    company_type: Optional[str] = None
+    monthly_revenue: Optional[str] = None
+    valuation: Optional[str] = None
+    capital_to_raise: Optional[str] = None
+    incorporation_date: Optional[str] = None
+    description: Optional[str] = None
+    is_single_founder: Optional[str] = None
+    
+    # Investor Specific
+    referrer: Optional[str] = None
+    referrer_name: Optional[str] = None
+    
+    # Legacy/Optional
+    company_name: Optional[str] = None
     agree_terms: Optional[bool] = False
 
 class UserLogin(UserBase):
@@ -69,6 +94,7 @@ class StartupBase(BaseModel):
     founder_linkedin: Optional[str] = None
     resume_url: Optional[str] = None
     website_url: Optional[str] = None
+    profile_photo: Optional[str] = None # Added profile photo
 
 class StartupCreate(StartupBase):
     pass
@@ -91,6 +117,7 @@ class InvestorBase(BaseModel):
     bio: Optional[str] = None
     website_url: Optional[str] = None
     linkedin_url: Optional[str] = None
+    profile_photo: Optional[str] = None # Added profile photo
     min_check_size: Optional[float] = None
     max_check_size: Optional[float] = None
 
@@ -140,6 +167,11 @@ class PitchResponse(PitchBase):
     # Let's keep it simple: Pitch model has `tags` as string.
     tags: Optional[str] = None
     valuation: Optional[str] = None 
+    
+    # Detailed Startup Info
+    vision: Optional[str] = None
+    problem: Optional[str] = None
+    solution: Optional[str] = None 
 
     class Config:
         from_attributes = True
@@ -175,6 +207,8 @@ class MessageResponse(BaseModel):
     receiver_role: Optional[str] = None
     sender_extra: Optional[str] = None # e.g. "FinTech" or "Investor"
     receiver_extra: Optional[str] = None
+    sender_photo: Optional[str] = None
+    receiver_photo: Optional[str] = None
 
     class Config:
         from_attributes = True

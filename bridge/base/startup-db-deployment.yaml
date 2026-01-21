@@ -1,0 +1,56 @@
+#! startup-db-deployment.yaml
+# Generated code, do not edit
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: startup-db
+    namespace: invester-dev
+    labels:
+        com.docker.compose.project: invester_dev
+        com.docker.compose.service: startup-db
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            com.docker.compose.project: invester_dev
+            com.docker.compose.service: startup-db
+    strategy:
+        type: Recreate
+    template:
+        metadata:
+            labels:
+                com.docker.compose.project: invester_dev
+                com.docker.compose.service: startup-db
+                com.docker.compose.network.pitch_network: "true"
+        spec:
+            restartPolicy: unless-stopped
+            containers:
+                - name: startup-pitch-db
+                  image: postgres:15-alpine
+                  imagePullPolicy: IfNotPresent
+                  env:
+                    - name: POSTGRES_DB
+                      value: "startuppitch"
+                    - name: POSTGRES_PASSWORD
+                      value: "password"
+                    - name: POSTGRES_USER
+                      value: "postgres"
+                  livenessProbe:
+                    exec:
+                        command:
+                            - /bin/sh
+                            - -c
+                            - pg_isready -U postgres
+                    periodSeconds: 10
+                    timeoutSeconds: 5
+                    failureThreshold: 5
+                  ports:
+                    - name: startup-db-5432
+                      containerPort: 5432
+                  volumeMounts:
+                    - name: var-lib-postgresql-data
+                      mountPath: /var/lib/postgresql/data
+            volumes:
+                - name: var-lib-postgresql-data
+                  persistentVolumeClaim:
+                    claimName: startup-db-startup-postgres-data

@@ -26,42 +26,56 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
 
-    # Automatically create empty profile based on role
+    # Automatically create profile based on role with extended data
     if user.role == "investor":
         investor_profile = InvestorProfile(
             user_id=new_user.id,
-            firm_name=user.company_name if user.company_name else user.full_name, 
+            firm_name=user.company_name if user.company_name else "Independent Investor", 
             contact_name=user.full_name,
-            preferred_stage="Seed"
+            preferred_stage="Seed",
+            # Extended fields
+            linkedin_url=user.linkedin_url,
+            website_url=user.website_url,
+            # Map referrer/other fields if model supports them, for now we log or store basic info
         )
         db.add(investor_profile)
     elif user.role == "startup":
+        # Determine company name from brand_name or company_name
+        c_name = user.brand_name if user.brand_name else (user.company_name if user.company_name else user.full_name + "'s Startup")
+        
         startup_profile = StartupProfile(
             user_id=new_user.id,
-            company_name=user.company_name if user.company_name else user.full_name,
+            company_name=c_name,
             founder_name=user.full_name,
             mobile=user.mobile_number,
-            industry="Technology",
-            funding_stage="Pre-Seed"
+            industry=user.startup_sector if user.startup_sector else "Technology",
+            funding_stage=user.startup_stage if user.startup_stage else "Pre-Seed",
+            
+            # Extended fields
+            description=user.description,
+            city=user.city,
+            website_url=user.website_url,
+            founder_linkedin=user.linkedin_url,
+            # valuation=user.valuation, # Model doesn't have valuation on profile yet, it's on pitch usually
         )
         db.add(startup_profile)
         db.commit() # Commit to get ID
         db.refresh(startup_profile)
 
-        # Create Default Pitch so they appear in Browse Pitches
+        # Create Default Pitch so they appear in BrowsePitches
         from app.models.core import Pitch
         default_pitch = Pitch(
             startup_id=startup_profile.id,
-            title=f"{startup_profile.company_name} - Seed Round",
-            description="We are building the next big thing.",
-            industry="Technology",
-            funding_stage="Pre-Seed",
-            amount_seeking=100000,
+            title=f"{c_name} - {user.startup_stage or 'Seed'} Round",
+            description=user.description or "We are building the next big thing.",
+            industry=user.startup_sector or "Technology",
+            funding_stage=user.startup_stage or "Pre-Seed",
+            amount_seeking=int(user.capital_to_raise) * 100000 if user.capital_to_raise and user.capital_to_raise.isdigit() else 100000,
             status="active",
-            location="Remote",
-            raising_amount="$100k",
+            location=user.city or "Remote",
+            raising_amount=f"${user.capital_to_raise}L" if user.capital_to_raise else "$100k",
             equity_percentage="10%",
-            valuation="$1M",
+            valuation=f"${user.valuation}L" if user.valuation else "$1M",
             pitch_file_url="https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"
         )
         db.add(default_pitch)

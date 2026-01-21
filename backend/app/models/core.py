@@ -58,6 +58,7 @@ class StartupProfile(Base):
     founder_name = Column(String)
     founder_bio = Column(Text)
     founder_linkedin = Column(String)
+    profile_photo = Column(String) # Added profile photo
     resume_url = Column(String)
     website_url = Column(String)
     
@@ -85,6 +86,7 @@ class InvestorProfile(Base):
     bio = Column(Text)
     website_url = Column(String)
     linkedin_url = Column(String)
+    profile_photo = Column(String) # Added profile photo
     min_check_size = Column(Float)
     max_check_size = Column(Float)
     
