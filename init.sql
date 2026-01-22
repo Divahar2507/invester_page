@@ -115,7 +115,13 @@ CREATE TABLE public.investor_profiles (
     website_url character varying,
     linkedin_url character varying,
     min_check_size double precision,
-    max_check_size double precision
+    max_check_size double precision,
+    investor_type character varying,
+    location character varying,
+    investment_range character varying,
+    investor_name character varying,
+    profile_photo character varying,
+    preferred_industries character varying
 );
 
 
@@ -281,7 +287,8 @@ CREATE TABLE public.pitches (
     revenue_model character varying,
     team_size integer,
     tags character varying,
-    location character varying
+    location character varying,
+    valuation character varying
 );
 
 
@@ -334,7 +341,8 @@ CREATE TABLE public.startup_profiles (
     founder_bio text,
     founder_linkedin character varying,
     resume_url character varying,
-    website_url character varying
+    website_url character varying,
+    profile_photo character varying
 );
 
 

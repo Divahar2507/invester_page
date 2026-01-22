@@ -1,0 +1,116 @@
+// Use import * as React to ensure JSX intrinsic elements are recognized
+import * as React from 'react';
+import { HashRouter as Router, Routes, Route, Outlet, Navigate } from 'react-router-dom';
+import Sidebar from './components/Sidebar';
+import Navbar from './components/Navbar';
+import Dashboard from './pages/common_page/Dashboard';
+import BrowsePitches from './pages/investor/BrowsePitches';
+import Portfolio from './pages/investor/Portfolio';
+import InReview from './pages/investor/InReview';
+import Messages from './pages/common_page/Messages';
+import Login from './pages/login/Login';
+import Register from './pages/register/Register';
+// Placeholder for missing components to ensure build works
+import Settings from './pages/common_page/Settings';
+import LogInvestment from './pages/investor/LogInvestment';
+import InvestmentDetails from './pages/investor/InvestmentDetails';
+import ExportReports from './pages/investor/ExportReports';
+import Profile from './pages/common_page/Profile';
+import ChangePhoto from './pages/common_page/ChangePhoto';
+import ChangePassword from './pages/common_page/ChangePassword';
+import NotificationsPage from './pages/common_page/Notifications';
+import WatchlistManagement from './pages/investor/WatchlistManagement';
+import PitchDeckView from './pages/investor/PitchDeckView';
+import ScheduleMeeting from './pages/common_page/ScheduleMeeting';
+import Landing from './pages/common_page/Landing';
+import ContactSupport from './pages/common_page/ContactSupport';
+import ForgotPassword from './pages/common_page/ForgotPassword';
+import ResetPassword from './pages/common_page/ResetPassword';
+import CreatePitch from './pages/startup/CreatePitch';
+import BrowseInvestors from './pages/startup/BrowseInvestors';
+
+// const SettingsPage = () => <div className="p-8 text-2xl font-bold">Settings Page (Coming Soon)</div>; // Removed placeholder
+
+const MainLayout = () => (
+    <div className="flex min-h-screen bg-slate-50 text-slate-900 antialiased">
+        <Sidebar />
+        <div className="flex-1 flex flex-col min-h-screen overflow-x-hidden pt-16">
+            <Navbar />
+            <main className="flex-1">
+                <Outlet />
+            </main>
+        </div>
+    </div>
+);
+
+const PublicRoute = ({ children }) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+        return <Navigate to="/dashboard" replace />;
+    }
+    return children;
+};
+
+const RequireAuth = ({ children }) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        return <Navigate to="/login" replace />;
+    }
+    return children;
+};
+
+import { GoogleOAuthProvider } from '@react-oauth/google';
+
+const App = () => {
+    return (
+        <GoogleOAuthProvider clientId="835532330363-8lohj8uk8bvqd37nnlpsfl4rslul8nff.apps.googleusercontent.com">
+            <Router>
+                <Routes>
+                    <Route path="/" element={<Landing />} />
+
+                    {/* Unified Login/Register Routes that accept logic via props or URL params */}
+                    <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+                    <Route path="/login/investor" element={<PublicRoute><Login role="investor" /></PublicRoute>} />
+                    <Route path="/login/startup" element={<PublicRoute><Login role="startup" /></PublicRoute>} />
+
+                    <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+                    <Route path="/register/investor" element={<PublicRoute><Register role="investor" /></PublicRoute>} />
+                    <Route path="/register/startup" element={<PublicRoute><Register role="startup" /></PublicRoute>} />
+
+                    <Route path="/contact-support" element={<ContactSupport />} />
+
+                    {/* Password Recovery */}
+                    <Route path="/forgot-password" element={<ForgotPassword />} />
+                    <Route path="/reset-password" element={<ResetPassword />} />
+
+                    <Route element={<RequireAuth><MainLayout /></RequireAuth>}>
+                        <Route path="/dashboard" element={<Dashboard />} />
+                        <Route path="/browse" element={<BrowsePitches />} />
+                        <Route path="/browse-pitches" element={<Navigate to="/browse" replace />} />
+                        <Route path="/portfolio" element={<Portfolio />} />
+                        <Route path="/in-review" element={<InReview />} />
+                        <Route path="/messages" element={<Messages />} />
+                        <Route path="/settings" element={<Settings />} />
+                        <Route path="/log-investment" element={<LogInvestment />} />
+                        <Route path="/export-reports" element={<ExportReports />} />
+                        <Route path="/profile" element={<Profile />} />
+                        <Route path="/change-photo" element={<ChangePhoto />} />
+                        <Route path="/change-password" element={<ChangePassword />} />
+                        <Route path="/notifications" element={<NotificationsPage />} />
+                        <Route path="/watchlist" element={<WatchlistManagement />} />
+                        <Route path="/pitch/:id" element={<PitchDeckView />} />
+                        <Route path="/investment/:id" element={<InvestmentDetails />} />
+                        <Route path="/schedule-meeting/:id" element={<ScheduleMeeting />} />
+
+                        {/* Startup Specific Routes */}
+                        <Route path="/create-pitch" element={<CreatePitch />} />
+                        <Route path="/edit-pitch/:id" element={<CreatePitch />} />
+                        <Route path="/browse-investors" element={<BrowseInvestors />} />
+                    </Route>
+                </Routes>
+            </Router>
+        </GoogleOAuthProvider>
+    );
+};
+
+export default App;

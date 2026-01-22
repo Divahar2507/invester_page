@@ -35,7 +35,7 @@ def send_message(token, receiver_id, content):
     url = f"{BASE_URL}/messages/send"
     print(f"Trying POST {url}")
     resp = requests.post(url, headers=headers, data=data) # form-data
-    print(f"Response: {resp.status_code} {resp.text[:200]}")
+    print(f"Response: {resp.status_code} {resp.text}")
     
     if resp.status_code == 404:
         # Try /api/v1/messaging/send

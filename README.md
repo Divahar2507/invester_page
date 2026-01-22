@@ -24,11 +24,14 @@ pitch-platform/
 │   └── load_diwahar_data.py  # CSV data loader
 │
 ├── 📂 frontend/               # React + Vite Frontend
-│   ├── components/           # Reusable UI components
-│   ├── pages/                # Page components
-│   ├── services/             # API services
-│   ├── App.jsx
-│   ├── index.jsx
+│   ├── src/                   # Source Code
+│   │   ├── components/       # Reusable UI components
+│   │   ├── pages/            # Page components
+│   │   ├── services/         # API services
+│   │   ├── App.jsx
+│   │   └── index.jsx
+│   ├── index.html
+│   ├── vite.config.js
 │   ├── Dockerfile
 │   ├── nginx.conf
 │   └── package.json
@@ -38,6 +41,42 @@ pitch-platform/
 ├── .gitignore
 └── README.md
 ```
+
+## 🔄 Project Workflow & User Journey
+
+### 1. User Roles
+- **Startup**: Founders looking for funding.
+- **Investor**: VCs or Angels looking for investment opportunities.
+
+### 2. Authentication & Onboarding
+- **Registration**:
+  - **Startups**: Multi-step registration (Personal Details → Startup Details → Pitch Deck).
+  - **Investors**: Single-step registration (Personal Details → Investment Preferences).
+- **Login**: Secure login via Email/Password or Google OAuth.
+
+### 3. The Startup Journey
+- **Dashboard**: View profile analytics, recent messages, and notifications.
+- **Profile Management**: Update company info, team members, and financials.
+- **Networking**:
+  - **Browse Investors**: Search for investors by industry or stage.
+  - **Messages**: Real-time chat with file/image sharing support.
+
+### 4. The Investor Journey
+- **Dashboard**: Track portfolio value, active deals, and investment activity.
+- **Discovery (Browse Pitches)**:
+  - Filter startups by Industry, Stage, or Deal Size.
+  - View detailed Pitch Cards (Deck PDF, Financials, Team).
+  - **Action**: Add to Watchlist or Connect.
+- **Portfolio Management**:
+  - **In Review**: Pipeline for due diligence.
+  - **Portfolio**: Log completed investments and upload term sheets.
+  - **Export**: Generate PDF/Excel performance reports.
+
+### 5. Key Feature Flows
+- **Connection**: Investor Connects → Startup Accepts → Messaging Channel Opens.
+- **Investment**: Investor Logs Deal → Uploads Docs → Added to Portfolio.
+- **Communication**: WebSocket-enabled chat with attachment support.
+
 
 ## 🐳 Quick Start with Docker
 
