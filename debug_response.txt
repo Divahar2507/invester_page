@@ -1,0 +1,2 @@
+Status: 500
+Body: {"error":{"code":500,"message":"Internal server error. Please contact support.","timestamp":"2026-01-22T05:28:38.408231"}}

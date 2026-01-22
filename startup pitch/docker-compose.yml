@@ -7,11 +7,11 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: startuppitch
     ports:
-      - "5432:5432"
+      - "5434:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d startuppitch"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d startuppitch" ]
       interval: 2s
       timeout: 3s
       retries: 30
@@ -26,18 +26,18 @@ services:
         condition: service_healthy
     restart: on-failure
     ports:
-      - "8000:8000"
+      - "8002:8000"
 
   frontend:
     build: ./frontend
     container_name: startup_pitch_web
     environment:
-      - VITE_API_URL=http://localhost:8000
+      - VITE_API_URL=http://localhost:8002
     depends_on:
       - backend
     restart: on-failure
     ports:
-      - "5173:5173"
+      - "5174:5173"
 
 volumes:
   pgdata:

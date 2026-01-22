@@ -1,0 +1,300 @@
+INFO:     172.21.0.7:40604 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:40614 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:40618 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:42120 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:42126 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:42136 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:42148 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:40362 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:40378 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:40384 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:40386 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:34890 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:34892 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:34904 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:34908 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:33750 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:33758 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:33760 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:33762 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:37354 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:37366 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:37370 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:37380 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:51704 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:51716 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:46088 - "GET /me HTTP/1.1" 200 OK
+INFO:     172.21.0.7:46090 - "GET /investors/me HTTP/1.1" 200 OK
+INFO:     172.21.0.7:46110 - "GET /watchlist/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:46112 - "GET /investments/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:46094 - "GET /pitches/feed HTTP/1.1" 200 OK
+INFO:     172.21.0.7:46114 - "GET /tasks/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:46126 - "GET /pitches/23 HTTP/1.1" 200 OK
+INFO:     172.21.0.7:46128 - "GET /investments/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:46154 - "GET /pitches/23/documents HTTP/1.1" 404 Not Found
+INFO:     172.21.0.7:46140 - "GET /pitches/23/comments HTTP/1.1" 200 OK
+INFO:     172.21.0.7:46162 - "GET /me HTTP/1.1" 200 OK
+INFO:     172.21.0.7:46166 - "GET /investors/me HTTP/1.1" 200 OK
+User 25 connected via WebSocket
+INFO:     172.21.0.7:46180 - "GET /messages/conversations HTTP/1.1" 500 Internal Server Error
+INFO:     172.21.0.7:46188 - "GET /messages/history HTTP/1.1" 500 Internal Server Error
+INFO:     172.21.0.7:46192 - "GET /messages/users/search?q=tec HTTP/1.1" 200 OK
+DB Error saving message: (psycopg2.errors.UndefinedColumn) column "attachment_url" of relation "messages" does not exist
+LINE 1: ...ages (sender_id, receiver_id, content, timestamp, attachment...
+                                                             ^
+
+[SQL: INSERT INTO messages (sender_id, receiver_id, content, timestamp, attachment_url, attachment_type) VALUES (%(sender_id)s, %(receiver_id)s, %(content)s, %(timestamp)s, %(attachment_url)s, %(attachment_type)s) RETURNING messages.id]
+[parameters: {'sender_id': 25, 'receiver_id': 28, 'content': 'hii', 'timestamp': datetime.datetime(2026, 1, 22, 5, 6, 21, 689745), 'attachment_url': None, 'attachment_type': None}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+INFO:     172.21.0.7:38844 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:38856 - "GET /me HTTP/1.1" 200 OK
+INFO:     172.21.0.7:38854 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:38870 - "GET /me HTTP/1.1" 200 OK
+INFO:     172.21.0.7:38874 - "GET /me HTTP/1.1" 200 OK
+INFO:     172.21.0.7:38880 - "GET /investors/me HTTP/1.1" 200 OK
+INFO:     172.21.0.7:38888 - "GET /investors/me HTTP/1.1" 200 OK
+INFO:     172.21.0.7:38896 - "GET /investors/me HTTP/1.1" 200 OK
+User 25 connected via WebSocket
+INFO:     172.21.0.7:38908 - "GET /messages/conversations HTTP/1.1" 500 Internal Server Error
+INFO:     172.21.0.7:38920 - "GET /messages/history HTTP/1.1" 500 Internal Server Error
+User 25 disconnected
+INFO:     172.21.0.7:36742 - "POST /auth/login HTTP/1.1" 200 OK
+INFO:     172.21.0.7:36744 - "GET /me HTTP/1.1" 200 OK
+INFO:     172.21.0.7:36756 - "GET /me/profile HTTP/1.1" 200 OK
+INFO:     172.21.0.7:36766 - "GET /me HTTP/1.1" 200 OK
+INFO:     172.21.0.7:36776 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:36784 - "GET /me HTTP/1.1" 200 OK
+INFO:     172.21.0.7:36790 - "GET /me/profile HTTP/1.1" 200 OK
+INFO:     172.21.0.7:36804 - "GET /me HTTP/1.1" 200 OK
+INFO:     172.21.0.7:36808 - "GET /me/profile HTTP/1.1" 200 OK
+INFO:     172.21.0.7:36814 - "GET /me/profile HTTP/1.1" 200 OK
+INFO:     172.21.0.7:36828 - "GET /pitches/my HTTP/1.1" 200 OK
+INFO:     172.21.0.7:36838 - "GET /investors/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:36844 - "GET /tasks/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:36852 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:36860 - "GET /me HTTP/1.1" 200 OK
+INFO:     172.21.0.7:36868 - "GET /me/profile HTTP/1.1" 200 OK
+User 28 connected via WebSocket
+INFO:     172.21.0.7:36878 - "GET /messages/conversations HTTP/1.1" 500 Internal Server Error
+INFO:     172.21.0.7:36888 - "GET /messages/history HTTP/1.1" 500 Internal Server Error
+INFO:     172.21.0.7:36900 - "GET /messages/users/search?q=div HTTP/1.1" 200 OK
+INFO:     172.21.0.7:36906 - "GET /messages/users/search?q=diva HTTP/1.1" 200 OK
+INFO:     172.21.0.7:36916 - "GET /messages/users/search?q=divah HTTP/1.1" 200 OK
+INFO:     172.21.0.7:36930 - "GET /messages/users/search?q=divaha HTTP/1.1" 200 OK
+DB Error saving message: (psycopg2.errors.UndefinedColumn) column "attachment_url" of relation "messages" does not exist
+LINE 1: ...ages (sender_id, receiver_id, content, timestamp, attachment...
+                                                             ^
+
+[SQL: INSERT INTO messages (sender_id, receiver_id, content, timestamp, attachment_url, attachment_type) VALUES (%(sender_id)s, %(receiver_id)s, %(content)s, %(timestamp)s, %(attachment_url)s, %(attachment_type)s) RETURNING messages.id]
+[parameters: {'sender_id': 28, 'receiver_id': 24, 'content': 'hii', 'timestamp': datetime.datetime(2026, 1, 22, 5, 6, 58, 884539), 'attachment_url': None, 'attachment_type': None}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+INFO:     172.21.0.7:41498 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:41500 - "GET /me HTTP/1.1" 200 OK
+INFO:     172.21.0.7:41516 - "GET /me HTTP/1.1" 200 OK
+INFO:     172.21.0.7:41526 - "GET /me HTTP/1.1" 200 OK
+INFO:     172.21.0.7:41530 - "GET /me/profile HTTP/1.1" 200 OK
+INFO:     172.21.0.7:41544 - "GET /me/profile HTTP/1.1" 200 OK
+INFO:     172.21.0.7:41548 - "GET /me/profile HTTP/1.1" 200 OK
+User 28 connected via WebSocket
+INFO:     172.21.0.7:41550 - "GET /messages/conversations HTTP/1.1" 500 Internal Server Error
+INFO:     172.21.0.7:41556 - "GET /messages/history HTTP/1.1" 500 Internal Server Error
+User 28 disconnected
+INFO:     172.21.0.7:41570 - "GET /me HTTP/1.1" 200 OK
+INFO:     172.21.0.7:41574 - "GET /me/profile HTTP/1.1" 200 OK
+INFO:     172.21.0.7:41586 - "GET /me/profile HTTP/1.1" 200 OK
+INFO:     172.21.0.7:35880 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:35888 - "GET /me HTTP/1.1" 200 OK
+INFO:     172.21.0.7:35894 - "GET /me/profile HTTP/1.1" 200 OK
+User 28 connected via WebSocket
+INFO:     172.21.0.7:35896 - "GET /messages/conversations HTTP/1.1" 500 Internal Server Error
+INFO:     172.21.0.7:35902 - "GET /messages/history HTTP/1.1" 500 Internal Server Error
+INFO:     172.21.0.7:43312 - "GET /messages/users/search?q=div HTTP/1.1" 200 OK
+INFO:     172.21.0.7:43328 - "GET /messages/users/search?q=diva HTTP/1.1" 200 OK
+INFO:     172.21.0.7:43334 - "GET /messages/users/search?q=divah HTTP/1.1" 200 OK
+INFO:     172.21.0.7:43336 - "GET /messages/users/search?q=divaha HTTP/1.1" 200 OK
+DB Error saving message: (psycopg2.errors.UndefinedColumn) column "attachment_url" of relation "messages" does not exist
+LINE 1: ...ages (sender_id, receiver_id, content, timestamp, attachment...
+                                                             ^
+
+[SQL: INSERT INTO messages (sender_id, receiver_id, content, timestamp, attachment_url, attachment_type) VALUES (%(sender_id)s, %(receiver_id)s, %(content)s, %(timestamp)s, %(attachment_url)s, %(attachment_type)s) RETURNING messages.id]
+[parameters: {'sender_id': 28, 'receiver_id': 24, 'content': 'hiii', 'timestamp': datetime.datetime(2026, 1, 22, 5, 8, 30, 441098), 'attachment_url': None, 'attachment_type': None}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+User 28 disconnected
+INFO:     172.21.0.7:50770 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:50754 - "GET /me HTTP/1.1" 200 OK
+INFO:     172.21.0.7:50784 - "GET /me HTTP/1.1" 200 OK
+INFO:     172.21.0.7:50790 - "GET /me HTTP/1.1" 200 OK
+INFO:     172.21.0.7:50804 - "GET /me/profile HTTP/1.1" 200 OK
+INFO:     172.21.0.7:50832 - "GET /me/profile HTTP/1.1" 200 OK
+INFO:     172.21.0.7:50820 - "GET /me/profile HTTP/1.1" 200 OK
+User 28 connected via WebSocket
+INFO:     172.21.0.7:50848 - "GET /messages/conversations HTTP/1.1" 500 Internal Server Error
+INFO:     172.21.0.7:50862 - "GET /messages/history HTTP/1.1" 500 Internal Server Error
+INFO:     172.21.0.7:50864 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:50870 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:50874 - "GET /messages/users/search?q=div HTTP/1.1" 200 OK
+INFO:     172.21.0.7:46202 - "GET /messages/users/search?q=diva HTTP/1.1" 200 OK
+DB Error saving message: (psycopg2.errors.UndefinedColumn) column "attachment_url" of relation "messages" does not exist
+LINE 1: ...ages (sender_id, receiver_id, content, timestamp, attachment...
+                                                             ^
+
+[SQL: INSERT INTO messages (sender_id, receiver_id, content, timestamp, attachment_url, attachment_type) VALUES (%(sender_id)s, %(receiver_id)s, %(content)s, %(timestamp)s, %(attachment_url)s, %(attachment_type)s) RETURNING messages.id]
+[parameters: {'sender_id': 28, 'receiver_id': 24, 'content': 'hiiii', 'timestamp': datetime.datetime(2026, 1, 22, 5, 8, 41, 634898), 'attachment_url': None, 'attachment_type': None}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
+User 28 disconnected
+INFO:     172.21.0.7:46210 - "GET /me HTTP/1.1" 200 OK
+INFO:     172.21.0.7:46214 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:46230 - "GET /me HTTP/1.1" 200 OK
+INFO:     172.21.0.7:46238 - "GET /me HTTP/1.1" 200 OK
+INFO:     172.21.0.7:46242 - "GET /me/profile HTTP/1.1" 200 OK
+INFO:     172.21.0.7:46252 - "GET /me/profile HTTP/1.1" 200 OK
+INFO:     172.21.0.7:46262 - "GET /me/profile HTTP/1.1" 200 OK
+User 28 connected via WebSocket
+INFO:     172.21.0.7:46274 - "GET /messages/conversations HTTP/1.1" 500 Internal Server Error
+INFO:     172.21.0.7:46284 - "GET /messages/history HTTP/1.1" 500 Internal Server Error
+INFO:     172.21.0.7:50276 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:57294 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:57298 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:37372 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:54384 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:45728 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:45736 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:39186 - "GET /notifications/ HTTP/1.1" 200 OK
+User 28 disconnected
+INFO:     127.0.0.1:38842 - "POST /auth/register HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38854 - "POST /auth/login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:38860 - "POST /pitches/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:41056 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:41064 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.1:40694 - "POST /auth/register HTTP/1.1" 200 OK
+INFO:     172.21.0.1:40698 - "POST /auth/login HTTP/1.1" 200 OK
+INFO:     172.21.0.1:40714 - "POST /pitches/ HTTP/1.1" 200 OK
+INFO:     172.21.0.1:40724 - "POST /tasks/ HTTP/1.1" 200 OK
+INFO:     172.21.0.1:40732 - "POST /auth/register HTTP/1.1" 200 OK
+INFO:     172.21.0.1:40744 - "POST /auth/login HTTP/1.1" 200 OK
+INFO:     172.21.0.1:40748 - "GET /messages/users/search?q=Test HTTP/1.1" 200 OK
+INFO:     172.21.0.7:42866 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.1:34544 - "POST /auth/login HTTP/1.1" 200 OK
+INFO:     172.21.0.1:34554 - "POST /messages/send HTTP/1.1" 500 Internal Server Error
+INFO:     172.21.0.7:41502 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:41986 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:42000 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:34452 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.1:56354 - "POST /auth/login HTTP/1.1" 200 OK
+INFO:     172.21.0.1:56362 - "POST /messages/send HTTP/1.1" 500 Internal Server Error
+INFO:     172.21.0.7:32892 - "GET /me HTTP/1.1" 200 OK
+INFO:     172.21.0.7:32900 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:32904 - "GET /me HTTP/1.1" 200 OK
+INFO:     172.21.0.7:32920 - "GET /me HTTP/1.1" 200 OK
+INFO:     172.21.0.7:32930 - "GET /me/profile HTTP/1.1" 200 OK
+INFO:     172.21.0.7:32938 - "GET /me/profile HTTP/1.1" 200 OK
+INFO:     172.21.0.7:32942 - "GET /me/profile HTTP/1.1" 200 OK
+INFO:     172.21.0.7:32950 - "GET /messages/conversations HTTP/1.1" 500 Internal Server Error
+User 28 connected via WebSocket
+INFO:     172.21.0.7:32966 - "GET /messages/history HTTP/1.1" 500 Internal Server Error
+User 28 disconnected
+INFO:     172.21.0.7:32984 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:32968 - "GET /me HTTP/1.1" 200 OK
+INFO:     172.21.0.7:32994 - "GET /me HTTP/1.1" 200 OK
+INFO:     172.21.0.7:33004 - "GET /me HTTP/1.1" 200 OK
+INFO:     172.21.0.7:33012 - "GET /me/profile HTTP/1.1" 200 OK
+INFO:     172.21.0.7:33016 - "GET /me/profile HTTP/1.1" 200 OK
+INFO:     172.21.0.7:33022 - "GET /me/profile HTTP/1.1" 200 OK
+User 28 connected via WebSocket
+INFO:     172.21.0.7:33034 - "GET /messages/conversations HTTP/1.1" 500 Internal Server Error
+INFO:     172.21.0.7:33046 - "GET /messages/history HTTP/1.1" 500 Internal Server Error
+INFO:     172.21.0.7:45526 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.1:56870 - "POST /auth/login HTTP/1.1" 200 OK
+INFO:     172.21.0.1:56882 - "POST /messages/send HTTP/1.1" 500 Internal Server Error
+INFO:     172.21.0.7:38626 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:38642 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:58666 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:52698 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:52708 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:52716 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:57924 - "POST /auth/login HTTP/1.1" 200 OK
+INFO:     172.21.0.7:57928 - "GET /me HTTP/1.1" 200 OK
+INFO:     172.21.0.7:57942 - "GET /me/profile HTTP/1.1" 404 Not Found
+INFO:     172.21.0.7:57950 - "GET /me HTTP/1.1" 200 OK
+INFO:     172.21.0.7:57966 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:57970 - "GET /me HTTP/1.1" 200 OK
+INFO:     172.21.0.7:57976 - "GET /me/profile HTTP/1.1" 404 Not Found
+INFO:     172.21.0.7:57990 - "GET /me HTTP/1.1" 200 OK
+INFO:     172.21.0.7:58000 - "GET /me/profile HTTP/1.1" 404 Not Found
+INFO:     172.21.0.7:58014 - "GET /me/profile HTTP/1.1" 404 Not Found
+INFO:     172.21.0.7:58030 - "GET /pitches/my HTTP/1.1" 200 OK
+INFO:     172.21.0.7:58038 - "GET /investors/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:58040 - "GET /tasks/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:60218 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:37768 - "POST /pitches/ HTTP/1.1" 400 Bad Request
+INFO:     172.21.0.7:43944 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:43948 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:43950 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:35554 - "GET /notifications/ HTTP/1.1" 200 OK
+User 28 disconnected
+INFO:     172.21.0.7:35556 - "GET /me HTTP/1.1" 200 OK
+INFO:     172.21.0.7:35564 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:35568 - "GET /me HTTP/1.1" 200 OK
+INFO:     172.21.0.7:35574 - "GET /me/profile HTTP/1.1" 200 OK
+INFO:     172.21.0.7:35584 - "GET /me HTTP/1.1" 200 OK
+INFO:     172.21.0.7:42154 - "GET /me/profile HTTP/1.1" 200 OK
+INFO:     172.21.0.7:42170 - "GET /me/profile HTTP/1.1" 200 OK
+INFO:     172.21.0.7:42176 - "GET /messages/conversations HTTP/1.1" 500 Internal Server Error
+User 28 connected via WebSocket
+INFO:     172.21.0.7:42190 - "GET /messages/history HTTP/1.1" 500 Internal Server Error
+INFO:     172.21.0.7:57026 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:57034 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:57040 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:51142 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:60918 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:60934 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:60938 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:50648 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.1:40228 - "POST /auth/login HTTP/1.1" 200 OK
+INFO:     172.21.0.1:40238 - "POST /messages/send HTTP/1.1" 500 Internal Server Error
+INFO:     172.21.0.7:35342 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:35354 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:35362 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:34296 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:50682 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:50694 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:50710 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:46350 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:34666 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:34672 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:34674 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:46938 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:49342 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:49356 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:49360 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:60140 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:59696 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:59700 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:59714 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:47290 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:47298 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:47314 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:47322 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:39232 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:39246 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:39262 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:39268 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:35572 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:35576 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:35590 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:35604 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:60414 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:60426 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:60436 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:60444 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:45186 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:45190 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:45196 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:45206 - "GET /notifications/ HTTP/1.1" 200 OK
+User 28 disconnected
+INFO:     172.21.0.7:45650 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:45660 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:45676 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.7:45680 - "GET /notifications/ HTTP/1.1" 200 OK
+INFO:     172.21.0.1:47638 - "POST /auth/login HTTP/1.1" 200 OK
+INFO:     172.21.0.1:47654 - "POST /messages/send HTTP/1.1" 500 Internal Server Error
