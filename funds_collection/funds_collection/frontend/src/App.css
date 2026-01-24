@@ -1,0 +1,58 @@
+/* Basic scaffolding for App.css if not already present or to add nav styles */
+.navbar {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 1200px;
+  padding: 1rem 2rem;
+  z-index: 1000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 100px;
+}
+
+.logo {
+  font-weight: 800;
+  font-size: 1.5rem;
+  background: linear-gradient(to right, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.nav-links a {
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: color 0.3s;
+}
+
+.nav-links a:hover {
+  color: var(--primary);
+}
+
+.btn-small {
+  background: var(--primary);
+  color: #000;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+/* Adjust main for fixed nav */
+main {
+  padding-top: 80px;
+}
+
+@media (max-width: 768px) {
+  .nav-links a {
+    display: none;
+  }
+}
