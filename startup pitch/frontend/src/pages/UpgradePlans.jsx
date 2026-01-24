@@ -2,149 +2,138 @@ import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DashShell from "../components/DashShell.jsx";
 
-function money(n) {
-  return `$${Number(n).toFixed(0)}`;
-}
+// Simple Check Icon
+const Check = ({ dim }) => (
+  <div className={`pcCheck ${dim ? "dim" : ""}`}>✓</div>
+);
 
 export default function UpgradePlans() {
   const navigate = useNavigate();
-  const [billing, setBilling] = useState("annually"); // monthly | annually
+  const [billing, setBilling] = useState("monthly"); // monthly | annually
 
   const prices = useMemo(() => {
-    const pro = billing === "monthly" ? 49 : 470; // like your image
     return {
       basic: 0,
-      pro,
-      enterprise: billing === "monthly" ? 299 : 299 * 10, // placeholder yearly
+      pro: billing === "monthly" ? 49 : 470,
     };
   }, [billing]);
 
   function goCheckout(planId) {
-    if (planId !== "pro") return;
-
-    navigate("/upgrade/checkout", {
-      state: {
-        planId: "pro",
-        planName: "Pro Growth",
-        billing,
-        amount: prices.pro,
-      },
-    });
+    if (planId === "pro") {
+      navigate("/upgrade/checkout", {
+        state: {
+          planId: "pro",
+          planName: "Pro Growth",
+          billing,
+          amount: prices.pro,
+        },
+      });
+    } else if (planId === "enterprise") {
+      navigate("/enterprise/review");
+    }
   }
 
   return (
     <DashShell>
-      <div className="dash-content">
-        <div className="upgradeHeader">
-          <div className="upgradeKicker">UPGRADE NOW</div>
-          <h1 className="upgradeTitle">Choose the plan that fits your growth</h1>
-          <p className="upgradeSub">
-            Unlock premium features to supercharge your fundraising journey. Detailed analytics, unlimited investor matching, and more.
+      <div className="pricingCheckWrap">
+
+        {/* Header */}
+        <div className="pricingHeader">
+          <div className="pricingBadge">Upgrade to Pro</div>
+          <h1 className="pricingTitle">Choose the plan that fits your growth</h1>
+          <p className="pricingSub">
+            Unlock premium features to supercharge your fundraising journey.
+            Detailed analytics, unlimited investor matching, and more.
           </p>
 
-          <div className="billingRow">
-            <div className="billingToggle">
-              <button
-                type="button"
-                className={`billingBtn ${billing === "monthly" ? "active" : ""}`}
+          <div className="billingControl">
+            <div className="billingPill" data-active={billing}>
+              <div className="billingGlider" />
+              <div
+                className={`billingOption ${billing === "monthly" ? "active" : ""}`}
                 onClick={() => setBilling("monthly")}
               >
                 Monthly
-              </button>
-              <button
-                type="button"
-                className={`billingBtn ${billing === "annually" ? "active" : ""}`}
+              </div>
+              <div
+                className={`billingOption ${billing === "annually" ? "active" : ""}`}
                 onClick={() => setBilling("annually")}
               >
                 Annually
-              </button>
+              </div>
             </div>
-            <div className="billingHint">Save 20% with annual billing</div>
+            {billing === "annually" && <div className="saveBadge">SAVE 20%</div>}
           </div>
         </div>
 
-        <div className="planGrid">
-          {/* Basic */}
-          <div className="planCard">
-            <div className="planTop">
-              <div>
-                <div className="planName">Basic</div>
-                <div className="planDesc">Essential tools for early-stage founders to get started.</div>
-              </div>
-              <div className="planPill">Current Plan</div>
-            </div>
+        {/* Pricing Cards Grid */}
+        <div className="pricingGrid">
 
-            <div className="planPrice">
-              {money(prices.basic)} <span>/mo</span>
+          {/* 1. Basic */}
+          <div className="priceCard">
+            <div className="pcHeader">
+              <div className="pcTitle">Basic</div>
+              <div className="pcDesc">Essential tools for early-stage founders to get started.</div>
             </div>
-
-            <button className="planBtn disabled" type="button" disabled>
+            <div className="pcPrice">
+              <div className="pcAmount">$0</div>
+              <div className="pcPeriod">/mo</div>
+            </div>
+            <button className="pcBtn outline" disabled style={{ opacity: 0.6, cursor: "default" }}>
               Current Plan
             </button>
-
-            <div className="planSectionTitle">FEATURES INCLUDED:</div>
-            <ul className="planList">
-              <li>✓ 3 Active Pitches</li>
-              <li>✓ Basic Analytics</li>
-              <li>✓ Export to PDF</li>
-              <li className="muted">✕ Investor Matching</li>
-            </ul>
+            <div className="pcFeatures">
+              <div className="pcFeature"><Check /> 3 Active Pitches</div>
+              <div className="pcFeature"><Check /> Basic Analytics</div>
+              <div className="pcFeature"><Check /> Export to PDF</div>
+              <div className="pcFeature"><Check dim /> No Investor Matching</div>
+            </div>
           </div>
 
-          {/* Pro */}
-          <div className="planCard popular">
-            <div className="popularBadge">MOST POPULAR</div>
-
-            <div className="planTop">
-              <div>
-                <div className="planName">Pro Growth</div>
-                <div className="planDesc">Advanced tools for serious fundraising and networking.</div>
-              </div>
+          {/* 2. Pro (Featured) */}
+          <div className="priceCard featured">
+            <div className="popularTag">MOST POPULAR</div>
+            <div className="pcHeader">
+              <div className="pcTitle">Pro Growth</div>
+              <div className="pcDesc">Advanced tools for serious fundraising and networking.</div>
             </div>
-
-            <div className="planPrice">
-              {money(prices.pro)} <span>/{billing === "monthly" ? "mo" : "yr"}</span>
+            <div className="pcPrice">
+              <div className="pcAmount">${prices.pro}</div>
+              <div className="pcPeriod">{billing === "monthly" ? "/mo" : "/yr"}</div>
             </div>
-
-            <button className="planBtn primary" type="button" onClick={() => goCheckout("pro")}>
+            <button className="pcBtn primary" onClick={() => goCheckout("pro")}>
               Upgrade to Pro
             </button>
-
-            <div className="planSectionTitle">EVERYTHING IN BASIC, PLUS:</div>
-            <ul className="planList">
-              <li>✓ Unlimited Active Pitches</li>
-              <li>✓ Advanced Visitor Analytics</li>
-              <li>✓ AI Investor Matching (50/mo)</li>
-              <li>✓ Custom Branding & Domain</li>
-              <li>✓ Priority Email Support</li>
-            </ul>
+            <div className="pcFeatures">
+              <div className="pcFeature"><Check /> <strong>Unlimited</strong> Active Pitches</div>
+              <div className="pcFeature"><Check /> Advanced Visitor Analytics</div>
+              <div className="pcFeature"><Check /> AI Investor Matching (50/mo)</div>
+              <div className="pcFeature"><Check /> Custom Branding & Domain</div>
+              <div className="pcFeature"><Check /> Priority Email Support</div>
+            </div>
           </div>
 
-          {/* Enterprise */}
-          <div className="planCard">
-            <div className="planTop">
-              <div>
-                <div className="planName">Enterprise</div>
-                <div className="planDesc">For scaling startups with larger teams and custom needs.</div>
-              </div>
+          {/* 3. Enterprise */}
+          <div className="priceCard">
+            <div className="pcHeader">
+              <div className="pcTitle">Enterprise</div>
+              <div className="pcDesc">For scaling startups with larger teams and custom needs.</div>
             </div>
-
-            <div className="planPrice">
-              {money(prices.enterprise)} <span>/mo</span>
+            <div className="pcPrice">
+              <div className="pcAmount">$299</div>
+              <div className="pcPeriod">/mo</div>
             </div>
-
-            <button className="planBtn outline" type="button" onClick={() => navigate("/enterprise/review")} >
+            <button className="pcBtn outline" onClick={() => goCheckout("enterprise")}>
               Contact Sales
             </button>
-
-            <div className="planSectionTitle">EVERYTHING IN PRO, PLUS:</div>
-            <ul className="planList">
-              <li>✓ Unlimited Team Members</li>
-              <li>✓ API Access</li>
-              <li>✓ Dedicated Success Manager</li>
-              <li>✓ SSO & Advanced Security</li>
-            </ul>
+            <div className="pcFeatures">
+              <div className="pcFeature"><Check /> Unlimited Team Members</div>
+              <div className="pcFeature"><Check /> API Access</div>
+              <div className="pcFeature"><Check /> Dedicated Success Manager</div>
+              <div className="pcFeature"><Check /> SSO & Advanced Security</div>
+            </div>
           </div>
+
         </div>
       </div>
     </DashShell>

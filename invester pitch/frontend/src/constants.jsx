@@ -4,6 +4,7 @@ import { LayoutDashboard, Compass, Briefcase, FileSearch, MessageSquare, Setting
 export const NAV_ITEMS = [
     { label: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/dashboard' },
     { label: 'Browse Pitches', icon: <Compass size={20} />, path: '/browse' },
+    { label: 'My Network', icon: <Users size={20} />, path: '/connections' },
     { label: 'Watchlist', icon: <Eye size={20} />, path: '/watchlist' },
     { label: 'My Portfolio', icon: <Briefcase size={20} />, path: '/portfolio' },
     { label: 'In Review', icon: <FileSearch size={20} />, path: '/in-review' },
@@ -12,6 +13,7 @@ export const NAV_ITEMS = [
 
 export const STARTUP_NAV_ITEMS = [
     { label: 'Dashboard', icon: <LayoutDashboard size={20} />, path: '/dashboard' },
+    { label: 'My Network', icon: <Users size={20} />, path: '/connections' },
     { label: 'Find Investors', icon: <Users size={20} />, path: '/browse-investors' },
     { label: 'Create Pitch', icon: <Compass size={20} />, path: '/create-pitch' },
     { label: 'Messages', icon: <MessageSquare size={20} />, path: '/messages' },

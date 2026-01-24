@@ -23,7 +23,10 @@ import {
     Bookmark,
     Star,
     X,
-    TrendingUp
+    TrendingUp,
+    UserPlus,
+    Clock,
+    Check
 } from 'lucide-react';
 
 const PitchDeckView = () => {
@@ -46,6 +49,18 @@ const PitchDeckView = () => {
         } catch (error) {
             console.error('Decision failed:', error);
             alert('Failed to record decision');
+        }
+    };
+
+    const handleConnect = async () => {
+        try {
+            if (!pitch?.startup_user_id) return;
+            await api.sendConnectionRequest(pitch.startup_user_id);
+            alert("Connection request sent!");
+            setPitch(prev => ({ ...prev, connection_status: 'pending' }));
+        } catch (e) {
+            console.error(e);
+            alert("Failed to send connection request");
         }
     };
 
@@ -290,20 +305,42 @@ const PitchDeckView = () => {
                                         <Star size={16} className="text-amber-500" />
                                         Review
                                     </button>
+
+                                    {pitch.connection_status === 'accepted' ? (
+                                        <button disabled className="flex-1 py-2.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 cursor-default">
+                                            <Check size={16} />
+                                            Connected
+                                        </button>
+                                    ) : pitch.connection_status === 'pending' ? (
+                                        <button disabled className="flex-1 py-2.5 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 cursor-default">
+                                            <Clock size={16} />
+                                            Pending
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={handleConnect}
+                                            className="flex-1 py-2.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 shadow-sm transition-all text-sm flex items-center justify-center gap-2"
+                                        >
+                                            <UserPlus size={16} />
+                                            Connect
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="flex gap-3">
                                     <button
                                         onClick={() => handleAddToWatchlist()}
-                                        className="flex-1 py-2.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 shadow-sm transition-all text-sm flex items-center justify-center gap-2"
+                                        className="flex-1 py-2.5 bg-white border border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-all text-sm flex items-center justify-center gap-2"
                                     >
                                         <Bookmark size={16} />
                                         Watchlist
                                     </button>
+                                    <button
+                                        onClick={() => navigate(`/schedule-meeting/${id}`)}
+                                        className="flex-1 py-3 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800 transition-all text-sm"
+                                    >
+                                        Meet Founder
+                                    </button>
                                 </div>
-                                <button
-                                    onClick={() => navigate(`/schedule-meeting/${id}`)}
-                                    className="w-full py-3 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800 transition-all text-sm"
-                                >
-                                    Schedule Deep Dive
-                                </button>
                             </div>
                         </div>
 

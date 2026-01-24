@@ -1,0 +1,13 @@
+node_modules/
+frontend/node_modules/
+.env
+backend_fastapi/.env
+backend_fastapi/venv/
+backend_fastapi/__pycache__/
+__pycache__/
+.DS_Store
+*.pyc
+**/*.csv
+**/*.xlsx
+**/*.zip
+backend_fastapi/data/

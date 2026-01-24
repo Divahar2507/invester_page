@@ -1,8 +1,12 @@
 version: '3.8'
 
 services:
-  # PostgreSQL Database
-  db:
+  # ==========================================
+  # DATABASES
+  # ==========================================
+
+  # MAIN DATABASE (Investor & Startup)
+  db-main:
     image: postgres:15-alpine
     container_name: pitch_platform_db
     restart: unless-stopped
@@ -10,43 +14,150 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-Diva@2004}
       POSTGRES_DB: ${POSTGRES_DB:-pitch_platform}
-    volumes:
-      - postgres_data_v3:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5433:5432"
+    volumes:
+      - postgres_data_main:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - pitch_network
+      - ecosystem_net
 
-  # FastAPI Backend (Main Unified Backend)
-  backend:
+  # LEADGEN DATABASE
+  db-leadgen:
+    image: postgres:15-alpine
+    container_name: leadgen_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Diva@2004
+      POSTGRES_DB: leadgen_db
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_data_leadgen:/var/lib/postgresql/data
+      - ./leadgen/leadgen/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ecosystem_net
+
+  # CONNECTOR DATABASE
+  db-connector:
+    image: postgres:13
+    container_name: connector_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Diva@2004
+      POSTGRES_DB: connector_db
+    ports:
+      - "5436:5432"
+    volumes:
+      - postgres_data_connector:/var/lib/postgresql/data
+    networks:
+      - ecosystem_net
+
+  # ==========================================
+  # BACKENDS
+  # ==========================================
+
+  # MAIN BACKEND (Investor & Startup)
+  backend-main:
     build:
       context: "./invester pitch/backend"
       dockerfile: Dockerfile
     container_name: pitch_platform_backend
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql://postgres:Diva%402004@db:5432/pitch_platform
-      SECRET_KEY: ${SECRET_KEY:-your-super-secret-key-change-in-production}
+      DATABASE_URL: postgresql://postgres:Diva%402004@db-main:5432/pitch_platform
+      SECRET_KEY: ${SECRET_KEY:-your-super-secret-key}
       ALGORITHM: HS256
       ACCESS_TOKEN_EXPIRE_MINUTES: 30
     volumes:
+      - "./invester pitch/backend:/app"
       - "./invester pitch/backend/uploads:/app/uploads"
       - "./invester pitch/backend/data:/app/data"
     ports:
       - "8000:8000"
     depends_on:
-      db:
+      db-main:
         condition: service_healthy
     networks:
-      - pitch_network
+      - ecosystem_net
 
-  # Investor React Frontend
+  # LEADGEN BACKEND
+  backend-leadgen:
+    build:
+      context: "./leadgen/leadgen/backend_fastapi"
+      dockerfile: Dockerfile
+    container_name: leadgen_backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:Diva%402004@db-leadgen:5432/leadgen_db
+    ports:
+      - "8003:8000"
+    depends_on:
+      db-leadgen:
+        condition: service_healthy
+    networks:
+      - ecosystem_net
+
+  # ADMIN BACKEND (Super Admin)
+  backend-admin:
+    build:
+      context: "./ai-admin/backend"
+    container_name: admin_backend
+    ports:
+      - "8004:8000"
+    volumes:
+      - "./ai-admin/backend:/app"
+    environment:
+      - SECRET_KEY=supersecretkey
+      - ALGORITHM=HS256
+    networks:
+      - ecosystem_net
+
+  # CONNECTOR BACKEND
+  backend-connector:
+    build:
+      context: "./collabrater/backend"
+    container_name: connector_backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://postgres:Diva%402004@db-connector:5432/connector_db
+    ports:
+      - "8005:8000"
+    depends_on:
+      - db-connector
+    networks:
+      - ecosystem_net
+
+  # ==========================================
+  # FRONTENDS
+  # ==========================================
+
+  # LANDING PAGE (GATEWAY) - Port 3000
+  landing-page:
+    build:
+      context: "./landing_page"
+    container_name: landing_page
+    ports:
+      - "3000:80"
+    volumes:
+      - "./landing_page:/app"
+      - "/app/node_modules"
+    networks:
+      - ecosystem_net
+
+  # INVESTOR FRONTEND - Port 80
   frontend-investor:
     build:
       context: "./invester pitch/frontend"
@@ -58,15 +169,17 @@ services:
     ports:
       - "80:80"
     depends_on:
-      - backend
+      - backend-main
     networks:
-      - pitch_network
+      - ecosystem_net
 
-  # Startup React Frontend
+  # STARTUP FRONTEND - Port 3001
   frontend-startup:
     build:
       context: "./startup pitch/frontend"
       dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:8000
     container_name: startup_frontend
     restart: unless-stopped
     ports:
@@ -74,14 +187,56 @@ services:
     environment:
       - VITE_API_URL=http://localhost:8000
     depends_on:
-      - backend
+      - backend-main
     networks:
-      - pitch_network
+      - ecosystem_net
+
+  # LEADGEN FRONTEND - Port 3003
+  frontend-leadgen:
+    build:
+      context: "./leadgen/leadgen/frontend"
+      dockerfile: Dockerfile
+    container_name: leadgen_frontend
+    ports:
+      - "3003:80"
+    depends_on:
+      - backend-leadgen
+    networks:
+      - ecosystem_net
+
+  # ADMIN FRONTEND - Port 3004
+  frontend-admin:
+    build:
+      context: "./ai-admin/frontend"
+    container_name: admin_frontend
+    ports:
+      - "3004:5173"
+    volumes:
+      - "./ai-admin/frontend:/app"
+      - "/app/node_modules"
+    depends_on:
+      - backend-admin
+    networks:
+      - ecosystem_net
+
+  # CONNECTOR FRONTEND - Port 3005
+  frontend-connector:
+    build:
+      context: "./collabrater/frontend"
+    container_name: connector_frontend
+    ports:
+      - "3005:3000"
+    depends_on:
+      - backend-connector
+    networks:
+      - ecosystem_net
 
 volumes:
-  postgres_data_v3:
+  postgres_data_main:
+  postgres_data_leadgen:
+  postgres_data_connector:
 
 
 networks:
-  pitch_network:
+  ecosystem_net:
     driver: bridge

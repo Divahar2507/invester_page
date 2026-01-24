@@ -1,6 +1,6 @@
 # Frontend Dockerfile - React Vite Application
 # Stage 1: Build
-FROM node:20-alpine as build
+FROM node:20-alpine AS build
 
 WORKDIR /app
 

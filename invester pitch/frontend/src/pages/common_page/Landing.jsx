@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import {
     Infinity,
     ArrowRight,
@@ -25,6 +25,12 @@ import {
 
 const Landing = () => {
     const [showSelection, setShowSelection] = useState(false);
+    const [searchParams] = useSearchParams();
+    const view = searchParams.get('view'); // 'investor' or 'startup'
+
+    // If a specific view is requested, we can show a simplified version or just the specific hero
+    const isInvestorView = view === 'investor';
+    const isStartupView = view === 'startup';
 
     return (
         <div className="min-h-screen bg-white font-['Plus Jakarta Sans'] text-slate-900 overflow-x-hidden">
@@ -84,7 +90,7 @@ const Landing = () => {
                     <a href="#features" className="hover:text-blue-500 transition-colors">Features</a>
                     <a href="#stories" className="hover:text-blue-500 transition-colors">Stories</a>
                     <Link
-                        to="/login"
+                        to={isStartupView ? "/login/startup" : isInvestorView ? "/login/investor" : "/login"}
                         className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-lg active:scale-95"
                     >
                         Sign In
@@ -92,48 +98,55 @@ const Landing = () => {
                 </div>
             </nav>
 
-            {/* Split Screen Hero */}
-            <div className="flex flex-col lg:flex-row min-h-screen pt-0">
-                {/* Left Side: Investor - Solid Black Background */}
-                <div className="relative flex-1 bg-black flex flex-col justify-center px-12 lg:px-24 py-20 text-white overflow-hidden group">
-                    <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(#ffffff 0.5px, transparent 0.5px)', backgroundSize: '32px 32px' }}></div>
-                    <div className="relative z-10 animate-in fade-in slide-in-from-left-10 duration-1000">
-                        <span className="text-blue-500 text-xs font-black tracking-[0.3em] uppercase mb-4 block">Institutional & Private</span>
-                        <h1 className="text-6xl lg:text-7xl font-bold leading-[0.9] mb-6 tracking-tighter">
-                            Fuel the <br />
-                            <span className="text-blue-600">Future.</span>
-                        </h1>
-                        <p className="max-w-md text-slate-400 text-lg leading-relaxed mb-10 font-medium">
-                            Access vetted AI startups and manage your portfolio with industrial precision through our high-performance engine.
-                        </p>
-
-                        <button onClick={() => setShowSelection(true)} className="group inline-flex items-center gap-3 px-8 py-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-all shadow-xl hover:shadow-blue-500/20 active:scale-95">
-                            Get Started as Investor <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-                        </button>
-                    </div>
+            {/* Unified Hero */}
+            <div className="relative min-h-[90vh] flex flex-col items-center justify-center text-center px-6 py-20 bg-slate-50 overflow-hidden">
+                <div className="absolute inset-0 z-0 opacity-40">
+                    <div className="absolute top-0 -left-4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+                    <div className="absolute top-0 -right-4 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+                    <div className="absolute -bottom-32 left-20 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
                 </div>
 
-                <div className="hidden lg:flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 items-center justify-center">
-                    <div className="w-16 h-16 bg-blue-600 rounded-full border-4 border-slate-900 flex items-center justify-center shadow-2xl">
-                        <Infinity className="text-white w-8 h-8" />
+                <div className="relative z-10 max-w-4xl mx-auto space-y-8 animate-in fade-in zoom-in duration-1000">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 shadow-sm mb-6">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span className="text-xs font-bold uppercase tracking-widest text-slate-500">The Global Standard for Private Markets</span>
                     </div>
-                </div>
 
-                {/* Right Side: Startup - White Background */}
-                <div className="relative flex-1 bg-white flex flex-col justify-center px-12 lg:px-24 py-20 text-slate-900 border-l border-slate-100 animate-in fade-in slide-in-from-right-10 duration-1000">
-                    <div className="relative z-10">
-                        <span className="text-blue-600 text-xs font-black tracking-[0.3em] uppercase mb-4 block">Founders & Innovators</span>
-                        <h1 className="text-6xl lg:text-7xl font-bold leading-[0.9] mb-6 tracking-tighter">
-                            Scale Your <br />
-                            <span className="text-blue-600">Vision.</span>
-                        </h1>
-                        <p className="max-w-md text-slate-500 text-lg leading-relaxed mb-10 font-medium">
-                            Connect with strategic capital and industry-leading AI expertise to transform your vision into market dominance.
-                        </p>
+                    <h1 className="text-6xl md:text-8xl font-black tracking-tighter text-slate-900 leading-[0.9]">
+                        Capital Meets <br />
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Innovation.</span>
+                    </h1>
 
-                        <button onClick={() => setShowSelection(true)} className="group inline-flex items-center gap-3 px-8 py-4 bg-black text-white font-bold rounded-xl hover:bg-slate-800 transition-all shadow-xl active:scale-95">
-                            Register My Startup <Rocket size={20} className="group-hover:-translate-y-1 transition-transform" />
-                        </button>
+                    <p className="max-w-2xl mx-auto text-xl text-slate-500 font-medium leading-relaxed">
+                        The all-in-one operating system for founders to raise capital and investors to deploy it with algorithmic precision.
+                    </p>
+
+                    {/* Role Toggle / Actions */}
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10">
+                        <div className="p-1.5 bg-white border border-slate-200 rounded-2xl shadow-lg flex items-center">
+                            <Link
+                                to="/register/startup"
+                                className="px-8 py-3 rounded-xl text-sm font-bold bg-slate-900 text-white hover:bg-slate-800 transition-all flex items-center gap-2"
+                            >
+                                <Rocket size={16} /> I'm a Founder
+                            </Link>
+                            <Link
+                                to="/register/investor"
+                                className="px-8 py-3 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all flex items-center gap-2"
+                            >
+                                <TrendingUp size={16} /> I'm an Investor
+                            </Link>
+                        </div>
+                    </div>
+
+                    <div className="pt-12 flex items-center justify-center gap-8 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
+                        {/* Simple Trust indicators */}
+                        <span className="text-sm font-bold text-slate-400">Trusted by modern teams at</span>
+                        <div className="flex gap-6 font-black text-lg text-slate-300">
+                            <span>ACME Inc</span>
+                            <span>Global.vc</span>
+                            <span>Nebula AI</span>
+                        </div>
                     </div>
                 </div>
             </div>

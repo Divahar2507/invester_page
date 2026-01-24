@@ -244,72 +244,7 @@ def send_message(
         receiver_photo=r_photo
     )
 
-@router.get("/{user_id}", response_model=list[MessageResponse])
-def get_messages(
-    user_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
-):
-    # Security check: Users can only view their own messages
-    if current_user.id != user_id:
-        raise HTTPException(status_code=403, detail="Not authorized to view these messages")
 
-    messages = db.query(Message).filter(
-        or_(
-            and_(Message.sender_id == current_user.id, Message.receiver_id == user_id),
-            and_(Message.sender_id == user_id, Message.receiver_id == current_user.id)
-        )
-    ).order_by(Message.timestamp.asc()).all()
-    
-    # Helper to get user info
-    def get_info(u):
-        info = {"name": "Unknown", "role": "user", "extra": ""}
-        if not u: return info
-        
-        info["role"] = u.role
-        if u.role == "startup" and u.startup_profile:
-            info["name"] = u.startup_profile.company_name
-            info["extra"] = u.startup_profile.industry
-        elif u.role == "investor" and u.investor_profile:
-            info["name"] = u.investor_profile.firm_name
-            info["extra"] = "Investor"
-        else:
-            info["name"] = u.email.split('@')[0]
-        
-        # Determine profile photo
-        if u.role == "startup" and u.startup_profile:
-            info["profile_photo"] = u.startup_profile.profile_photo
-        elif u.role == "investor" and u.investor_profile:
-            info["profile_photo"] = u.investor_profile.profile_photo
-        else:
-            info["profile_photo"] = None
-            
-        return info
-
-    results = []
-    for msg in messages:
-        s_info = get_info(msg.sender)
-        r_info = get_info(msg.receiver)
-        
-        results.append(MessageResponse(
-            id=msg.id,
-            sender_id=msg.sender_id,
-            receiver_id=msg.receiver_id,
-            content=msg.content,
-            timestamp=msg.timestamp,
-            sender_name=s_info["name"],
-            receiver_name=r_info["name"],
-            sender_role=s_info["role"],
-            receiver_role=r_info["role"],
-            sender_extra=s_info["extra"],
-            receiver_extra=r_info["extra"],
-            attachment_url=msg.attachment_url,
-            attachment_type=msg.attachment_type,
-            sender_photo=s_info.get("profile_photo"),
-            receiver_photo=r_info.get("profile_photo")
-        ))
-    
-    return results
 
 
 # Removed old get_conversations from bottom since we moved it up

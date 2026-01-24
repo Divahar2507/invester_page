@@ -28,6 +28,7 @@ import ForgotPassword from './pages/common_page/ForgotPassword';
 import ResetPassword from './pages/common_page/ResetPassword';
 import CreatePitch from './pages/startup/CreatePitch';
 import BrowseInvestors from './pages/startup/BrowseInvestors';
+import Connections from './pages/common_page/Connections';
 
 // const SettingsPage = () => <div className="p-8 text-2xl font-bold">Settings Page (Coming Soon)</div>; // Removed placeholder
 
@@ -98,6 +99,7 @@ const App = () => {
                         <Route path="/change-password" element={<ChangePassword />} />
                         <Route path="/notifications" element={<NotificationsPage />} />
                         <Route path="/watchlist" element={<WatchlistManagement />} />
+                        <Route path="/connections" element={<Connections />} />
                         <Route path="/pitch/:id" element={<PitchDeckView />} />
                         <Route path="/investment/:id" element={<InvestmentDetails />} />
                         <Route path="/schedule-meeting/:id" element={<ScheduleMeeting />} />
