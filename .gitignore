@@ -17,6 +17,8 @@ build/
 # Logs
 *.log
 npm-debug.log*
+*.txt
+!requirements.txt
 
 # IDE
 .vscode/

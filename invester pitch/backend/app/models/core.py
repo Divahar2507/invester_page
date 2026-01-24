@@ -13,12 +13,12 @@ class User(Base):
     
     startup_profile = relationship("StartupProfile", back_populates="user", uselist=False)
     investor_profile = relationship("InvestorProfile", back_populates="user", uselist=False)
-    sent_messages = relationship("Message", back_populates="sender")
-    received_messages = relationship("Message", back_populates="receiver")
+    sent_messages = relationship("Message", primaryjoin="User.id == Message.sender_id", foreign_keys="Message.sender_id", back_populates="sender")
+    received_messages = relationship("Message", primaryjoin="User.id == Message.receiver_id", foreign_keys="Message.receiver_id", back_populates="receiver")
     notifications = relationship("Notification", back_populates="user", cascade="all, delete-orphan")
     
-    sent_connections = relationship("Connection", back_populates="requester")
-    received_connections = relationship("Connection", back_populates="receiver")
+    sent_connections = relationship("Connection", primaryjoin="User.id == Connection.requester_id", foreign_keys="Connection.requester_id", back_populates="requester")
+    received_connections = relationship("Connection", primaryjoin="User.id == Connection.receiver_id", foreign_keys="Connection.receiver_id", back_populates="receiver")
     watchlist_items = relationship("Watchlist", back_populates="user", cascade="all, delete-orphan")
     tasks = relationship("Task", back_populates="user", cascade="all, delete-orphan")
 
@@ -30,8 +30,8 @@ class Connection(Base):
     status = Column(String, default="pending") # pending | accepted | rejected
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
-    requester = relationship("User", foreign_keys=[requester_id], back_populates="sent_connections")
-    receiver = relationship("User", foreign_keys=[receiver_id], back_populates="received_connections")
+    requester = relationship("User", primaryjoin="Connection.requester_id == User.id", foreign_keys="Connection.requester_id", back_populates="sent_connections")
+    receiver = relationship("User", primaryjoin="Connection.receiver_id == User.id", foreign_keys="Connection.receiver_id", back_populates="received_connections")
 
 class StartupProfile(Base):
     __tablename__ = "startup_profiles"
@@ -148,8 +148,8 @@ class Message(Base):
     attachment_url = Column(String)
     attachment_type = Column(String)
     
-    sender = relationship("User", back_populates="sent_messages", foreign_keys=[sender_id])
-    receiver = relationship("User", back_populates="received_messages", foreign_keys=[receiver_id])
+    sender = relationship("User", primaryjoin="Message.sender_id == User.id", foreign_keys="Message.sender_id", back_populates="sent_messages")
+    receiver = relationship("User", primaryjoin="Message.receiver_id == User.id", foreign_keys="Message.receiver_id", back_populates="received_messages")
 
 class Notification(Base):
     __tablename__ = "notifications"
@@ -222,8 +222,8 @@ class Meeting(Base):
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
-    investor = relationship("User", foreign_keys=[investor_id])
-    startup = relationship("User", foreign_keys=[startup_id])
+    investor = relationship("User", primaryjoin="Meeting.investor_id == User.id", foreign_keys="Meeting.investor_id")
+    startup = relationship("User", primaryjoin="Meeting.startup_id == User.id", foreign_keys="Meeting.startup_id")
     pitch = relationship("Pitch")
 
 class Task(Base):

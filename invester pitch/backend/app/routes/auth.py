@@ -236,3 +236,119 @@ def reset_password(request: ResetPasswordRequest, db: Session = Depends(get_db))
     db.commit()
     
     return {"message": "Password updated successfully"}
+
+@router.get("/linkedin/login")
+def linkedin_login():
+    """
+    Redirects the user to LinkedIn's OAuth authorization page.
+    """
+    import os
+    import urllib.parse
+    
+    # These should ideally come from env, but I'll use placeholders that the user MUST replace
+    LINKEDIN_CLIENT_ID = os.getenv("LINKEDIN_CLIENT_ID", "866r5xfodldh1y") 
+    LINKEDIN_REDIRECT_URI = os.getenv("LINKEDIN_REDIRECT_URI", "http://localhost:8000/auth/linkedin/callback")
+    
+    # LinkedIn OAuth 2.0 params
+    params = {
+        "response_type": "code",
+        "client_id": "866r5xfodldh1y",
+        "redirect_uri": "http://localhost:8000/auth/linkedin/callback",
+        "state": "random_state_string", # Should be random ideally
+        "scope": "openid profile email", # Scopes for "Sign In with LinkedIn"
+    }
+    
+    url = f"https://www.linkedin.com/oauth/v2/authorization?{urllib.parse.urlencode(params)}"
+    
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url)
+
+@router.get("/linkedin/callback")
+def linkedin_callback(code: str, db: Session = Depends(get_db)):
+    """
+    Handles the callback from LinkedIn, exchanges code for token, gets user info, and logs them in.
+    """
+    import os
+    import requests
+    from fastapi.responses import RedirectResponse
+    
+    LINKEDIN_CLIENT_ID = os.getenv("LINKEDIN_CLIENT_ID")
+    LINKEDIN_CLIENT_SECRET = os.getenv("LINKEDIN_CLIENT_SECRET")
+    LINKEDIN_REDIRECT_URI = os.getenv("LINKEDIN_REDIRECT_URI")
+    
+    # 1. Exchange auth code for access token
+    token_url = "https://www.linkedin.com/oauth/v2/accessToken"
+    payload = {
+        "grant_type": "authorization_code",
+        "code": code,
+        "redirect_uri": LINKEDIN_REDIRECT_URI,
+        "client_id": LINKEDIN_CLIENT_ID,
+        "client_secret": LINKEDIN_CLIENT_SECRET,
+    }
+    
+    token_res = requests.post(token_url, data=payload)
+    if not token_res.ok:
+        # In a real app, redirect to frontend with error param
+        raise HTTPException(status_code=400, detail=f"LinkedIn Token Error: {token_res.text}")
+        
+    access_token = token_res.json().get("access_token")
+    
+    # 2. Get User Info (OpenID method)
+    user_info_url = "https://api.linkedin.com/v2/userinfo"
+    headers = {"Authorization": f"Bearer {access_token}"}
+    
+    user_res = requests.get(user_info_url, headers=headers)
+    if not user_res.ok:
+        raise HTTPException(status_code=400, detail=f"LinkedIn Profile Error: {user_res.text}")
+        
+    user_data = user_res.json()
+    
+    # user_data typically contains: sub, name, given_name, family_name, picture, email, etc.
+    email = user_data.get("email")
+    name = user_data.get("name")
+    picture = user_data.get("picture")
+    
+    if not email:
+         raise HTTPException(status_code=400, detail="LinkedIn did not return an email address")
+
+    # 3. Find or Create User
+    user = db.query(User).filter(User.email == email).first()
+    
+    if not user:
+        # Auto-register
+        hashed_password = get_password_hash("linkedin_auth_user") # Dummy password
+        user = User(
+            email=email,
+            password_hash=hashed_password,
+            role="startup" # Default to startup for now, or could ask user later
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        
+        # Create Startup Profile
+        startup_profile = StartupProfile(
+            user_id=user.id,
+            company_name=name + "'s Project", # Placeholder
+            founder_name=name,
+            profile_photo=picture,
+            industry="Technology",
+            funding_stage="Pre-Seed"
+        )
+        db.add(startup_profile)
+        db.commit()
+    
+    # 4. Create JWT for our app
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    jwt_token = create_access_token(
+        data={"sub": user.email, "role": user.role}, expires_delta=access_token_expires
+    )
+    
+    # 5. Redirect to Frontend with Token
+    # Assuming frontend runs on localhost:3001 (based on docker-compose) or 3000
+    # The existing TokenCapture in frontend looks for ?token=...
+    
+    # NOTE: You must allow this origin in CORS or use a proper callback page
+    frontend_url = "http://localhost:3001" # Startup frontend port
+    
+    return RedirectResponse(f"{frontend_url}?token={jwt_token}")

@@ -11,8 +11,8 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from app.models.core import User, StartupProfile, Pitch
 from app.database import Base
 
-DATABASE_URL = "postgresql://postgres:Diva%402004@db:5432/pitch_platform"
-CSV_PATH = "/app/data/diwahar.csv"
+DATABASE_URL = "postgresql://postgres:Diva%402004@localhost:5433/pitch_platform"
+CSV_PATH = os.path.join(os.path.dirname(__file__), "diwahar.csv")
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

@@ -40,8 +40,8 @@ export default function EnterpriseReview() {
   // Fetch real company name
   useEffect(() => {
     api.me().then(u => {
-      if(u.company_name) setCompanyName(u.company_name);
-    }).catch(() => {});
+      if (u.company_name) setCompanyName(u.company_name);
+    }).catch(() => { });
   }, []);
 
   async function onConfirm() {
@@ -54,11 +54,11 @@ export default function EnterpriseReview() {
         // rzp1.open();
         alert("Razorpay integration coming soon! (Mock Success)");
       }
-      
+
       await api.confirmEnterprise({ payment_method: paymentMethod });
-      
+
       // Navigate to success page
-      navigate("/upgrade/success", {
+      navigate("/enterprise/success", {
         state: {
           planName: "Enterprise Custom",
           billing: "annually",
@@ -90,7 +90,7 @@ export default function EnterpriseReview() {
   return (
     <DashShell>
       <div className="dash-content">
-        
+
         {/* Header */}
         <div style={{ marginBottom: 30 }}>
           <h1 style={{ fontSize: 32, margin: "0 0 6px 0", letterSpacing: "-0.02em" }}>Review Your Enterprise Agreement</h1>
@@ -98,7 +98,7 @@ export default function EnterpriseReview() {
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 30, alignItems: "start" }}>
-          
+
           {/* Left Column: Agreement Details */}
           <div className="card" style={{ padding: 30, background: "#fff", border: "1px solid #e2e8f0", borderRadius: 16 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -124,7 +124,7 @@ export default function EnterpriseReview() {
               <div style={{ fontSize: 11, fontWeight: 800, color: "#94a3b8", letterSpacing: "0.05em", marginBottom: 16 }}>
                 INCLUDED IN YOUR PLAN
               </div>
-              
+
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px 24px" }}>
                 {[
                   "Dedicated Account Manager", "Unlimited Pitch Deck Export",
@@ -138,11 +138,11 @@ export default function EnterpriseReview() {
               </div>
             </div>
 
-            <button 
-              type="button" 
+            <button
+              type="button"
               style={{ background: "transparent", border: 0, color: "#155eef", fontWeight: 700, fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
               Download Official Quote (PDF)
             </button>
           </div>
@@ -154,9 +154,9 @@ export default function EnterpriseReview() {
 
               {/* Invoice Option */}
               <div onClick={() => setPaymentMethod("invoice")} style={optionStyle("invoice")}>
-                <div style={{ 
+                <div style={{
                   width: 20, height: 20, borderRadius: "50%", border: paymentMethod === "invoice" ? "6px solid #155eef" : "2px solid #cbd5e1",
-                  flexShrink: 0, marginTop: 2 
+                  flexShrink: 0, marginTop: 2
                 }} />
                 <div style={{ flex: 1 }}>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
@@ -171,9 +171,9 @@ export default function EnterpriseReview() {
 
               {/* Wire Option */}
               <div onClick={() => setPaymentMethod("wire")} style={optionStyle("wire")}>
-                <div style={{ 
+                <div style={{
                   width: 20, height: 20, borderRadius: "50%", border: paymentMethod === "wire" ? "6px solid #155eef" : "2px solid #cbd5e1",
-                  flexShrink: 0, marginTop: 2 
+                  flexShrink: 0, marginTop: 2
                 }} />
                 <div style={{ flex: 1 }}>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
@@ -188,9 +188,9 @@ export default function EnterpriseReview() {
 
               {/* Card Option */}
               <div onClick={() => setPaymentMethod("card")} style={optionStyle("card")}>
-                <div style={{ 
+                <div style={{
                   width: 20, height: 20, borderRadius: "50%", border: paymentMethod === "card" ? "6px solid #155eef" : "2px solid #cbd5e1",
-                  flexShrink: 0, marginTop: 2 
+                  flexShrink: 0, marginTop: 2
                 }} />
                 <div style={{ flex: 1 }}>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
@@ -204,21 +204,21 @@ export default function EnterpriseReview() {
               </div>
 
               {/* Actions */}
-              <button 
-                className="btnPrimary" 
+              <button
+                className="btnPrimary"
                 style={{ width: "100%", height: 48, justifyContent: "center", marginTop: 12, fontSize: 15 }}
                 onClick={onConfirm}
                 disabled={loading}
               >
                 {loading ? "Processing..." : "Confirm Custom Plan"}
               </button>
-              
-              <button 
+
+              <button
                 type="button"
                 onClick={() => navigate("/upgrade")}
-                style={{ 
-                  width: "100%", height: 48, marginTop: 12, background: "#fff", border: "1px solid #e2e8f0", 
-                  borderRadius: 10, fontWeight: 700, color: "#0f172a", cursor: "pointer" 
+                style={{
+                  width: "100%", height: 48, marginTop: 12, background: "#fff", border: "1px solid #e2e8f0",
+                  borderRadius: 10, fontWeight: 700, color: "#0f172a", cursor: "pointer"
                 }}
               >
                 Back to Sales Form

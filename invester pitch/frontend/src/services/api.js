@@ -618,5 +618,19 @@ export const api = {
         });
         if (!response.ok) throw new Error('Failed to check status');
         return response.json();
+    },
+
+    markNotificationAsRead: async (notificationId) => {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('No token found');
+        const response = await fetch(`${API_URL}/notifications/${notificationId}/read`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        if (!response.ok) throw new Error('Failed to mark notification as read');
+        return response.json();
     }
 };

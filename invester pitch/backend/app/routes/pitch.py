@@ -239,17 +239,38 @@ def get_pitch_feed(
 
 
 @router.get("/{pitch_id}", response_model=PitchResponse)
-def get_pitch(pitch_id: int, db: Session = Depends(get_db)):
+def get_pitch(
+    pitch_id: int, 
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_current_user_optional)
+):
     pitch = db.query(Pitch).filter(Pitch.id == pitch_id).first()
     if not pitch:
         raise HTTPException(status_code=404, detail="Pitch not found")
     
-    # Simple enrichment for response model (simplified compared to feed)
+    # Simple enrichment for response model
     resp = PitchResponse.model_validate(pitch)
     resp.company_name = pitch.startup.company_name
     resp.industry = pitch.startup.industry
     resp.stage = pitch.startup.funding_stage
     resp.startup_user_id = pitch.startup.user_id
+    
+    # Connection Check
+    if current_user:
+        if pitch.startup.user_id == current_user.id:
+            resp.connection_status = "self"
+        else:
+            from app.models.core import Connection
+            conn = db.query(Connection).filter(
+                or_(
+                    (Connection.requester_id == current_user.id) & (Connection.receiver_id == pitch.startup.user_id),
+                    (Connection.requester_id == pitch.startup.user_id) & (Connection.receiver_id == current_user.id)
+                )
+            ).first()
+            resp.connection_status = conn.status if conn else "not_connected"
+    else:
+        resp.connection_status = "not_connected"
+        
     return resp
 
 @router.post("/{pitch_id}/decision")

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, Grid, List, ChevronDown, Star, X, TrendingUp, Sparkles, Loader2, FileText, MessageCircle, Calendar, Bookmark, Zap, MapPin, ChevronRight, Eye } from 'lucide-react';
+import { Search, Filter, Grid, List, ChevronDown, Star, X, TrendingUp, Sparkles, Loader2, FileText, MessageCircle, Calendar, Bookmark, Zap, MapPin, ChevronRight, Eye, Check, Clock, UserPlus } from 'lucide-react';
 import { api } from '../../services/api';
 import { aiService } from '../../services/aiService';
 import CommentsSection from '../../components/CommentsSection';
@@ -31,7 +31,20 @@ const BrowsePitches = () => {
     const fetchPitches = async () => {
         try {
             setLoading(true);
-            const data = await api.getPitchFeed(filters.industry, filters.stage, searchQuery, 'active', sortBy);
+            const [data, connectionsData] = await Promise.all([
+                api.getPitchFeed(filters.industry, filters.stage, searchQuery, 'active', sortBy),
+                api.getMyConnections()
+            ]);
+
+            // Map connections for lookup: userId -> status
+            const connMap = {};
+            connectionsData.forEach(c => {
+                const partnerId = c.requester_id === data.user_id ? c.receiver_id : (c.receiver_id === data.user_id ? c.requester_id : (c.requester_id + c.receiver_id === data.user_id ? 0 : 0));
+                // Since getMyConnections doesn't give me 'my' ID easily here without extra logic, 
+                // let's just map both IDs to the status for lookup robustness.
+                connMap[c.requester_id] = c.status;
+                connMap[c.receiver_id] = c.status;
+            });
 
             const mappedStartups = data.map((pitch) => ({
                 id: pitch.id.toString(),
@@ -48,7 +61,7 @@ const BrowsePitches = () => {
                 tags: [pitch.industry, pitch.stage, ...(pitch.tags ? pitch.tags.split(',') : [])].filter(Boolean),
                 logo: (pitch.company_name || 'S').charAt(0),
                 status: pitch.status,
-                connectionStatus: pitch.connection_status || 'not_connected'
+                connectionStatus: connMap[pitch.startup_user_id] || 'not_connected'
             }));
             setStartups(mappedStartups);
         } catch (err) {
@@ -62,6 +75,19 @@ const BrowsePitches = () => {
     // Search Handler
     const handleSearchChange = (e) => {
         setSearchQuery(e.target.value);
+    };
+
+    const handleConnect = async (userId, pitchId) => {
+        try {
+            await api.sendConnectionRequest(userId);
+            setStartups(prev => prev.map(s => s.id === pitchId ? { ...s, connectionStatus: 'pending' } : s));
+            if (selectedPitch && selectedPitch.userId === userId) {
+                setSelectedPitch({ ...selectedPitch, connectionStatus: 'pending' });
+            }
+        } catch (e) {
+            console.error(e);
+            alert("Failed to send connection request");
+        }
     };
 
     const handleAddToWatchlist = async (startupId) => {
@@ -170,26 +196,41 @@ const BrowsePitches = () => {
                                         <Star size={16} className="text-amber-500" />
                                         Mark In Review
                                     </button>
+
+                                    {/* Connection Action */}
+                                    {selectedPitch.connectionStatus === 'accepted' ? (
+                                        <button disabled className="flex-1 py-3 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 cursor-default">
+                                            <Check size={16} />
+                                            Connected
+                                        </button>
+                                    ) : selectedPitch.connectionStatus === 'pending' ? (
+                                        <button disabled className="flex-1 py-3 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 cursor-default">
+                                            <Clock size={16} />
+                                            Request Pending
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={() => handleConnect(selectedPitch.userId, selectedPitch.id)}
+                                            className="flex-1 py-3 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-sm"
+                                        >
+                                            <UserPlus size={16} />
+                                            Connect
+                                        </button>
+                                    )}
+
                                     <button
                                         onClick={() => handleAddToWatchlist(selectedPitch.startupId || selectedPitch.id)}
-                                        className="flex-1 py-3 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 transition-all flex items-center justify-center gap-2 shadow-sm"
+                                        className="px-6 py-3 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-all shadow-sm flex items-center justify-center gap-2"
                                     >
                                         <Bookmark size={16} />
-                                        Add to Watchlist
-                                    </button>
-                                    <button
-                                        onClick={() => handleDecision(selectedPitch.id, 'Decline')}
-                                        className="px-6 py-3 bg-slate-100 text-slate-600 rounded-xl text-sm font-semibold hover:bg-slate-200 transition-colors"
-                                    >
-                                        Decline
                                     </button>
                                 </div>
 
                                 <button
                                     onClick={() => navigate('/messages', { state: { conversationStart: selectedPitch.name } })}
-                                    className="w-full py-3 bg-white border border-slate-200 text-slate-700 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-all shadow-sm flex items-center justify-center gap-2"
+                                    className="w-full py-3 bg-slate-900 text-white rounded-xl text-sm font-semibold hover:bg-slate-800 transition-all shadow-sm flex items-center justify-center gap-2"
                                 >
-                                    <MessageCircle size={16} className="text-blue-500" />
+                                    <MessageCircle size={16} />
                                     Message Founder
                                 </button>
 

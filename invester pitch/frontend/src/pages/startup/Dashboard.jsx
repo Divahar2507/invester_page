@@ -6,17 +6,20 @@ import { api } from '../../services/api';
 const StartupDashboard = ({ user }) => {
     const [myPitches, setMyPitches] = React.useState([]);
     const [investors, setInvestors] = React.useState([]);
+    const [incomingRequests, setIncomingRequests] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
 
     React.useEffect(() => {
         const fetchData = async () => {
             try {
-                const [pitchesData, investorsData] = await Promise.all([
+                const [pitchesData, investorsData, requestsData] = await Promise.all([
                     api.getMyPitches(),
-                    api.getAllInvestors()
+                    api.getAllInvestors(),
+                    api.getIncomingConnectionRequests()
                 ]);
                 setMyPitches(pitchesData);
                 setInvestors(investorsData);
+                setIncomingRequests(requestsData);
             } catch (error) {
                 console.error("Failed to load startup data", error);
             } finally {
@@ -25,6 +28,19 @@ const StartupDashboard = ({ user }) => {
         };
         fetchData();
     }, []);
+
+    const handleRespondToRequest = async (connectionId, action) => {
+        try {
+            await api.respondToConnectionRequest(connectionId, action);
+            setIncomingRequests(prev => prev.filter(r => r.id !== connectionId));
+            if (action === 'accept') {
+                alert("Connection accepted!");
+            }
+        } catch (error) {
+            console.error("Failed to respond to request", error);
+            alert("Action failed.");
+        }
+    };
 
     if (loading) {
         return (
@@ -143,7 +159,7 @@ const StartupDashboard = ({ user }) => {
                                         </div>
                                         <div className="flex items-center gap-6 mt-4">
                                             <span className={`px-2.5 py-1 rounded-md text-xs font-bold ${pitch.status === 'active' ? 'bg-amber-100 text-amber-700' :
-                                                    pitch.status === 'funded' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'
+                                                pitch.status === 'funded' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'
                                                 }`}>
                                                 {pitch.status === 'active' ? 'Editing' : pitch.status || 'Draft'}
                                             </span>
@@ -170,6 +186,45 @@ const StartupDashboard = ({ user }) => {
 
                 {/* Right Sidebar */}
                 <div className="space-y-8">
+                    {/* Incoming Connection Requests */}
+                    {incomingRequests.length > 0 && (
+                        <div>
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Connection Requests</h2>
+                                <span className="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">{incomingRequests.length}</span>
+                            </div>
+                            <div className="bg-white rounded-2xl border border-blue-100 shadow-sm overflow-hidden ring-1 ring-blue-50">
+                                {incomingRequests.map((req) => (
+                                    <div key={req.id} className="p-4 border-b border-slate-50 last:border-0 bg-blue-50/10">
+                                        <div className="flex items-center gap-3 mb-3">
+                                            <div className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-white font-bold text-xs">
+                                                {req.requester_name?.charAt(0) || 'I'}
+                                            </div>
+                                            <div className="min-w-0">
+                                                <h4 className="text-sm font-bold text-slate-900 truncate">{req.requester_name}</h4>
+                                                <p className="text-[10px] text-slate-500 uppercase font-bold tracking-tight">{req.requester_role}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-2 mt-2">
+                                            <button
+                                                onClick={() => handleRespondToRequest(req.id, 'accept')}
+                                                className="flex-1 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition-colors"
+                                            >
+                                                Accept
+                                            </button>
+                                            <button
+                                                onClick={() => handleRespondToRequest(req.id, 'reject')}
+                                                className="flex-1 py-1.5 bg-white border border-slate-200 text-slate-600 text-xs font-bold rounded-lg hover:bg-slate-50 transition-colors"
+                                            >
+                                                Ignore
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     {/* Match Opportunities */}
                     <div>
                         <div className="flex items-center justify-between mb-4">

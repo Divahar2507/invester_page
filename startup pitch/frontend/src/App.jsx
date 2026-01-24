@@ -172,6 +172,15 @@ export default function App() {
           path="/upgrade/success"
           element={
             <ProtectedRoute>
+              <UpgradeSuccess />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/enterprise/success"
+          element={
+            <ProtectedRoute>
               <EnterpriseSuccess />
             </ProtectedRoute>
           }
