@@ -1,0 +1,8 @@
+
+{
+  "name": "InnoSphere Admin & Collaboration Portal",
+  "description": "A comprehensive R&D and startup ecosystem platform featuring project collaboration, mentor directories, tech park mapping, and knowledge seminars.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}

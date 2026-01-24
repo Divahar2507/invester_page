@@ -1,0 +1,62 @@
+/* 
+  InnoSphere Admin Portal - Global Styles
+  Note: This project uses Tailwind Play CDN. 
+  Custom styles here complement utility classes.
+*/
+
+body {
+    font-family: 'Inter', sans-serif;
+    letter-spacing: -0.01em;
+    transition: background-color 0.3s ease;
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+    background: #475569;
+}
+
+/* Animations */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-slide-up {
+    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Utilities */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+/* Ensure images are visible and handle loading states */
+img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}

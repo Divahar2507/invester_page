@@ -102,6 +102,7 @@ services:
     restart: unless-stopped
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:Diva%402004@db-leadgen:5432/leadgen_db
+      GROQ_API_KEY: ${GROQ_API_KEY}
     ports:
       - "8003:8000"
     depends_on:
@@ -234,7 +235,7 @@ services:
   # EVENTS (Infinite_BZ) BACKEND - Port 8006
   backend-events:
     build:
-      context: "./Infinite_BZ/Infinite_BZ-main/backend"
+      context: "./Infinite_BZ/backend"
       dockerfile: Dockerfile
     container_name: events_backend
     restart: unless-stopped
@@ -250,7 +251,7 @@ services:
   # EVENTS (Infinite_BZ) FRONTEND - Port 3006
   frontend-events:
     build:
-      context: "./Infinite_BZ/Infinite_BZ-main/frontend"
+      context: "./Infinite_BZ/frontend"
       dockerfile: Dockerfile
     container_name: events_frontend
     ports:
@@ -278,11 +279,81 @@ services:
     networks:
       - ecosystem_net
 
+  # FOUNDERDASH STARTUP FRONTEND - Port 3007
+  frontend-founderdash:
+    build:
+      context: "./founderdash_startup"
+      dockerfile: Dockerfile
+    container_name: founderdash_frontend
+    ports:
+      - "3007:80"
+    networks:
+      - ecosystem_net
+
+  # INNOSPHERE ADMIN FRONTEND - Port 3008
+  frontend-innosphere:
+    build:
+      context: "./innosphere_admin/innosphere-admin-&-collaboration-portal"
+      dockerfile: Dockerfile
+    container_name: innosphere_frontend
+    ports:
+      - "3008:80"
+    networks:
+      - ecosystem_net
+
+  # FUNDS COLLECTION DATABASE
+  db-funds:
+    image: postgres:15-alpine
+    container_name: funds_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Diva@2004
+      POSTGRES_DB: propinvest
+    ports:
+      - "5438:5432"
+    volumes:
+      - postgres_data_funds:/var/lib/postgresql/data
+    networks:
+      - ecosystem_net
+
+  # FUNDS COLLECTION BACKEND - Port 8007
+  backend-funds:
+    build:
+      context: "./funds_collection/funds_collection/backend"
+      dockerfile: Dockerfile
+    container_name: funds_backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://postgres:Diva%402004@db-funds:5432/propinvest
+    ports:
+      - "8007:8000"
+    depends_on:
+      - db-funds
+    networks:
+      - ecosystem_net
+
+  # FUNDS COLLECTION FRONTEND - Port 3009
+  frontend-funds:
+    build:
+      context: "./funds_collection/funds_collection/frontend"
+      dockerfile: Dockerfile
+    container_name: funds_frontend
+    ports:
+      - "3009:80"
+    environment:
+      - VITE_API_URL=http://localhost:8007
+    depends_on:
+      - backend-funds
+    networks:
+      - ecosystem_net
+
 volumes:
   postgres_data_main:
   postgres_data_leadgen:
   postgres_data_connector:
   postgres_data_events:
+  postgres_data_funds:
 
 
 networks:

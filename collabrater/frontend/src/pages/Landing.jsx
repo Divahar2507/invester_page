@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { ArrowRight, Globe, Shield, TrendingUp, CheckCircle, Mail, MapPin, Github, Twitter, Linkedin, Sun, Moon, Calendar, Users, Target, Layers } from 'lucide-react';
+import { ArrowRight, Globe, Shield, TrendingUp, CheckCircle, Mail, MapPin, Github, Twitter, Linkedin, Sun, Moon, Calendar, Users, Target, Layers, Rocket, CreditCard } from 'lucide-react';
 import './Landing.css';
 
 const Landing = () => {
@@ -136,6 +135,7 @@ const Landing = () => {
                 </div>
 
                 <div className="pillars-grid">
+                    {/* 1. Investor Platform */}
                     <div className="pillar-card" onClick={() => window.open('http://localhost', '_blank')} style={{ cursor: 'pointer' }}>
                         <div className="pillar-image img-1"></div>
                         <div className="pillar-content">
@@ -145,6 +145,17 @@ const Landing = () => {
                         </div>
                     </div>
 
+                    {/* 2. FounderDash (NEW) */}
+                    <div className="pillar-card" onClick={() => window.open('http://localhost:3007', '_blank')} style={{ cursor: 'pointer' }}>
+                        <div className="pillar-image img-startup"></div>
+                        <div className="pillar-content">
+                            <div className="icon-box"><Rocket size={20} /></div>
+                            <h3>FounderDash</h3>
+                            <p>Comprehensive command center for startup founders to tracking growth and metrics.</p>
+                        </div>
+                    </div>
+
+                    {/* 3. LeadGen */}
                     <div className="pillar-card" onClick={() => window.open('http://localhost:3003', '_blank')} style={{ cursor: 'pointer' }}>
                         <div className="pillar-image img-3"></div>
                         <div className="pillar-content">
@@ -154,6 +165,27 @@ const Landing = () => {
                         </div>
                     </div>
 
+                    {/* 4. Innosphere (NEW) */}
+                    <div className="pillar-card" onClick={() => window.open('http://localhost:3008', '_blank')} style={{ cursor: 'pointer' }}>
+                        <div className="pillar-image img-collab"></div>
+                        <div className="pillar-content">
+                            <div className="icon-box"><Users size={20} /></div>
+                            <h3>Innosphere Admin</h3>
+                            <p>Centralized portal for team collaboration and project oversight.</p>
+                        </div>
+                    </div>
+
+                    {/* 5. Funds Collection (NEW) */}
+                    <div className="pillar-card" onClick={() => window.open('http://localhost:3009', '_blank')} style={{ cursor: 'pointer' }}>
+                        <div className="pillar-image img-funds"></div>
+                        <div className="pillar-content">
+                            <div className="icon-box"><CreditCard size={20} /></div>
+                            <h3>Funds Collection</h3>
+                            <p>Secure payment processing and automated capital flow management.</p>
+                        </div>
+                    </div>
+
+                    {/* 6. Events */}
                     <div className="pillar-card" onClick={() => window.open('http://localhost:3006', '_blank')} style={{ cursor: 'pointer' }}>
                         <div className="pillar-image img-2"></div>
                         <div className="pillar-content">
