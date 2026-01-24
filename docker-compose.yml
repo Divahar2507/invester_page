@@ -113,12 +113,12 @@ services:
   # ADMIN BACKEND (Super Admin)
   backend-admin:
     build:
-      context: "./ai-admin/backend"
+      context: "./admin/backend"
     container_name: admin_backend
     ports:
       - "8004:8000"
     volumes:
-      - "./ai-admin/backend:/app"
+      - "./admin/backend:/app"
     environment:
       - SECRET_KEY=supersecretkey
       - ALGORITHM=HS256
@@ -207,12 +207,12 @@ services:
   # ADMIN FRONTEND - Port 3004
   frontend-admin:
     build:
-      context: "./ai-admin/frontend"
+      context: "./admin/frontend"
     container_name: admin_frontend
     ports:
       - "3004:5173"
     volumes:
-      - "./ai-admin/frontend:/app"
+      - "./admin/frontend:/app"
       - "/app/node_modules"
     depends_on:
       - backend-admin
@@ -231,10 +231,58 @@ services:
     networks:
       - ecosystem_net
 
+  # EVENTS (Infinite_BZ) BACKEND - Port 8006
+  backend-events:
+    build:
+      context: "./Infinite_BZ/Infinite_BZ-main/backend"
+      dockerfile: Dockerfile
+    container_name: events_backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://postgres:Diva%402004@db-events:5432/events_db
+    ports:
+      - "8006:8000"
+    depends_on:
+      - db-events
+    networks:
+      - ecosystem_net
+
+  # EVENTS (Infinite_BZ) FRONTEND - Port 3006
+  frontend-events:
+    build:
+      context: "./Infinite_BZ/Infinite_BZ-main/frontend"
+      dockerfile: Dockerfile
+    container_name: events_frontend
+    ports:
+      - "3006:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8006
+    depends_on:
+      - backend-events
+    networks:
+      - ecosystem_net
+
+  # EVENTS DATABASE
+  db-events:
+    image: postgres:15-alpine
+    container_name: events_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Diva@2004
+      POSTGRES_DB: events_db
+    ports:
+      - "5437:5432"
+    volumes:
+      - postgres_data_events:/var/lib/postgresql/data
+    networks:
+      - ecosystem_net
+
 volumes:
   postgres_data_main:
   postgres_data_leadgen:
   postgres_data_connector:
+  postgres_data_events:
 
 
 networks:

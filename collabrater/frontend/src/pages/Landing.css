@@ -416,8 +416,8 @@ body {
 
 .pillars-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    /* Changed to 4 columns */
+    grid-template-columns: repeat(3, 1fr);
+    /* Changed to 3 columns */
     gap: 1.5rem;
 }
 

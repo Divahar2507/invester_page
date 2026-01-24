@@ -4,7 +4,6 @@ import { Link, useSearchParams } from 'react-router-dom';
 import {
     Infinity,
     ArrowRight,
-    Handshake,
     Users,
     ShieldCheck,
     Rocket,
@@ -243,38 +242,38 @@ const Landing = () => {
                         {[
                             {
                                 icon: <Cpu />,
-                                title: "Neural Matching",
-                                desc: "Proprietary algorithms that match startups to investors based on check size, sector, and founder DNA.",
+                                title: "Neural Matching Engine",
+                                desc: "Our proprietary AI analyzes 50+ data points including founder DNA, market traction, and investor thesis to predict high-probability matches.",
                                 img: "https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=2000&auto=format&fit=crop"
                             },
                             {
                                 icon: <Network />,
                                 title: "Smart Data Rooms",
-                                desc: "Track which slides are read, which docs are downloaded, and who is deep-diving into your financials.",
+                                desc: "Secure, tracked document sharing. Know exactly when investors view your pitch deck and which slides they focus on.",
                                 img: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2000&auto=format&fit=crop"
                             },
                             {
                                 icon: <MessageSquare />,
-                                title: "Unified Messaging",
-                                desc: "A direct, secure channel between decision makers. Move from pitch to term-sheet in record time.",
+                                title: "Direct Founder Access",
+                                desc: "Bypass the warm intro barrier. Our direct messaging channel connects verified founders with decision-making partners instantly.",
                                 img: "https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?q=80&w=2000&auto=format&fit=crop"
                             },
                             {
                                 icon: <PieChart />,
-                                title: "Portfolio 360",
-                                desc: "Investors get real-time dashboards for growth, runways, and deployment metrics across their entire book.",
+                                title: "Live Portfolio Tracking",
+                                desc: "Investors get a real-time dashboard of their portfolio performance, burn rates, and growth metrics in one unified view.",
                                 img: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2000&auto=format&fit=crop"
                             },
                             {
                                 icon: <Lock />,
-                                title: "Institutional Security",
-                                desc: "Bank-grade encryption for every message, document, and transaction. Your data stays internal.",
+                                title: "Military-Grade Security",
+                                desc: "End-to-end encryption for all sensitive financial data and intellectual property. Your competitive advantage stays protected.",
                                 img: "https://images.unsplash.com/photo-1563986768609-322da13575f3?q=80&w=2000&auto=format&fit=crop"
                             },
                             {
                                 icon: <Globe />,
-                                title: "Cross-Border Access",
-                                desc: "Instantly connect with capital in Silicon Valley, London, and Singapore from a single interface.",
+                                title: "Global Deal Flow",
+                                desc: "Break geographical boundaries. Access high-growth startups from Silicon Valley to Singapore without leaving your office.",
                                 img: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2000&auto=format&fit=crop"
                             }
                         ].map((f, i) => (
