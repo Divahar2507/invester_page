@@ -85,7 +85,7 @@ const Landing = () => {
                 </div>
             </section>
 
-            {/* About / Summary Section (New) */}
+            {/* About / Summary Section */}
             <section id="about" className="about-section">
                 <div className="about-container">
                     <div className="section-header center-aligned">
@@ -136,21 +136,12 @@ const Landing = () => {
                 </div>
 
                 <div className="pillars-grid">
-                    <div className="pillar-card" onClick={() => window.open('http://localhost:3001', '_blank')} style={{ cursor: 'pointer' }}>
+                    <div className="pillar-card" onClick={() => window.open('http://localhost', '_blank')} style={{ cursor: 'pointer' }}>
                         <div className="pillar-image img-1"></div>
                         <div className="pillar-content">
                             <div className="icon-box"><Shield size={20} /></div>
-                            <h3>Document Preparation</h3>
-                            <p>Professional tools to prepare and organize your startup documentation.</p>
-                        </div>
-                    </div>
-
-                    <div className="pillar-card" onClick={() => window.open('http://localhost:80', '_blank')} style={{ cursor: 'pointer' }}>
-                        <div className="pillar-image img-1"></div>
-                        <div className="pillar-content">
-                            <div className="icon-box"><TrendingUp size={20} /></div>
-                            <h3>Investor Portal</h3>
-                            <p>Manage portfolio, watchlist, and discover new opportunities.</p>
+                            <h3>Investor & Startup</h3>
+                            <p>Unified platform for pitching ideas, finding investors, and managing portfolios.</p>
                         </div>
                     </div>
 
@@ -163,7 +154,7 @@ const Landing = () => {
                         </div>
                     </div>
 
-                    <div className="pillar-card" onClick={() => window.open('http://localhost:3004/events', '_blank')} style={{ cursor: 'pointer' }}>
+                    <div className="pillar-card" onClick={() => window.open('http://localhost:3006', '_blank')} style={{ cursor: 'pointer' }}>
                         <div className="pillar-image img-2"></div>
                         <div className="pillar-content">
                             <div className="icon-box"><Calendar size={20} /></div>
