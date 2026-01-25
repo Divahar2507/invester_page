@@ -446,9 +446,9 @@ function App() {
     <div className="app-container">
       <aside className="sidebar">
         <div className="logo-area">
-          <div className="logo-icon">L</div>
+          <div className="logo-icon">I</div>
           <div>
-            <h2 className="logo-text">LeadGen AI</h2>
+            <h2 className="logo-text">INVESTOR</h2>
           </div>
         </div>
         <nav className="nav-links">

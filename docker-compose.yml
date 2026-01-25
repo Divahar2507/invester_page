@@ -169,6 +169,9 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
+    volumes:
+      - "./invester pitch/frontend:/app"
+      - "/app/node_modules"
     depends_on:
       - backend-main
     networks:
@@ -185,6 +188,9 @@ services:
     restart: unless-stopped
     ports:
       - "3001:5173"
+    volumes:
+      - "./startup pitch/frontend:/app"
+      - "/app/node_modules"
     environment:
       - VITE_API_URL=http://localhost:8000
     depends_on:
@@ -340,7 +346,7 @@ services:
       dockerfile: Dockerfile
     container_name: funds_frontend
     ports:
-      - "3009:80"
+      - "3009:5173"
     environment:
       - VITE_API_URL=http://localhost:8007
     depends_on:

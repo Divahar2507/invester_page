@@ -449,7 +449,7 @@ const PersonaMapping = ({ icps, selectedIcpId, onSelectIcp }) => {
   };
 
   const handleDeleteInsight = async (id) => {
-    if (!confirm('Delete this insight?')) return;
+    if (!window.confirm('Delete this insight?')) return;
 
     // Optimistic update
     setItemsByContainer(prev => {
@@ -525,7 +525,7 @@ const PersonaMapping = ({ icps, selectedIcpId, onSelectIcp }) => {
 
   const handleDeletePersona = async (p, e) => {
     e.stopPropagation();
-    if (!confirm(`Delete persona "${p}"?`)) return;
+    if (!window.confirm(`Delete persona "${p}"?`)) return;
     setExtraPersonas(prev => prev.filter(x => x !== p));
     if (activePersona === p) setActivePersona(DEFAULT_PERSONAS[0]);
 

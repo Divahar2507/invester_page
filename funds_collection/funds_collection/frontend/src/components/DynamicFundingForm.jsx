@@ -1,11 +1,43 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, Paperclip, Check } from 'lucide-react';
+import FileUpload from './FileUpload';
+import CustomDropdown from './CustomDropdown';
 import './DynamicFundingForm.css';
 
-const DynamicFundingForm = ({ selectedType }) => {
+const DynamicFundingForm = ({ selectedType, onSubmit, loading }) => {
     const [step, setStep] = useState(1);
-    const [formData, setFormData] = useState({});
+    const [formData, setFormData] = useState({
+        title: '',
+        description: '',
+        target_amount: '',
+        category: selectedType,
+        image_url: ''
+    });
+
+    useEffect(() => {
+        setFormData(prev => ({ ...prev, category: selectedType }));
+    }, [selectedType]);
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        // Basic mapping for demo purposes
+        const submissionData = {
+            title: formData.title || "New Project",
+            description: formData.description || "No description provided.",
+            target_amount: parseFloat(formData.target_amount) || 0,
+            category: selectedType,
+            image_url: formData.image_url || "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&q=80&w=1000",
+            pdf_url: formData.pdf_url
+        };
+        onSubmit(submissionData);
+    };
 
     if (!selectedType) return null;
 
@@ -16,12 +48,13 @@ const DynamicFundingForm = ({ selectedType }) => {
                     <>
                         <div className="form-group full-width">
                             <label>Campaign Title</label>
-                            <input type="text" placeholder="e.g. Eco-friendly Water Bottle" />
+                            <input name="title" value={formData.title} onChange={handleChange} type="text" placeholder="e.g. Eco-friendly Water Bottle" />
                         </div>
                         <div className="form-group full-width">
                             <label>Short Pitch (150 chars)</label>
-                            <textarea maxLength="150" placeholder="Describe your idea in a tweet..."></textarea>
+                            <textarea name="description" value={formData.description} onChange={handleChange} maxLength="150" placeholder="Describe your idea in a tweet..."></textarea>
                         </div>
+                        {/* Other fields omitted for brevity in demo logic, but UI remains */}
                         <div className="form-row">
                             <div className="form-group">
                                 <label>End Date</label>
@@ -29,12 +62,17 @@ const DynamicFundingForm = ({ selectedType }) => {
                             </div>
                             <div className="form-group">
                                 <label>Reward Type</label>
-                                <select>
-                                    <option>Early Access</option>
-                                    <option>Merchandise</option>
-                                    <option>Equity</option>
-                                    <option>None (Donation)</option>
-                                </select>
+                                <CustomDropdown
+                                    options={[
+                                        { value: 'Early Access', label: 'Early Access' },
+                                        { value: 'Merchandise', label: 'Merchandise' },
+                                        { value: 'Equity', label: 'Equity' },
+                                        { value: 'None (Donation)', label: 'None (Donation)' },
+                                    ]}
+                                    value={formData.rewardType || 'Early Access'}
+                                    onChange={(val) => setFormData(prev => ({ ...prev, rewardType: val }))}
+                                    placeholder="Select Reward"
+                                />
                             </div>
                         </div>
                     </>
@@ -42,36 +80,49 @@ const DynamicFundingForm = ({ selectedType }) => {
             case 'research':
                 return (
                     <>
-                        <div className="form-group">
-                            <label>Research Area</label>
-                            <select>
-                                <option>Artificial Intelligence</option>
-                                <option>Biotechnology</option>
-                                <option>Sustainable Energy</option>
-                                <option>Materials Science</option>
-                            </select>
+                        <div className="form-group full-width">
+                            <label>Research Title</label>
+                            <input name="title" value={formData.title} onChange={handleChange} type="text" placeholder="e.g. Cancer Research" />
                         </div>
+                        <div className="form-group full-width">
+                            <label>Research Summary</label>
+                            <textarea name="description" value={formData.description} onChange={handleChange} placeholder="Summary of your research..."></textarea>
+                        </div>
+                        {/* Visual only fields */}
                         <div className="form-group">
                             <label>Timeline</label>
-                            <select>
-                                <option>3 Months</option>
-                                <option>6 Months</option>
-                                <option>1 Year</option>
-                                <option>2+ Years</option>
-                            </select>
+                            <CustomDropdown
+                                options={[
+                                    { value: '3 Months', label: '3 Months' },
+                                    { value: '6 Months', label: '6 Months' },
+                                    { value: '1 Year', label: '1 Year' },
+                                    { value: '2+ Years', label: '2+ Years' },
+                                ]}
+                                value={formData.timeline || '3 Months'}
+                                onChange={(val) => setFormData(prev => ({ ...prev, timeline: val }))}
+                                placeholder="Select Timeline"
+                            />
                         </div>
                         <div className="form-group full-width file-upload">
                             <label>Upload Research Proposal (PDF)</label>
-                            <div className="upload-box">
-                                <Upload size={24} />
-                                <span>Drag & drop or click to upload proposal</span>
-                            </div>
+                            <FileUpload
+                                label="Drop Proposal PDF Here"
+                                onUploadComplete={(url) => setFormData(prev => ({ ...prev, pdf_url: url }))}
+                            />
                         </div>
                     </>
                 );
             case 'growth':
                 return (
                     <>
+                        <div className="form-group full-width">
+                            <label>Company Name</label>
+                            <input name="title" value={formData.title} onChange={handleChange} type="text" placeholder="Your Company Name" />
+                        </div>
+                        <div className="form-group full-width">
+                            <label>Traction Metrics (Description)</label>
+                            <textarea name="description" value={formData.description} onChange={handleChange} placeholder="e.g. 20% MoM growth, 5k active users..."></textarea>
+                        </div>
                         <div className="form-row">
                             <div className="form-group">
                                 <label>Monthly Revenue (MRR)</label>
@@ -82,29 +133,38 @@ const DynamicFundingForm = ({ selectedType }) => {
                                 <input type="number" placeholder="e.g. 10" />
                             </div>
                         </div>
-                        <div className="form-group full-width">
-                            <label>Traction Metrics</label>
-                            <textarea placeholder="e.g. 20% MoM growth, 5k active users..."></textarea>
-                        </div>
                         <div className="form-group full-width file-upload">
                             <label>Upload Pitch Deck</label>
-                            <div className="upload-box">
-                                <Paperclip size={24} />
-                                <span>Attach Pitch Deck (PDF/PPT)</span>
-                            </div>
+                            <FileUpload
+                                label="Drop Pitch Deck PDF Here"
+                                onUploadComplete={(url) => setFormData(prev => ({ ...prev, pdf_url: url }))}
+                            />
                         </div>
                     </>
                 );
             case 'public':
                 return (
                     <>
+                        <div className="form-group full-width">
+                            <label>Project Name</label>
+                            <input name="title" value={formData.title} onChange={handleChange} type="text" placeholder="Project Name" />
+                        </div>
+                        <div className="form-group full-width">
+                            <label>Impact Description</label>
+                            <textarea name="description" value={formData.description} onChange={handleChange} placeholder="Describe the social impact..."></textarea>
+                        </div>
                         <div className="form-group">
                             <label>Organization Type</label>
-                            <select>
-                                <option>NGO</option>
-                                <option>Registered Startup</option>
-                                <option>Educational Institution</option>
-                            </select>
+                            <CustomDropdown
+                                options={[
+                                    { value: 'NGO', label: 'NGO' },
+                                    { value: 'Registered Startup', label: 'Registered Startup' },
+                                    { value: 'Educational Institution', label: 'Educational Institution' },
+                                ]}
+                                value={formData.orgType || 'NGO'}
+                                onChange={(val) => setFormData(prev => ({ ...prev, orgType: val }))}
+                                placeholder="Select Type"
+                            />
                         </div>
                         <div className="form-group">
                             <label>Registration Number</label>
@@ -138,37 +198,35 @@ const DynamicFundingForm = ({ selectedType }) => {
                     <span className="step-indicator">Step 1 of 2</span>
                 </div>
 
-                <form className="dynamic-form">
+                <form className="dynamic-form" onSubmit={handleSubmit}>
                     <div className="form-grid">
                         {/* Common Fields */}
+                        {/* If specific type doesn't have title, we might need a fallback, but we added title to all above */}
                         <div className="form-group">
-                            <label>Startup Name</label>
-                            <input type="text" placeholder="Enter startup name" />
+                            <label>Amount Required (₹)</label>
+                            <input name="target_amount" value={formData.target_amount} onChange={handleChange} type="number" placeholder="5,00,000" />
                         </div>
                         <div className="form-group">
                             <label>Founder Name</label>
                             <input type="text" placeholder="Your full name" />
                         </div>
                         <div className="form-group">
+                            <label>Current Stage</label>
+                            <CustomDropdown
+                                options={[
+                                    { value: 'Idea Phase', label: 'Idea Phase' },
+                                    { value: 'MVP', label: 'MVP' },
+                                    { value: 'Early Revenue', label: 'Early Revenue' },
+                                    { value: 'Growth/Scaling', label: 'Growth/Scaling' },
+                                ]}
+                                value={formData.stage || 'Idea Phase'}
+                                onChange={(val) => setFormData(prev => ({ ...prev, stage: val }))}
+                                placeholder="Select Stage"
+                            />
+                        </div>
+                        <div className="form-group">
                             <label>Email Address</label>
                             <input type="email" placeholder="name@company.com" />
-                        </div>
-                        <div className="form-group">
-                            <label>Phone Number</label>
-                            <input type="tel" placeholder="+91 98765 43210" />
-                        </div>
-                        <div className="form-group">
-                            <label>Current Stage</label>
-                            <select>
-                                <option>Idea Phase</option>
-                                <option>MVP</option>
-                                <option>Early Revenue</option>
-                                <option>Growth/Scaling</option>
-                            </select>
-                        </div>
-                        <div className="form-group">
-                            <label>Amount Required (₹)</label>
-                            <input type="number" placeholder="5,00,000" />
                         </div>
                     </div>
 
@@ -180,8 +238,8 @@ const DynamicFundingForm = ({ selectedType }) => {
                     </div>
 
                     <div className="form-footer">
-                        <button type="button" className="btn btn-primary full-btn" onClick={() => window.location.href = '#payment'}>
-                            Continue to Payment
+                        <button type="submit" className="btn btn-primary full-btn" disabled={loading}>
+                            {loading ? 'Submitting...' : 'Create Fund'}
                             <Check size={18} />
                         </button>
                     </div>

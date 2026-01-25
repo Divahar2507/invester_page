@@ -82,17 +82,147 @@ body {
     color: var(--text-main);
 }
 
-.brand-icon {
-    width: 32px;
+.nav-logo {
     height: 32px;
-    background: linear-gradient(135deg, var(--primary), #8b5cf6);
-    border-radius: 8px;
-    display: flex;
-    /* If we want to put something inside later */
-    box-shadow: 0 0 15px var(--primary-glow);
+    object-fit: contain;
 }
 
-/* ... existing styles ... */
+.brand-icon {
+    display: none;
+}
+
+/* Growth Grid Section */
+.impact-grid-section {
+    padding: 8rem 5%;
+    max-width: var(--max-width);
+    margin: 0 auto;
+}
+
+.infinite-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2rem;
+    margin-top: 4rem;
+}
+
+.grid-item-card {
+    background: var(--bg-surface);
+    padding: 2.5rem;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.grid-item-card:hover {
+    transform: translateY(-10px);
+    border-color: var(--primary);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.card-icon-box {
+    width: 48px;
+    height: 48px;
+    background: var(--primary-glow);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary);
+}
+
+.card-stat-pill {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--primary);
+    background: rgba(59, 130, 246, 0.1);
+    padding: 6px 14px;
+    border-radius: 100px;
+}
+
+.grid-item-card h3 {
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+    font-weight: 700;
+}
+
+.grid-item-card p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+    line-height: 1.7;
+}
+
+.card-footer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-style: italic;
+}
+
+.q-icon {
+    color: var(--primary);
+    opacity: 0.5;
+}
+
+/* Stories Strip Marquee */
+.stories-strip {
+    background: var(--bg-surface);
+    padding: 2rem 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+}
+
+.story-label {
+    padding: 0 4rem;
+    font-weight: 900;
+    font-size: 0.75rem;
+    color: var(--primary);
+    letter-spacing: 2px;
+    border-right: 1px solid var(--border);
+}
+
+.marquee {
+    flex: 1;
+    overflow: hidden;
+}
+
+.marquee-content {
+    display: inline-block;
+    white-space: nowrap;
+    animation: marquee 30s linear infinite;
+}
+
+.marquee-content span {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin: 0 3rem;
+    color: var(--text-muted);
+}
+
+@keyframes marquee {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
+}
 
 .pillar-image {
     height: 180px;

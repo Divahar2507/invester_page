@@ -1,17 +1,15 @@
 
 import React from 'react';
-import { 
-  LayoutDashboard, 
-  Users, 
-  Briefcase, 
-  Building2, 
-  GraduationCap,
-  User,
-  Settings, 
-  HelpCircle, 
+import {
+  LayoutDashboard,
+  Briefcase,
+  Users,
+  Settings,
+  HelpCircle,
   LogOut,
   Rocket,
-  MessageSquare
+  MessageSquare,
+  Globe
 } from 'lucide-react';
 import { AppView, UserRole } from '../types';
 
@@ -23,15 +21,11 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, userRole, onLogout }) => {
-  const isStartup = userRole === UserRole.STARTUP;
-
   const menuItems = [
     { id: AppView.DASHBOARD, label: 'Dashboard', icon: LayoutDashboard },
-    // Direct connection menus for Startups
-    { id: AppView.AGENCIES, label: 'Agencies', icon: Building2, roles: [UserRole.STARTUP] },
-    { id: AppView.INSTITUTIONS, label: 'Colleges', icon: GraduationCap, roles: [UserRole.STARTUP] },
-    { id: AppView.FREELANCERS, label: 'Freelancers', icon: User, roles: [UserRole.STARTUP] },
-    
+    // Consolidated Common Menu for Startups
+    { id: AppView.TALENT_POOL, label: 'Talent & Partners', icon: Users, roles: [UserRole.STARTUP] },
+
     { id: AppView.PROJECT_BOARD, label: 'Opportunity Hub', icon: Briefcase },
     { id: AppView.MESSAGES, label: 'Messages', icon: MessageSquare },
     { id: AppView.SETTINGS, label: 'Settings', icon: Settings },
@@ -42,11 +36,9 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, userRole, on
   return (
     <div className="w-64 flex flex-col h-full bg-white border-r border-slate-200 shrink-0">
       <div className="p-6 flex items-center gap-3">
-        <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white">
-          <Rocket size={24} />
-        </div>
+        <img src="/assets/company_logo.png" alt="Logo" className="h-10 object-contain" />
         <div>
-          <h1 className="font-bold text-slate-900 leading-tight">FounderDash</h1>
+          <h1 className="font-black text-slate-900 leading-tight tracking-tighter uppercase italic">STARTUPCONNECTER</h1>
           <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">{userRole}</p>
         </div>
       </div>
@@ -59,11 +51,10 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, userRole, on
             <button
               key={item.id}
               onClick={() => onNavigate(item.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
-                isActive 
-                  ? 'bg-blue-50 text-blue-600' 
-                  : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
-              }`}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive
+                ? 'bg-blue-50 text-blue-600'
+                : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                }`}
             >
               <Icon size={20} />
               {item.label}
@@ -78,7 +69,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, userRole, on
             <HelpCircle size={20} />
             Support
           </button>
-          <button 
+          <button
             onClick={onLogout}
             className="w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:text-red-600 text-sm font-medium transition-colors"
           >

@@ -4,161 +4,178 @@ import {
   Users, 
   Briefcase, 
   Calendar, 
-  Plus, 
-  Search, 
   ArrowRight,
-  Mail,
-  UserCheck,
   Zap,
-  UserPlus
+  UserPlus,
+  Trophy,
+  Target
 } from 'lucide-react';
-import { Stat, Activity, User, UserRole, ProjectType } from '../types';
+import { Stat, User, UserRole, ProjectType, Interview, HiringStats } from '../types';
 
 interface DashboardProps {
   user: User;
+  interviews: Interview[];
+  hiringStats: HiringStats;
   onPostProject?: (type: ProjectType) => void;
+  onViewInterviews: () => void;
+  onViewInterns: () => void;
+  onViewAgencyLeads: () => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ user, onPostProject }) => {
+const Dashboard: React.FC<DashboardProps> = ({ user, interviews, hiringStats, onPostProject, onViewInterviews, onViewInterns, onViewAgencyLeads }) => {
   const isStartup = user.role === UserRole.STARTUP;
+  const isInstitution = user.role === UserRole.INSTITUTION;
+  const isAgency = user.role === UserRole.AGENCY;
+  const isFreelancer = user.role === UserRole.FREELANCER;
 
-  const stats: Stat[] = [
-    { label: isStartup ? 'Active Interns' : 'Talent Placed', value: isStartup ? 12 : 84, change: '+20%', isPositive: true, subtext: 'v.s. last month', icon: Users },
-    { label: isStartup ? 'Agency Leads' : 'New Proposals', value: isStartup ? '08' : '15', change: '+10%', isPositive: true, subtext: 'active negotiations', icon: Briefcase },
-    { label: 'Upcoming Calls', value: '05', change: '-5%', isPositive: false, subtext: 'scheduled this week', icon: Calendar }
-  ];
+  const getStats = (): Stat[] => {
+    if (isStartup) {
+      return [
+        { label: 'Active Interns', value: hiringStats.activeInterns, change: '+2', isPositive: true, subtext: 'Hired from Institutions', icon: Users },
+        { label: 'Agency Leads', value: hiringStats.agencyLeads, change: '+1', isPositive: true, subtext: 'Active Partnerships', icon: Target },
+        { label: 'Upcoming Interviews', value: interviews.length, change: interviews.length > 0 ? `+${interviews.length}` : '0', isPositive: interviews.length > 0, subtext: 'Pending decision', icon: Calendar }
+      ];
+    }
+    if (isInstitution) {
+      return [
+        { label: 'Students Hired', value: hiringStats.hiredStudents, change: '+5', isPositive: true, subtext: 'Total across startups', icon: Trophy },
+        { label: 'Active Internships', value: 12, change: '+2', isPositive: true, subtext: 'Current student count', icon: Users },
+        { label: 'Partner Startups', value: 8, change: '0', isPositive: false, subtext: 'Trusting your talent', icon: Briefcase }
+      ];
+    }
+    if (isAgency || isFreelancer) {
+      return [
+        { label: 'Leads Taken', value: hiringStats.leadsTaken, change: '+3', isPositive: true, subtext: 'Projects won this month', icon: Zap },
+        { label: 'Active Projects', value: 4, change: '+1', isPositive: true, subtext: 'Under execution', icon: Briefcase },
+        { label: 'Client Rating', value: '4.9', change: '+0.1', isPositive: true, subtext: 'Based on 24 reviews', icon: Target }
+      ];
+    }
+    return [];
+  };
+
+  const stats = getStats();
+
+  const handleStatClick = (label: string) => {
+    if (label === 'Upcoming Interviews') onViewInterviews();
+    if (label === 'Active Interns') onViewInterns();
+    if (label === 'Agency Leads') onViewAgencyLeads();
+  };
+
+  const isInteractive = (label: string) => {
+    return ['Upcoming Interviews', 'Active Interns', 'Agency Leads'].includes(label);
+  };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <div className="lg:col-span-2 space-y-8">
+        {/* Welcome Banner */}
         <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm flex items-center justify-between relative overflow-hidden">
           <div className="relative z-10">
             <h2 className="text-2xl font-black text-slate-900 mb-2">Welcome back, {user.name.split(' ')[0]}!</h2>
-            <p className="text-slate-500 max-w-md">
+            <p className="text-slate-500 max-w-md text-sm">
               {isStartup 
-                ? "You have 3 new quotations for your 'React Native' project. Review them today to stay on track."
-                : "There are 5 new projects matching your skills in the marketplace."}
+                ? "Manage your workforce and partnerships from a single command center."
+                : isInstitution 
+                ? "Your students are making waves! Check out the latest hiring trends."
+                : "Your professional reputation is growing. Review your active leads and projects."}
             </p>
           </div>
-          <div className="relative z-10">
-             <div className="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-blue-100">
+          <div className="relative z-10 hidden sm:block">
+             <div className="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-blue-100 animate-pulse">
                <Zap size={32} />
              </div>
           </div>
           <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 blur-3xl rounded-full"></div>
         </div>
 
+        {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {stats.map((stat, idx) => (
-            <div key={idx} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-slate-500 text-xs font-bold uppercase tracking-wider">{stat.label}</span>
-                <stat.icon size={18} className="text-blue-600" />
-              </div>
-              <div className="flex items-end gap-2 mb-1">
-                <span className="text-2xl font-black text-slate-900">{stat.value}</span>
-                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${stat.isPositive ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
-                  {stat.change}
-                </span>
-              </div>
-              <p className="text-[10px] text-slate-400 font-medium">{stat.subtext}</p>
-            </div>
-          ))}
+          {stats.map((stat, idx) => {
+            const clickable = isInteractive(stat.label);
+            return (
+              <button 
+                key={idx} 
+                onClick={() => handleStatClick(stat.label)}
+                disabled={!clickable}
+                className={`bg-white p-6 rounded-2xl border border-slate-100 shadow-sm text-left transition-all group ${clickable ? 'hover:shadow-lg hover:border-blue-200 cursor-pointer active:scale-95' : 'cursor-default'}`}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-slate-500 text-[10px] font-black uppercase tracking-widest">{stat.label}</span>
+                  <div className={`p-2 rounded-lg ${clickable ? 'bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white' : 'bg-slate-50 text-slate-400'} transition-colors`}>
+                    <stat.icon size={16} />
+                  </div>
+                </div>
+                <div className="flex items-end gap-2 mb-1">
+                  <span className="text-3xl font-black text-slate-900 leading-none">{String(stat.value).padStart(2, '0')}</span>
+                  <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${stat.isPositive ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
+                    {stat.change}
+                  </span>
+                </div>
+                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">{stat.subtext}</p>
+              </button>
+            );
+          })}
         </div>
 
         <section>
-          <h3 className="text-lg font-bold text-slate-900 mb-6">Recent Collaborations</h3>
+          <h3 className="text-lg font-black text-slate-900 mb-6 tracking-tight">Ecosystem Insights</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <CollaborationCard 
-              title="Q3 Brand Strategy" 
-              partner="AGENCY X" 
-              status="In Progress"
-              progress={75}
-            />
-            <CollaborationCard 
-              title="Backend Refactor" 
-              partner="John Freelancer" 
-              status="Review"
-              progress={90}
-            />
+            <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+              <h4 className="font-bold text-slate-900 mb-2">Collaboration Progress</h4>
+              <p className="text-xs text-slate-400 mb-4">Project: Q4 Sprint Alpha</p>
+              <div className="h-2 bg-slate-50 rounded-full overflow-hidden">
+                <div className="h-full bg-blue-600 w-[65%]"></div>
+              </div>
+            </div>
+            <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+              <h4 className="font-bold text-slate-900 mb-2">Market Sentiment</h4>
+              <p className="text-xs text-slate-400 mb-4">Trending Sector: Climate Tech</p>
+              <div className="flex items-center gap-2 text-emerald-600 font-bold text-sm">
+                <Target size={16} /> High Demand
+              </div>
+            </div>
           </div>
         </section>
       </div>
 
       <div className="space-y-8">
-        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-          <h3 className="text-lg font-bold text-slate-900 mb-6">Immediate Actions</h3>
+        <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+          <h3 className="text-lg font-black text-slate-900 mb-6 tracking-tight">Immediate Actions</h3>
           <div className="space-y-4">
             {isStartup ? (
               <>
                 <button 
                   onClick={() => onPostProject?.('execution')}
-                  className="w-full bg-slate-900 text-white p-4 rounded-2xl flex items-center justify-between hover:bg-slate-800 transition-colors group"
+                  className="w-full bg-slate-900 text-white p-5 rounded-2xl flex items-center justify-between hover:bg-slate-800 transition-all group active:scale-[0.98]"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-4">
                     <Zap size={20} className="text-blue-400" />
-                    <span className="font-bold text-sm">Post a Project</span>
+                    <span className="font-black text-xs uppercase tracking-widest">Post a Project</span>
                   </div>
-                  <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight size={18} />
                 </button>
                 <button 
                   onClick={() => onPostProject?.('recruitment')}
-                  className="w-full bg-blue-50 text-blue-600 p-4 rounded-2xl flex items-center justify-between hover:bg-blue-100 transition-colors group"
+                  className="w-full bg-blue-50 text-blue-600 p-5 rounded-2xl flex items-center justify-between hover:bg-blue-100 transition-all group active:scale-[0.98]"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-4">
                     <UserPlus size={20} />
-                    <span className="font-bold text-sm">Find Talent</span>
+                    <span className="font-black text-xs uppercase tracking-widest">Find a Talent</span>
                   </div>
-                  <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight size={18} />
                 </button>
               </>
             ) : (
-              <>
-                <button className="w-full bg-slate-900 text-white p-4 rounded-2xl flex items-center justify-between hover:bg-slate-800 transition-colors group">
-                  <span className="font-bold text-sm">Browse Marketplace</span>
-                  <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                </button>
-                <button className="w-full bg-blue-50 text-blue-600 p-4 rounded-2xl flex items-center justify-between hover:bg-blue-100 transition-colors group">
-                  <span className="font-bold text-sm">Update Availability</span>
-                  <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                </button>
-              </>
+              <button className="w-full bg-blue-600 text-white p-5 rounded-2xl flex items-center justify-between hover:bg-blue-700 transition-all group">
+                <span className="font-black text-xs uppercase tracking-widest">Update Profile</span>
+                <ArrowRight size={18} />
+              </button>
             )}
           </div>
-        </div>
-
-        <div className="bg-slate-900 p-8 rounded-3xl text-white relative overflow-hidden group">
-          <div className="relative z-10">
-            <h4 className="text-xs font-bold uppercase tracking-widest opacity-60 mb-2">Community Score</h4>
-            <p className="text-4xl font-black mb-4">98</p>
-            <p className="text-xs text-slate-400 leading-relaxed">Your account is in excellent standing. You're among the top 5% of collaborators this month.</p>
-          </div>
-          <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/20 blur-3xl rounded-full translate-x-10 -translate-y-10 group-hover:scale-150 transition-transform duration-700"></div>
         </div>
       </div>
     </div>
   );
 };
-
-const CollaborationCard = ({ title, partner, status, progress }: any) => (
-  <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-    <div className="flex justify-between items-start mb-4">
-      <div>
-        <h4 className="font-bold text-slate-900 leading-none mb-1">{title}</h4>
-        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{partner}</p>
-      </div>
-      <span className="text-[9px] font-black px-2 py-0.5 rounded bg-blue-50 text-blue-600 uppercase">{status}</span>
-    </div>
-    <div className="space-y-2">
-      <div className="flex justify-between text-[10px] font-bold text-slate-400">
-        <span>Progress</span>
-        <span>{progress}%</span>
-      </div>
-      <div className="h-1.5 bg-slate-50 rounded-full overflow-hidden">
-        <div className="h-full bg-blue-600" style={{ width: `${progress}%` }}></div>
-      </div>
-    </div>
-  </div>
-);
 
 export default Dashboard;

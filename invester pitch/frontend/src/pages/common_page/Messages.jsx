@@ -43,7 +43,7 @@ const Messages = () => {
         return {
             id: m.id || `temp-${Date.now()}`,
             sender: m.sender_name || 'Unknown',
-            role: m.sender_role || 'Professional',
+            role: m.sender_role || 'Member',
             content: m.content,
             timestamp: m.timestamp ? new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleTimeString(),
             isMe: isMe,
@@ -72,7 +72,7 @@ const Messages = () => {
                     name: c.name || 'Unknown User',
                     role: (c.role === 'startup')
                         ? (c.extra || 'Startup')
-                        : (c.role === 'investor' ? 'Investor' : 'Professional'),
+                        : (c.role === 'investor' ? 'Investor' : 'Member'),
                     avatar: <User size={20} />,
                     avatarBg: c.role === 'startup' ? 'bg-emerald-600' : 'bg-slate-500',
                     isAi: false,
@@ -202,7 +202,7 @@ const Messages = () => {
                             const newC = {
                                 id: partnerId,
                                 name: data.sender_name || 'New User',
-                                role: 'Professional', // Approximate
+                                role: 'Member', // Approximate
                                 avatar: <User size={20} />,
                                 avatarBg: 'bg-slate-500',
                                 isAi: false,
@@ -346,7 +346,7 @@ const Messages = () => {
             {/* Sidebar */}
             <div className="w-80 border-r border-slate-200 bg-white flex flex-col">
                 <div className="p-4 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white z-10">
-                    <h1 className="text-xl font-bold text-slate-900">Messages</h1>
+                    <h1 className="text-xl font-bold text-slate-900">Connect Messages</h1>
                     <div className="flex gap-2">
                         <button className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-colors"><MoreHorizontal size={20} /></button>
                     </div>
@@ -369,7 +369,7 @@ const Messages = () => {
                                         setSearchResults(results.map(u => ({
                                             id: u.id,
                                             name: u.name || 'User ' + u.id,
-                                            role: u.role === 'investor' ? 'Investor' : 'Professional',
+                                            role: u.role === 'investor' ? 'Investor' : 'Member',
                                             avatar: <User size={20} />,
                                             avatarBg: u.role === 'investor' ? 'bg-blue-600' : 'bg-slate-500',
                                             profile_photo: u.profile_image, // Map from API

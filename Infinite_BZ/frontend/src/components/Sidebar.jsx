@@ -5,11 +5,9 @@ export default function Sidebar({ activePage, onNavigate, onLogout, onCreateClic
         <aside className="w-64 bg-slate-900 border-r border-white/20 flex flex-col fixed h-full z-20 hidden lg:flex text-white transition-all duration-300">
             <div className="p-6">
                 <div className="flex items-center gap-3 font-bold text-xl text-white cursor-pointer" onClick={() => onNavigate('dashboard')}>
-                    <div className="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center shadow-lg shadow-primary-500/20">
-                        <i className="text-white not-italic">BZ</i>
-                    </div>
+                    <img src="/assets/company_logo.png" alt="Logo" className="h-10 object-contain" />
                     <div>
-                        InfiniteBZ
+                        <span className="text-lg font-black tracking-tighter uppercase italic">INVESTOR</span>
                         <span className="block text-[10px] font-normal text-white/70">Chennai Edition</span>
                     </div>
                 </div>

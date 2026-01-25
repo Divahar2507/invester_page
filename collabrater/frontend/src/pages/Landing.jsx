@@ -1,4 +1,5 @@
-import { ArrowRight, Globe, Shield, TrendingUp, CheckCircle, Mail, MapPin, Github, Twitter, Linkedin, Sun, Moon, Calendar, Users, Target, Layers, Rocket, CreditCard } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowRight, Globe, Shield, TrendingUp, CheckCircle, Mail, MapPin, Github, Twitter, Linkedin, Sun, Moon, Calendar, Users, Target, Layers, Rocket, CreditCard, MessageSquare, Quote, Star, Zap } from 'lucide-react';
 import './Landing.css';
 
 const Landing = () => {
@@ -15,13 +16,13 @@ const Landing = () => {
             {/* Navbar */}
             <nav className="navbar">
                 <div className="nav-brand">
-                    <div className="brand-icon"></div>
-                    <span>CONNECTOR</span>
+                    <img src="/assets/company_logo.png" alt="INVESTOR" className="nav-logo" />
+                    <span>INVESTOR</span>
                 </div>
                 <div className="nav-menu">
                     <a href="#about">About</a>
                     <a href="#services">Services</a>
-                    <a href="#performance">Performance</a>
+                    <a href="#impact">Impact</a>
                     <a href="#contact">Contact</a>
                 </div>
                 <div className="nav-cta">
@@ -39,7 +40,9 @@ const Landing = () => {
                     <div className="hero-text">
                         <div className="tag-pill">STRATEGIC CAPITAL PARTNERS</div>
                         <h1>Scalable Solutions for <br /> <span className="text-highlight">Modern Capital</span></h1>
-                        <p>Empowering founders and investors through bespoke deal flow management, strategic diligence, and high-precision matchmaking.</p>
+                        <p>
+                            "Innovation distinguishes between a leader and a follower." INVESTOR is the central nervous system for founders and investors, providing 360° deal flow management and strategic growth automation.
+                        </p>
 
                         <div className="hero-buttons">
                             <button className="btn-primary">Get Started Today</button>
@@ -53,7 +56,6 @@ const Landing = () => {
                             backgroundSize: 'cover',
                             backgroundPosition: 'center'
                         }}>
-                            {/* Image loaded via CSS background */}
                         </div>
                         <div className="floating-quote">
                             <p>"Efficiency is doing things right; effectiveness is doing the right things."</p>
@@ -63,65 +65,80 @@ const Landing = () => {
                 </div>
             </section>
 
-            {/* Stats Section */}
-            <section className="stats-section">
-                <div className="stats-grid">
-                    <div className="stat-card">
-                        <div className="stat-icon blue-icon"><TrendingUp size={20} /> REVENUE IMPACT</div>
-                        <h3>$120M+</h3>
-                        <p className="positive">↗ +45% YoY Growth</p>
-                    </div>
-                    <div className="stat-card">
-                        <div className="stat-icon blue-icon"><CheckCircle size={20} /> DEALS CLOSED</div>
-                        <h3>500+</h3>
-                        <p className="positive">◎ 98.4% Client Satisfaction</p>
-                    </div>
-                    <div className="stat-card">
-                        <div className="stat-icon blue-icon"><Globe size={20} /> LEAD CONVERSION</div>
-                        <h3>15k+</h3>
-                        <p className="positive">⚡ +66% Acquisition Rate</p>
-                    </div>
+            {/* Growth Grid Section (NEW) */}
+            <section id="impact" className="impact-grid-section">
+                <div className="section-header center-aligned">
+                    <span className="section-tag">PROJECT ECOSYSTEM</span>
+                    <h2>The Gateway Growth Grid</h2>
+                    <p>Every connection made here is backed by institutional-grade data and a global network of visionaries.</p>
+                </div>
+
+                <div className="infinite-grid">
+                    {[
+                        {
+                            title: "Investor Matchmaking",
+                            desc: "Our neural matching engine connects elite founders with precision capital, reducing the fundraising cycle by 3x.",
+                            icon: <Target />,
+                            stats: "92% Accuracy"
+                        },
+                        {
+                            title: "LeadGen Engine",
+                            desc: "Automated market analysis and B2B lead generation targeting high-intent prospects across 50+ sectors.",
+                            icon: <Zap />,
+                            stats: "15k+ Leads/Mo"
+                        },
+                        {
+                            title: "Founders Hub",
+                            desc: "A mission control center for building traction, managing pitches, and tracking real-time data metrics.",
+                            icon: <Rocket />,
+                            stats: "1.2k+ Founders"
+                        },
+                        {
+                            title: "Legal & Compliance",
+                            desc: "Automated term sheets, NDAs, and MOU generation to ensure every deal is legally sound and lightning fast.",
+                            icon: <Shield />,
+                            stats: "Zero-Risk Flow"
+                        },
+                        {
+                            title: "Community Events",
+                            desc: "Host demo days and networking mixers with auto-lead capture and high-engagement RSVP protocols.",
+                            icon: <Users />,
+                            stats: "160+ Events"
+                        },
+                        {
+                            title: "Growth Research",
+                            desc: "In-depth market insights and sector-specific reports to help you navigate the ever-evolving capital landscape.",
+                            icon: <BarChart3 />,
+                            stats: "Data-Driven"
+                        }
+                    ].map((item, i) => (
+                        <div key={i} className="grid-item-card">
+                            <div className="card-top">
+                                <div className="card-icon-box">{item.icon}</div>
+                                <div className="card-stat-pill">{item.stats}</div>
+                            </div>
+                            <h3>{item.title}</h3>
+                            <p>{item.desc}</p>
+                            <div className="card-footer">
+                                <Quote size={14} className="q-icon" />
+                                <span>"Impact starts with one connection."</span>
+                            </div>
+                        </div>
+                    ))}
                 </div>
             </section>
 
-            {/* About / Summary Section */}
-            <section id="about" className="about-section">
-                <div className="about-container">
-                    <div className="section-header center-aligned">
-                        <span className="section-tag">WHO WE ARE</span>
-                        <h2>The Central Nervous System <br /> of Innovation</h2>
-                        <div className="underline center-line"></div>
-                    </div>
-
-                    <div className="about-content-grid">
-                        <div className="about-text">
-                            <h3>Bridging the Gap</h3>
-                            <p>
-                                Connector is more than just a platform; it's the bridge between high-potential ventures and institutional capital.
-                                In a fragmented market, we provide the infrastructure that allows innovation to scale efficiently.
-                            </p>
-                            <p>
-                                By leveraging AI-driven data intelligence and human-centric relationship building, we ensure that every connection
-                                made on our platform has the highest probability of mutual success.
-                            </p>
-                            <ul className="about-list">
-                                <li><CheckCircle size={16} className="list-icon" /> Curated Deal Flow</li>
-                                <li><CheckCircle size={16} className="list-icon" /> Institutional-Grade Diligence</li>
-                                <li><CheckCircle size={16} className="list-icon" /> Secure Data Rooms</li>
-                            </ul>
-                        </div>
-                        <div className="about-visual">
-                            <div className="visual-card">
-                                <Target size={32} className="visual-icon" />
-                                <h4>Precision Matching</h4>
-                                <p>Our algorithm matches you with partners that align with your thesis.</p>
-                            </div>
-                            <div className="visual-card">
-                                <Layers size={32} className="visual-icon" />
-                                <h4>Full-Stack Integration</h4>
-                                <p>From document prep to final close, we handle the workflow.</p>
-                            </div>
-                        </div>
+            {/* Stories Strip */}
+            <section className="stories-strip">
+                <div className="story-label">SUCCESS STORIES</div>
+                <div className="marquee">
+                    <div className="marquee-content">
+                        <span>• AeroAI raised $5M in Seed •</span>
+                        <span>• FinTech Pro closed 24 deals this quarter •</span>
+                        <span>• CleanTech Hub generated 2,000+ leads •</span>
+                        <span>• Global VC shortlisted 15 startups via Bridge •</span>
+                        <span>• AeroAI raised $5M in Seed •</span>
+                        <span>• FinTech Pro closed 24 deals this quarter •</span>
                     </div>
                 </div>
             </section>
@@ -129,69 +146,65 @@ const Landing = () => {
             {/* Service Pillars */}
             <section id="services" className="services-section">
                 <div className="section-header">
-                    <span className="section-tag">CORE EXPERTISE</span>
-                    <h2>Our Service Pillars</h2>
+                    <span className="section-tag">SERVICES</span>
+                    <h2>Investor Solutions</h2>
+                    <p>We provide the full stack of tools needed to manage the entire lifecycle of capital deployment and startup growth.</p>
                     <div className="underline"></div>
                 </div>
 
                 <div className="pillars-grid">
-                    {/* 1. Investor Platform */}
+                    {/* ... (existing pillar cards remain same but I'll update their titles/descriptions in the full render) */}
                     <div className="pillar-card" onClick={() => window.open('http://localhost', '_blank')} style={{ cursor: 'pointer' }}>
                         <div className="pillar-image img-1"></div>
                         <div className="pillar-content">
                             <div className="icon-box"><Shield size={20} /></div>
-                            <h3>Investor & Startup</h3>
-                            <p>Unified platform for pitching ideas, finding investors, and managing portfolios.</p>
+                            <h3>Matchmaking Hub</h3>
+                            <p>The definitive platform for pitching and deploying capital with algorithmic precision.</p>
                         </div>
                     </div>
 
-                    {/* 2. FounderDash (NEW) */}
                     <div className="pillar-card" onClick={() => window.open('http://localhost:3007', '_blank')} style={{ cursor: 'pointer' }}>
                         <div className="pillar-image img-startup"></div>
                         <div className="pillar-content">
                             <div className="icon-box"><Rocket size={20} /></div>
                             <h3>FounderDash</h3>
-                            <p>Comprehensive command center for startup founders to tracking growth and metrics.</p>
+                            <p>The cockpit for startup founders to navigate growth, traction, and investor relations.</p>
                         </div>
                     </div>
 
-                    {/* 3. LeadGen */}
                     <div className="pillar-card" onClick={() => window.open('http://localhost:3003', '_blank')} style={{ cursor: 'pointer' }}>
                         <div className="pillar-image img-3"></div>
                         <div className="pillar-content">
                             <div className="icon-box"><Globe size={20} /></div>
-                            <h3>LeadGen Engine</h3>
-                            <p>AI-powered lead generation and marketing automation tools.</p>
+                            <h3>LeadGen Matrix</h3>
+                            <p>Supercharge your prospecting with AI-driven market analysis and automated reach-out.</p>
                         </div>
                     </div>
 
-                    {/* 4. Innosphere (NEW) */}
                     <div className="pillar-card" onClick={() => window.open('http://localhost:3008', '_blank')} style={{ cursor: 'pointer' }}>
                         <div className="pillar-image img-collab"></div>
                         <div className="pillar-content">
                             <div className="icon-box"><Users size={20} /></div>
-                            <h3>Innosphere Admin</h3>
-                            <p>Centralized portal for team collaboration and project oversight.</p>
+                            <h3>Innosphere Portal</h3>
+                            <p>Institutional collaboration for team management, project oversight, and secure data rooms.</p>
                         </div>
                     </div>
 
-                    {/* 5. Funds Collection (NEW) */}
                     <div className="pillar-card" onClick={() => window.open('http://localhost:3009', '_blank')} style={{ cursor: 'pointer' }}>
                         <div className="pillar-image img-funds"></div>
                         <div className="pillar-content">
                             <div className="icon-box"><CreditCard size={20} /></div>
-                            <h3>Funds Collection</h3>
-                            <p>Secure payment processing and automated capital flow management.</p>
+                            <h3>Capital Flows</h3>
+                            <p>Secure global fundraising portals including crowdfunding and debt-financing setups.</p>
                         </div>
                     </div>
 
-                    {/* 6. Events */}
                     <div className="pillar-card" onClick={() => window.open('http://localhost:3006', '_blank')} style={{ cursor: 'pointer' }}>
                         <div className="pillar-image img-2"></div>
                         <div className="pillar-content">
                             <div className="icon-box"><Calendar size={20} /></div>
-                            <h3>Community & Events</h3>
-                            <p>Exclusive access to demo days, roundtables, and networking mixers.</p>
+                            <h3>Events & Network</h3>
+                            <p>Connect with high-net-worth individuals and VCs through exclusive globally hosted events.</p>
                         </div>
                     </div>
                 </div>
@@ -266,7 +279,7 @@ const Landing = () => {
             <footer className="footer-bar">
                 <div className="footer-left">
                     <div className="brand-icon small"></div>
-                    <span>CONNECTOR</span>
+                    <span>INVESTOR</span>
                 </div>
                 <div className="footer-center">
                     <a href="#">Privacy Policy</a>
