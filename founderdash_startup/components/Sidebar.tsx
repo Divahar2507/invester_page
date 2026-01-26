@@ -35,13 +35,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onNavigate, userRole, on
 
   return (
     <div className="w-64 flex flex-col h-full bg-white border-r border-slate-200 shrink-0">
-      <div className="p-6 flex items-center gap-3">
-        <img src="/assets/company_logo.png" alt="Logo" className="h-10 object-contain" />
-        <div>
-          <h1 className="font-black text-slate-900 leading-tight tracking-tighter uppercase italic">STARTUPCONNECTER</h1>
-          <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">{userRole}</p>
-        </div>
-      </div>
+      {/* Logo area removed as per request */}
 
       <nav className="flex-1 px-4 space-y-1 mt-4">
         {filteredItems.map((item) => {

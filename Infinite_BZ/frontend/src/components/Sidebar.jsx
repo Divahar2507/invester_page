@@ -3,15 +3,7 @@ import { LayoutDashboard, ClipboardList, TrendingUp, Settings, LogOut, ScanLine,
 export default function Sidebar({ activePage, onNavigate, onLogout, onCreateClick }) {
     return (
         <aside className="w-64 bg-slate-900 border-r border-white/20 flex flex-col fixed h-full z-20 hidden lg:flex text-white transition-all duration-300">
-            <div className="p-6">
-                <div className="flex items-center gap-3 font-bold text-xl text-white cursor-pointer" onClick={() => onNavigate('dashboard')}>
-                    <img src="/assets/company_logo.png" alt="Logo" className="h-10 object-contain" />
-                    <div>
-                        <span className="text-lg font-black tracking-tighter uppercase italic">INVESTOR</span>
-                        <span className="block text-[10px] font-normal text-white/70">Chennai Edition</span>
-                    </div>
-                </div>
-            </div>
+            {/* Logo area removed as per request */}
 
             <nav className="flex-1 px-4 space-y-1 mt-6">
                 <NavItem

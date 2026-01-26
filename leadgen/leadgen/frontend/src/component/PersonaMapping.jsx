@@ -7,6 +7,7 @@ import {
   useSensor,
   useSensors,
   closestCorners,
+  useDroppable,
 } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -60,16 +61,20 @@ function findContainerByItemId(itemsByContainer, itemId) {
 /* --------------------------------- Components -------------------------------- */
 
 function DroppableContainer({ id, title, children, style }) {
+  const { setNodeRef, isOver } = useDroppable({ id });
   const isMappedContainer = id.includes('mapped');
 
   return (
     <div
+      ref={setNodeRef}
       style={{
         border: isMappedContainer ? '2px dashed #cbd5e1' : 'none',
         borderRadius: 12,
         padding: isMappedContainer ? 16 : 0,
         minHeight: isMappedContainer ? 140 : 20,
         background: isMappedContainer ? '#fff' : 'transparent',
+        boxShadow: isOver && isMappedContainer ? '0 0 0 2px #3b82f6' : 'none',
+        transition: 'all 0.2s ease',
         ...style,
       }}
     >
@@ -345,6 +350,52 @@ const PersonaMapping = ({ icps, selectedIcpId, onSelectIcp }) => {
     setActiveItemId(event.active.id);
   }
 
+  function handleDragOver(event) {
+    const { active, over } = event;
+    if (!over) return;
+
+    const activeId = active.id;
+    const overId = over.id;
+
+    const activeContainer = findContainerByItemId(itemsByContainer, activeId);
+    let overContainer = overId;
+
+    if (!Object.keys(itemsByContainer).includes(overId)) {
+      overContainer = findContainerByItemId(itemsByContainer, overId);
+    }
+
+    if (!activeContainer || !overContainer || activeContainer === overContainer) {
+      return;
+    }
+
+    const draggedItem = itemsByContainer[activeContainer].find(x => x.id === activeId);
+    if (!draggedItem || !isAllowedDrop(draggedItem, overContainer)) return;
+
+    setItemsByContainer((prev) => {
+      const activeItems = prev[activeContainer];
+      const overItems = prev[overContainer];
+
+      const activeIndex = activeItems.findIndex((item) => item.id === activeId);
+      const isOverItem = !Object.keys(prev).includes(overId);
+      const overIndex = isOverItem
+        ? overItems.findIndex((item) => item.id === overId)
+        : overItems.length;
+
+      const [removed] = activeItems.filter((i) => i.id === activeId);
+      const updatedItem = { ...removed, status: overContainer.includes('mapped') ? 'mapped' : 'unassigned' };
+
+      return {
+        ...prev,
+        [activeContainer]: activeItems.filter((item) => item.id !== activeId),
+        [overContainer]: [
+          ...overItems.slice(0, overIndex),
+          updatedItem,
+          ...overItems.slice(overIndex),
+        ],
+      };
+    });
+  }
+
   function onDragEnd(event) {
     const { active, over } = event;
     setActiveItemId(null);
@@ -354,65 +405,25 @@ const PersonaMapping = ({ icps, selectedIcpId, onSelectIcp }) => {
     const activeId = active.id;
     const overId = over.id;
 
-    const fromContainer = findContainerByItemId(itemsByContainer, activeId);
-    if (!fromContainer) return;
-
-    // Resolve overContainer
+    const activeContainer = findContainerByItemId(itemsByContainer, activeId);
     let overContainer = overId;
-    if (Object.keys(itemsByContainer).includes(overId)) {
-      // dropped on container itself
-    } else {
-      // dropped on item
+
+    if (!Object.keys(itemsByContainer).includes(overId)) {
       overContainer = findContainerByItemId(itemsByContainer, overId);
     }
 
-    if (!overContainer) return;
+    if (!activeContainer || !overContainer) return;
 
-    const draggedItem = itemsByContainer[fromContainer].find(x => x.id === activeId);
-    if (!draggedItem) return;
+    if (activeId !== overId) {
+      const activeIndex = itemsByContainer[activeContainer].findIndex((i) => i.id === activeId);
+      const overIndex = itemsByContainer[overContainer].findIndex((i) => i.id === overId);
 
-    // Type restriction
-    if (!isAllowedDrop(draggedItem, overContainer)) return;
-
-    // Move
-    if (fromContainer === overContainer) {
-      // Reorder
-      const oldIndex = itemsByContainer[fromContainer].findIndex(x => x.id === activeId);
-      const newIndex = itemsByContainer[fromContainer].findIndex(x => x.id === overId);
-
-      if (oldIndex !== newIndex) {
-        setItemsByContainer(prev => ({
-          ...prev,
-          [fromContainer]: arrayMove(prev[fromContainer], oldIndex, newIndex)
+      if (activeIndex !== overIndex) {
+        setItemsByContainer((items) => ({
+          ...items,
+          [overContainer]: arrayMove(items[overContainer], activeIndex, overIndex),
         }));
       }
-    } else {
-      // Move between containers
-      setItemsByContainer(prev => {
-        const fromItems = [...prev[fromContainer]];
-        const toItems = [...prev[overContainer]];
-
-        const fromIndex = fromItems.findIndex(x => x.id === activeId);
-        const [removed] = fromItems.splice(fromIndex, 1);
-
-        // Update status based on container
-        if (overContainer.includes('mapped')) removed.status = 'mapped';
-        else removed.status = 'unassigned';
-
-        const isOverItem = !Object.keys(prev).includes(overId);
-        if (isOverItem) {
-          const overIndex = toItems.findIndex(x => x.id === overId);
-          toItems.splice(overIndex, 0, removed);
-        } else {
-          toItems.push(removed);
-        }
-
-        return {
-          ...prev,
-          [fromContainer]: fromItems,
-          [overContainer]: toItems
-        };
-      });
     }
   }
 
@@ -664,13 +675,14 @@ const PersonaMapping = ({ icps, selectedIcpId, onSelectIcp }) => {
           sensors={sensors}
           collisionDetection={closestCorners}
           onDragStart={onDragStart}
+          onDragOver={handleDragOver}
           onDragEnd={onDragEnd}
         >
           {/* LEFT COLUMN: LIBRARY */}
           <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #e2e8f0', padding: 20, height: 'fit-content' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
               <h3 style={{ fontSize: 16, fontWeight: 700 }}>Library</h3>
-              <button onClick={handleAddAll} style={{ fontSize: 12, color: '#2563eb', background: 'none', border: 'none', fontWeight: 600, cursor: 'pointer' }}>Add All</button>
+              <button onClick={handleAddAll} style={{ fontSize: 12, color: '#2563eb', background: 'none', border: 'none', fontWeight: 600, cursor: 'pointer' }}>drag and drop</button>
             </div>
 
             {/* Custom Insight Button */}

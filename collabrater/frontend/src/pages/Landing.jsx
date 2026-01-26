@@ -92,7 +92,25 @@ const Landing = () => {
                             desc: "A mission control center for building traction, managing pitches, and tracking real-time data metrics.",
                             icon: <Rocket />,
                             stats: "1.2k+ Founders"
-                        },
+                        }
+                    ].map((item, i) => (
+                        <div key={i} className="grid-item-card">
+                            <div className="card-top">
+                                <div className="card-icon-box">{item.icon}</div>
+                                <div className="card-stat-pill">{item.stats}</div>
+                            </div>
+                            <h3>{item.title}</h3>
+                            <p>{item.desc}</p>
+                            <div className="card-footer">
+                                <Quote size={14} className="q-icon" />
+                                <span>"Impact starts with one connection."</span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                <div className="infinite-grid" style={{ marginTop: '2rem' }}>
+                    {[
                         {
                             title: "Legal & Compliance",
                             desc: "Automated term sheets, NDAs, and MOU generation to ensure every deal is legally sound and lightning fast.",

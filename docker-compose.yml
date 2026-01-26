@@ -206,8 +206,9 @@ services:
     container_name: leadgen_frontend
     ports:
       - "3003:80"
-    depends_on:
-      - backend-leadgen
+    volumes:
+      - "./leadgen/leadgen/frontend:/app"
+      - "/app/node_modules"
     networks:
       - ecosystem_net
 
@@ -293,6 +294,9 @@ services:
     container_name: founderdash_frontend
     ports:
       - "3007:80"
+    volumes:
+      - "./founderdash_startup:/app"
+      - "/app/node_modules"
     networks:
       - ecosystem_net
 
@@ -304,6 +308,9 @@ services:
     container_name: innosphere_frontend
     ports:
       - "3008:80"
+    volumes:
+      - "./innosphere_admin/innosphere-admin-&-collaboration-portal:/app"
+      - "/app/node_modules"
     networks:
       - ecosystem_net
 

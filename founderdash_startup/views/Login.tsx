@@ -21,14 +21,14 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     e.preventDefault();
     const mockUser: UserType = {
       id: Math.random().toString(36).substr(2, 9),
-      name: selectedRole === UserRole.STARTUP ? 'Alex Chen' : 
-            selectedRole === UserRole.AGENCY ? 'Sarah Agency' : 
-            selectedRole === UserRole.INSTITUTION ? 'Dean Miller' : 'John Freelancer',
+      name: selectedRole === UserRole.STARTUP ? 'Alex Chen' :
+        selectedRole === UserRole.AGENCY ? 'Sarah Agency' :
+          selectedRole === UserRole.INSTITUTION ? 'Dean Miller' : 'John Freelancer',
       role: selectedRole,
       avatar: `https://picsum.photos/seed/${selectedRole}/100/100`,
-      organization: selectedRole === UserRole.STARTUP ? 'Nexus AI' : 
-                    selectedRole === UserRole.AGENCY ? 'Global Talent' : 
-                    selectedRole === UserRole.INSTITUTION ? 'Tech Institute' : undefined
+      organization: selectedRole === UserRole.STARTUP ? 'Nexus AI' :
+        selectedRole === UserRole.AGENCY ? 'Global Talent' :
+          selectedRole === UserRole.INSTITUTION ? 'Tech Institute' : undefined
     };
     onLogin(mockUser);
   };
@@ -42,7 +42,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-8">
               <Rocket size={28} />
             </div>
-            <h1 className="text-4xl font-black mb-4">FounderDash</h1>
+            {/* Branding removed */}
             <p className="text-blue-100 leading-relaxed">
               The unified ecosystem for startups, talent agencies, and freelancers to build the future together.
             </p>
@@ -67,11 +67,10 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                 <button
                   key={role.id}
                   onClick={() => setSelectedRole(role.id)}
-                  className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 group text-center ${
-                    isSelected 
-                      ? `border-blue-600 bg-blue-50 text-blue-600` 
-                      : 'border-slate-100 hover:border-slate-200 text-slate-400'
-                  }`}
+                  className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 group text-center ${isSelected
+                    ? `border-blue-600 bg-blue-50 text-blue-600`
+                    : 'border-slate-100 hover:border-slate-200 text-slate-400'
+                    }`}
                 >
                   <Icon size={24} className={isSelected ? 'text-blue-600' : 'group-hover:text-slate-600'} />
                   <span className="text-[10px] font-bold uppercase tracking-wide">{role.label}</span>
@@ -83,21 +82,21 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1 block">Email Address</label>
-              <input 
-                type="email" 
+              <input
+                type="email"
                 defaultValue="demo@founderdash.io"
                 className="w-full p-4 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-900"
               />
             </div>
             <div>
               <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1 block">Password</label>
-              <input 
-                type="password" 
+              <input
+                type="password"
                 defaultValue="password"
                 className="w-full p-4 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-900"
               />
             </div>
-            <button 
+            <button
               type="submit"
               className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-slate-800 transition-colors shadow-lg"
             >
