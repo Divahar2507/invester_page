@@ -5,6 +5,8 @@ import DashboardPage from './pages/DashboardPage';
 import RaiseFundsPage from './pages/RaiseFundsPage';
 import LeaderboardPage from './pages/LeaderboardPage';
 import SuccessStoriesPage from './pages/SuccessStoriesPage';
+import FundsCatalogPage from './pages/FundsCatalogPage';
+import FundDetailsPage from './pages/FundDetailsPage';
 
 function App() {
   return (
@@ -14,7 +16,8 @@ function App() {
           <Route index element={<DashboardPage />} />
           <Route path="funding" element={<RaiseFundsPage />} />
           <Route path="leaderboard" element={<LeaderboardPage />} />
-          <Route path="success-stories" element={<SuccessStoriesPage />} />
+          <Route path="funds" element={<FundsCatalogPage />} />
+          <Route path="funds/:id" element={<FundDetailsPage />} />
           {/* Fallback route */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>

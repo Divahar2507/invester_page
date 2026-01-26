@@ -63,8 +63,8 @@ const StartupDashboard = ({ user }) => {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
-                        Startup Dashboard
+                    <h1 className="text-3xl font-black text-slate-900 tracking-tighter uppercase italic">
+                        STARTUP
                     </h1>
                     <p className="text-slate-500 mt-1 text-base">
                         Overview for <span className="text-slate-900 font-medium">{user?.email?.split('@')[0]}</span>
@@ -145,8 +145,8 @@ const StartupDashboard = ({ user }) => {
                                                 <p className="text-sm text-slate-500 mt-1 line-clamp-2">{pitch.description}</p>
                                             </div>
                                             <span className={`px-3 py-1 rounded-full text-xs font-bold capitalize ${pitch.status === 'funded' ? 'bg-emerald-100 text-emerald-700' :
-                                                    pitch.status === 'active' ? 'bg-blue-100 text-blue-700' :
-                                                        'bg-slate-100 text-slate-600'
+                                                pitch.status === 'active' ? 'bg-blue-100 text-blue-700' :
+                                                    'bg-slate-100 text-slate-600'
                                                 }`}>
                                                 {pitch.status || 'Draft'}
                                             </span>
@@ -290,8 +290,8 @@ const InvestorDashboard = ({ user }) => {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
-                        Investor Dashboard
+                    <h1 className="text-3xl font-black text-slate-900 tracking-tighter uppercase italic">
+                        INVESTOR
                     </h1>
                     <p className="text-slate-500 mt-1 text-base">
                         Welcome back, <span className="text-slate-900 font-medium">{user?.email?.split('@')[0] || 'Investor'}</span>

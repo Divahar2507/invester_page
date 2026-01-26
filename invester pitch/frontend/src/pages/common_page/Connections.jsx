@@ -62,7 +62,7 @@ const Connections = () => {
         <div className="p-8 max-w-6xl mx-auto space-y-8 font-['Plus Jakarta Sans'] animate-in fade-in duration-500">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div>
-                    <h1 className="text-3xl font-bold text-slate-900 tracking-tight">My Network</h1>
+                    <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Connect Hub</h1>
                     <p className="text-slate-500 mt-1">Manage your professional connections and requests.</p>
                 </div>
                 <div className="relative w-full md:w-80">

@@ -193,7 +193,7 @@ export default function Dashboard({ user, onLogout, onNavigate }) {
 
     const handleRegisterClick = (event) => {
         // CHECK SOURCE: If InfiniteBZ, open Detail Modal
-        if (event.raw_data?.source === 'InfiniteBZ') {
+        if (event.raw_data?.source === 'INVESTOR') {
             setSelectedInternalEvent(event);
             setShowDetailModal(true);
             return;
@@ -484,7 +484,7 @@ export default function Dashboard({ user, onLogout, onNavigate }) {
                                 />
                                 <FilterDropdown
                                     label="Source"
-                                    options={["All", "Eventbrite", "Meetup", "InfiniteBZ"]}
+                                    options={["All", "Eventbrite", "Meetup", "INVESTOR"]}
                                     selected={selectedSource}
                                     onChange={setSelectedSource}
                                 />

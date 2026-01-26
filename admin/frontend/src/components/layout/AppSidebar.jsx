@@ -35,7 +35,7 @@ export function AppSidebar() {
           <img src="/logo.png" alt="Logo" className="w-10 h-10 object-contain rounded-xl bg-white/10 p-1" />
           <div>
             <h1 className="font-bold text-white text-lg truncate max-w-[140px]">
-              INFIOITE TECH AI
+              INVESTOR
             </h1>
             <p className="text-xs text-muted-foreground truncate max-w-[140px]">
               {user?.full_name || user?.username || "Loading..."}

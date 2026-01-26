@@ -19,19 +19,14 @@ const Layout = () => {
                         <span>Dashboard</span>
                     </NavLink>
 
-                    <NavLink to="/funding" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                    <NavLink to="/funds" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
                         <Wallet size={20} />
-                        <span>Raise Funds</span>
+                        <span>Browse Funds</span>
                     </NavLink>
 
                     <NavLink to="/leaderboard" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
                         <Trophy size={20} />
                         <span>Leaderboard</span>
-                    </NavLink>
-
-                    <NavLink to="/success-stories" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
-                        <FileText size={20} />
-                        <span>Success Stories</span>
                     </NavLink>
                 </nav>
 

@@ -47,7 +47,7 @@ const Dashboard = () => {
               title="Integrated Events"
               value={statsLoading ? "..." : stats?.liveEvents}
               icon={Calendar}
-              description="Active Infinite_BZ Modules"
+              description="Active Ecosystem Modules"
             />
             <StatCard
               title="System Uptime"
@@ -97,7 +97,7 @@ const Dashboard = () => {
               Recent Authority Logs
             </h2>
             <div className="bg-card/20 border border-border rounded-xl p-4 h-[400px] overflow-y-auto space-y-3 font-mono text-[11px]">
-              <div className="text-muted-foreground"><span className="text-primary">[14:22:01]</span> IPA_BOT: Syncing events from infinite_bz... SUCCESS</div>
+              <div className="text-muted-foreground"><span className="text-primary">[14:22:01]</span> IPA_BOT: Syncing events from Ecosystem... SUCCESS</div>
               <div className="text-muted-foreground"><span className="text-primary">[14:21:45]</span> AUTH: User 'admin' granted global view perm...</div>
               <div className="text-muted-foreground"><span className="text-primary">[14:20:12]</span> MONITOR: LeadGen Engine reported high load (45%)...</div>
               <div className="text-muted-foreground"><span className="text-emerald-500">[14:18:00]</span> HUB: Central Hub v2.0 deployed to production...</div>

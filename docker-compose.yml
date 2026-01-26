@@ -169,6 +169,9 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"
+    volumes:
+      - "./invester pitch/frontend:/app"
+      - "/app/node_modules"
     depends_on:
       - backend-main
     networks:
@@ -185,6 +188,9 @@ services:
     restart: unless-stopped
     ports:
       - "3001:5173"
+    volumes:
+      - "./startup pitch/frontend:/app"
+      - "/app/node_modules"
     environment:
       - VITE_API_URL=http://localhost:8000
     depends_on:
@@ -200,8 +206,9 @@ services:
     container_name: leadgen_frontend
     ports:
       - "3003:80"
-    depends_on:
-      - backend-leadgen
+    volumes:
+      - "./leadgen/leadgen/frontend:/app"
+      - "/app/node_modules"
     networks:
       - ecosystem_net
 
@@ -287,6 +294,9 @@ services:
     container_name: founderdash_frontend
     ports:
       - "3007:80"
+    volumes:
+      - "./founderdash_startup:/app"
+      - "/app/node_modules"
     networks:
       - ecosystem_net
 
@@ -298,6 +308,9 @@ services:
     container_name: innosphere_frontend
     ports:
       - "3008:80"
+    volumes:
+      - "./innosphere_admin/innosphere-admin-&-collaboration-portal:/app"
+      - "/app/node_modules"
     networks:
       - ecosystem_net
 
@@ -340,7 +353,7 @@ services:
       dockerfile: Dockerfile
     container_name: funds_frontend
     ports:
-      - "3009:80"
+      - "3009:5173"
     environment:
       - VITE_API_URL=http://localhost:8007
     depends_on:

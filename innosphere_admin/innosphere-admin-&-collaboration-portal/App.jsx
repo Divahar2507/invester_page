@@ -50,11 +50,8 @@ const Sidebar = ({ isOpen, toggle }) => {
         flex flex-col
       `}>
         <div className="p-6 flex items-center gap-3">
-          <div className="w-9 h-9 bg-indigo-600 dark:bg-indigo-500 rounded-xl flex items-center justify-center text-white shadow-lg">
-            <LayoutDashboard size={20} />
-          </div>
           <div>
-            <h1 className="font-extrabold text-slate-900 dark:text-white tracking-tight leading-none text-lg">InnoSphere</h1>
+            <h1 className="font-extrabold text-slate-900 dark:text-white tracking-tighter leading-none text-lg uppercase italic">InnoSphere</h1>
             <p className="text-[9px] text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-[0.2em] mt-1">Portal</p>
           </div>
         </div>

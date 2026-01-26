@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Send, Phone, Video, Minus, CheckCheck, Smile, Paperclip } from 'lucide-react';
+import { X, Send, CheckCheck, Smile, Paperclip } from 'lucide-react';
 import { User, ChatMessage } from '../types';
 
 interface ChatOverlayProps {
@@ -54,8 +54,6 @@ const ChatOverlay: React.FC<ChatOverlayProps> = ({ recipient, onClose, currentUs
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button className="p-1 hover:bg-white/10 rounded"><Phone size={18} /></button>
-            <button className="p-1 hover:bg-white/10 rounded"><Video size={18} /></button>
             <button onClick={onClose} className="p-1 hover:bg-white/10 rounded"><X size={18} /></button>
           </div>
         </div>

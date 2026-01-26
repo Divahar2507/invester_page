@@ -1,9 +1,7 @@
 
 export enum AppView {
   DASHBOARD = 'dashboard',
-  AGENCIES = 'agencies',
-  INSTITUTIONS = 'institutions',
-  FREELANCERS = 'freelancers',
+  TALENT_POOL = 'talent_pool',
   PROJECT_BOARD = 'project_board',
   MESSAGES = 'messages',
   SETTINGS = 'settings'
@@ -24,6 +22,36 @@ export interface User {
   role: UserRole;
   avatar: string;
   organization?: string;
+  email?: string;
+  bio?: string;
+}
+
+export interface Interview {
+  id: string;
+  participantId: string;
+  participantName: string;
+  participantAvatar: string;
+  participantRole: UserRole;
+  date: string;
+  time: string;
+  topic: string;
+}
+
+export interface HiredMember {
+  id: string;
+  name: string;
+  avatar: string;
+  role: UserRole;
+  startDate: string;
+  project: string;
+  organization?: string;
+}
+
+export interface HiringStats {
+  activeInterns: number;
+  agencyLeads: number;
+  hiredStudents: number;
+  leadsTaken: number;
 }
 
 export interface Project {
@@ -44,17 +72,19 @@ export interface ChatMessage {
   senderId: string;
   text: string;
   timestamp: string;
-  status?: 'sent' | 'delivered' | 'read';
+  status?: 'sent' | 'delivered' | 'read' | 'system';
 }
 
 export interface Conversation {
   id: string;
   participantName: string;
   participantAvatar: string;
+  participantRole?: UserRole;
   lastMessage: string;
   lastTimestamp: string;
   unreadCount: number;
   messages: ChatMessage[];
+  isHired?: boolean;
 }
 
 export interface Stat {
@@ -66,19 +96,9 @@ export interface Stat {
   icon: any;
 }
 
-export interface Activity {
-  id: string;
-  type: 'proposal' | 'onboarding' | 'meeting';
-  user: string;
-  description: string;
-  time: string;
-  actionLabel: string;
-  icon: any;
-  color: string;
-}
-
 export interface PartnerCard {
   id: string;
+  role: UserRole;
   name: string;
   description: string;
   image: string;
@@ -86,7 +106,6 @@ export interface PartnerCard {
   reviews: number;
   tags: string[];
   verified: boolean;
-  role: UserRole;
 }
 
 export interface ProjectConcept {

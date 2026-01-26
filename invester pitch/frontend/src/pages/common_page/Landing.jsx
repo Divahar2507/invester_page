@@ -1,387 +1,463 @@
 import * as React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
-    Infinity,
     ArrowRight,
-    Users,
-    ShieldCheck,
-    Rocket,
     TrendingUp,
+    Rocket,
     CheckCircle2,
+    DollarSign,
+    Lock,
+    Network,
+    ArrowUpRight,
+    ShieldCheck,
+    BarChart3,
+    MessageSquare,
+    Users,
     Zap,
     Globe,
-    Lock,
-    X,
-    MessageSquare,
-    PieChart,
-    BarChart3,
-    ArrowUpRight,
-    Layout,
-    Cpu,
-    Network
+    Layers,
+    Search,
+    Quote,
+    Target,
+    Shield,
+    Star,
+    Calendar,
+    CreditCard,
+    Linkedin,
+    Twitter
 } from 'lucide-react';
 
 const Landing = () => {
-    const [showSelection, setShowSelection] = useState(false);
-    const [searchParams] = useSearchParams();
-    const view = searchParams.get('view'); // 'investor' or 'startup'
+    const [isScrolled, setIsScrolled] = useState(false);
 
-    // If a specific view is requested, we can show a simplified version or just the specific hero
-    const isInvestorView = view === 'investor';
-    const isStartupView = view === 'startup';
+    useEffect(() => {
+        const handleScroll = () => setIsScrolled(window.scrollY > 20);
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     return (
-        <div className="min-h-screen bg-white font-['Plus Jakarta Sans'] text-slate-900 overflow-x-hidden">
+        <div className="ic-landing-root">
+            <style>{`
+                @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+                
+                :root {
+                    --bg-black: #050505;
+                    --text-main: #94a3b8;
+                    --text-white: #ffffff;
+                    --brand-blue: #3b82f6;
+                    --glass: rgba(255, 255, 255, 0.02);
+                    --border: rgba(255, 255, 255, 0.08);
+                }
 
-            {/* Modal for Get Started Selection */}
-            {showSelection && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-300">
-                    <div className="bg-white rounded-3xl w-full max-w-2xl overflow-hidden relative shadow-2xl">
-                        <button
-                            onClick={() => setShowSelection(false)}
-                            className="absolute top-6 right-6 p-2 hover:bg-slate-100 rounded-full transition-colors"
-                        >
-                            <X size={20} className="text-slate-400" />
-                        </button>
+                .ic-landing-root {
+                    background-color: var(--bg-black);
+                    color: var(--text-main);
+                    font-family: 'Plus Jakarta Sans', sans-serif;
+                    min-height: 100vh;
+                    overflow-x: hidden;
+                    margin: 0;
+                    padding: 0;
+                    -webkit-font-smoothing: antialiased;
+                }
 
-                        <div className="p-12 text-center">
-                            <h2 className="text-3xl font-black tracking-tight text-slate-900 mb-2">Create Your Account</h2>
-                            <p className="text-slate-500 mb-10">Select your role to join the InfiniteTechAI ecosystem.</p>
+                h1, h2, h3, h4 { margin: 0; font-weight: 900; letter-spacing: -0.04em; color: white; }
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <Link
-                                    to="/register/investor"
-                                    className="p-8 border-2 border-slate-100 rounded-2xl hover:border-blue-500 hover:bg-blue-50/50 transition-all group text-left"
-                                >
-                                    <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                        <TrendingUp size={24} />
-                                    </div>
-                                    <h4 className="text-xl font-bold text-slate-900 mb-2">I'm an Investor</h4>
-                                    <p className="text-sm text-slate-500">Access vetted deal flow and manage your AI portfolio.</p>
-                                </Link>
+                /* NAVIGATION */
+                .ic-nav {
+                    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+                    height: 80px; display: flex; align-items: center; justify-content: center;
+                    transition: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+                }
+                .ic-nav.scrolled {
+                    background: rgba(5, 5, 5, 0.8);
+                    backdrop-filter: blur(20px);
+                    border-bottom: 1px solid var(--border);
+                    height: 70px;
+                }
+                .ic-nav-inner {
+                    width: 100%; max-width: 1300px; padding: 0 40px;
+                    display: flex; align-items: center; justify-content: space-between;
+                }
+                .ic-logo {
+                    display: flex; align-items: center; gap: 10px; text-decoration: none; color: white;
+                    font-weight: 900; font-size: 18px; letter-spacing: -0.04em; font-style: italic;
+                }
+                .ic-logo-dot { width: 8px; height: 8px; background: var(--brand-blue); border-radius: 50%; box-shadow: 0 0 10px var(--brand-blue); }
 
-                                <Link
-                                    to="/register/startup"
-                                    className="p-8 border-2 border-slate-100 rounded-2xl hover:border-blue-500 hover:bg-blue-50/50 transition-all group text-left"
-                                >
-                                    <div className="w-12 h-12 bg-slate-100 text-slate-900 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                        <Rocket size={24} />
-                                    </div>
-                                    <h4 className="text-xl font-bold text-slate-900 mb-2">I'm a Founder</h4>
-                                    <p className="text-sm text-slate-500">Showcase your startup and connect with smart capital.</p>
-                                </Link>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
+                .ic-nav-links { display: flex; gap: 40px; }
+                .ic-nav-link { color: var(--text-main); text-decoration: none; font-size: 14px; font-weight: 500; transition: 0.3s; }
+                .ic-nav-link:hover { color: white; }
 
-            {/* Dark/Light Split Header */}
-            <nav className="fixed top-0 left-0 right-0 z-50 flex h-20 px-8 items-center justify-between border-b border-white/10 backdrop-blur-md">
-                <div className="flex items-center gap-2">
-                    <Infinity className="text-blue-500 w-8 h-8" />
-                    <span className="text-xl font-black tracking-tighter text-white uppercase mix-blend-difference">INFINITETECHAI</span>
-                </div>
+                .ic-nav-cta { display: flex; align-items: center; gap: 24px; }
+                .btn-login { text-decoration: none; color: white; font-size: 14px; font-weight: 600; opacity: 0.7; transition: 0.2s; }
+                .btn-login:hover { opacity: 1; }
+                .btn-start {
+                    background: white; color: black; padding: 12px 24px; border-radius: 12px;
+                    text-decoration: none; font-size: 14px; font-weight: 700; transition: 0.3s;
+                }
+                .btn-start:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(255,255,255,0.1); }
 
-                <div className="hidden lg:flex items-center gap-8 text-sm font-semibold tracking-tight text-white mix-blend-difference">
-                    <a href="#about" className="hover:text-blue-500 transition-colors">About</a>
-                    <a href="#features" className="hover:text-blue-500 transition-colors">Features</a>
-                    <a href="#stories" className="hover:text-blue-500 transition-colors">Stories</a>
-                    <Link
-                        to={isStartupView ? "/login/startup" : isInvestorView ? "/login/investor" : "/login"}
-                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-lg active:scale-95"
-                    >
-                        Sign In
+                /* HERO */
+                .ic-hero {
+                    padding: 200px 20px 140px; text-align: center; position: relative;
+                    max-width: 1100px; margin: 0 auto;
+                }
+                .ic-badge {
+                    display: inline-flex; align-items: center; gap: 8px;
+                    background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.2);
+                    padding: 8px 16px; border-radius: 100px; margin-bottom: 40px;
+                    font-size: 12px; font-weight: 700; color: var(--brand-blue);
+                }
+                .ic-hero-title {
+                    font-size: clamp(32px, 6vw, 72px); line-height: 1.05; margin-bottom: 32px;
+                    background: linear-gradient(180deg, #FFFFFF 0%, rgba(255, 255, 255, 0.6) 100%);
+                    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+                }
+                .ic-hero-sub {
+                    font-size: 20px; color: var(--text-main); max-width: 650px; margin: 0 auto 56px; line-height: 1.6;
+                }
+
+                /* MARQUEE */
+                .ic-marquee {
+                    background: var(--glass); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+                    padding: 20px 0; overflow: hidden; white-space: nowrap; margin-bottom: 100px;
+                }
+                .ic-m-scroll {
+                    display: inline-block; animation: marquee 30s linear infinite;
+                }
+                @keyframes marquee {
+                    0% { transform: translateX(0); }
+                    100% { transform: translateX(-50%); }
+                }
+                .ic-m-item {
+                    display: inline-flex; align-items: center; gap: 12px;
+                    margin: 0 40px; color: white; font-weight: 700; font-size: 14px;
+                }
+                .ic-m-dot { width: 6px; height: 6px; background: var(--brand-blue); border-radius: 50%; opacity: 0.5; }
+
+                /* GRID CARDS */
+                .ic-grid {
+                    max-width: 1200px; margin: 0 auto 100px; display: grid; grid-template-columns: 1fr 1fr; gap: 32px;
+                    padding: 0 40px;
+                }
+                @media (max-width: 900px) { .ic-grid { grid-template-columns: 1fr; } }
+                .ic-card {
+                    background: var(--glass); border: 1px solid var(--border);
+                    border-radius: 32px; padding: 60px; text-align: left; transition: 0.4s;
+                    position: relative; overflow: hidden;
+                }
+                .ic-card:hover { border-color: var(--brand-blue); transform: translateY(-8px); }
+                .ic-card-icon { width: 56px; height: 56px; background: rgba(59, 130, 246, 0.1); border-radius: 16px; display: flex; align-items: center; justify-content: center; color: var(--brand-blue); margin-bottom: 40px; }
+                .ic-card-title { font-size: 36px; margin-bottom: 24px; }
+                .ic-card-p { font-size: 16px; line-height: 1.7; color: var(--text-main); margin-bottom: 40px; }
+                
+                /* MATRIX SECTION */
+                .ic-matrix { padding: 120px 40px; background: linear-gradient(180deg, transparent, rgba(37,99,235,0.03) 50%, transparent); }
+                .ic-matrix-inner { max-width: 1200px; margin: 0 auto; text-align: center; }
+                .ic-m-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 80px; }
+                @media (max-width: 1000px) { .ic-m-grid { grid-template-columns: repeat(2, 1fr); } }
+                @media (max-width: 700px) { .ic-m-grid { grid-template-columns: 1fr; } }
+                
+                .ic-m-card {
+                    background: var(--glass); border: 1px solid var(--border); border-radius: 24px;
+                    padding: 40px; text-align: left; transition: 0.3s; display: flex; flex-direction: column;
+                }
+                .ic-m-card:hover { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.03); }
+                .ic-m-card-icon { color: var(--brand-blue); margin-bottom: 24px; }
+                .ic-m-card-h3 { font-size: 20px; margin-bottom: 12px; }
+                .ic-m-card-p { font-size: 14px; line-height: 1.6; flex: 1; margin-bottom: 24px; }
+                .ic-m-quote { border-top: 1px solid var(--border); padding-top: 20px; display: flex; align-items: flex-start; gap: 10px; font-size: 12px; font-style: italic; color: #64748b; }
+
+                /* PILLARS */
+                .ic-pillar-sec { padding: 120px 40px; }
+                .ic-p-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 40px; max-width: 1200px; margin: 80px auto 0; }
+                @media (max-width: 900px) { .ic-p-grid { grid-template-columns: 1fr; } }
+                .ic-pillar {
+                    border-radius: 40px; overflow: hidden; background: var(--glass); border: 1px solid var(--border);
+                    display: flex; flex-direction: column; cursor: pointer; transition: 0.4s;
+                }
+                .ic-pillar:hover { transform: scale(1.02); border-color: var(--brand-blue); }
+                .ic-p-img { height: 300px; background-size: cover; background-position: center; filter: grayscale(1) brightness(0.7); transition: 0.4s; }
+                .ic-pillar:hover .ic-p-img { filter: grayscale(0) brightness(1); }
+                .ic-p-content { padding: 40px; }
+
+                /* QUOTES */
+                .ic-vision { padding: 140px 40px; text-align: center; max-width: 800px; margin: 0 auto; }
+                .ic-v-quote { font-size: 32px; font-weight: 700; color: white; line-height: 1.4; margin-bottom: 40px; position: relative; }
+                .ic-v-quote::before { content: '“'; position: absolute; left: -50px; top: -20px; font-size: 120px; opacity: 0.1; color: var(--brand-blue); }
+                .ic-v-author { font-size: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.2em; color: var(--brand-blue); }
+
+                /* FOOTER */
+                .ic-footer { padding: 100px 40px 60px; border-top: 1px solid var(--border); background: #000; }
+                .ic-f-inner { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; }
+                @media (max-width: 800px) { .ic-f-inner { flex-direction: column; gap: 60px; } }
+                .ic-f-copy { margin-top: 80px; padding-top: 40px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; font-size: 11px; color: #444; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
+            `}</style>
+
+            <nav className={`ic-nav ${isScrolled ? 'scrolled' : ''}`}>
+                <div className="ic-nav-inner">
+                    <Link to="/" className="ic-logo">
+                        <div className="ic-logo-dot" />
+                        INVESTOR
                     </Link>
+                    <div className="ic-nav-links">
+                        <a href="#matrix" className="ic-nav-link">Protocols</a>
+                        <a href="#services" className="ic-nav-link">Ecosystem</a>
+                        <a href="#vision" className="ic-nav-link">Vision</a>
+                    </div>
+                    <div className="ic-nav-cta">
+                        <Link to="/login" className="btn-login">Terminal Access</Link>
+                        <Link to="/register" className="btn-start">Join Network</Link>
+                    </div>
                 </div>
             </nav>
 
-            {/* Unified Hero */}
-            <div className="relative min-h-[90vh] flex flex-col items-center justify-center text-center px-6 py-20 bg-slate-50 overflow-hidden">
-                <div className="absolute inset-0 z-0 opacity-40">
-                    <div className="absolute top-0 -left-4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-                    <div className="absolute top-0 -right-4 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
-                    <div className="absolute -bottom-32 left-20 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+            <header className="ic-hero">
+                <div className="ic-badge">
+                    <Zap size={14} />
+                    <span>THE DEPLOYMENT SOVEREIGN LAYER</span>
                 </div>
+                <h1 className="ic-hero-title">High-Conviction <br />Capital Allocation.</h1>
+                <p className="ic-hero-sub">
+                    The institutional gateway where elite founders and strategic partners align with technical precision. Engineered for zero-noise deal flow.
+                </p>
+                <div style={{ display: 'flex', gap: 20, justifyContent: 'center' }}>
+                    <Link to="/register/startup" className="btn-start" style={{ padding: '20px 48px', fontSize: '16px' }}>Connect as Founder</Link>
+                    <Link to="/register/investor" className="btn-login" style={{ padding: '20px 48px', fontSize: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: '16px', opacity: 1 }}>Enter as Partner</Link>
+                </div>
+            </header>
 
-                <div className="relative z-10 max-w-4xl mx-auto space-y-8 animate-in fade-in zoom-in duration-1000">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 shadow-sm mb-6">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span className="text-xs font-bold uppercase tracking-widest text-slate-500">The Global Standard for Private Markets</span>
-                    </div>
-
-                    <h1 className="text-6xl md:text-8xl font-black tracking-tighter text-slate-900 leading-[0.9]">
-                        Capital Meets <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Innovation.</span>
-                    </h1>
-
-                    <p className="max-w-2xl mx-auto text-xl text-slate-500 font-medium leading-relaxed">
-                        The all-in-one operating system for founders to raise capital and investors to deploy it with algorithmic precision.
-                    </p>
-
-                    {/* Role Toggle / Actions */}
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-10">
-                        <div className="p-1.5 bg-white border border-slate-200 rounded-2xl shadow-lg flex items-center">
-                            <Link
-                                to="/register/startup"
-                                className="px-8 py-3 rounded-xl text-sm font-bold bg-slate-900 text-white hover:bg-slate-800 transition-all flex items-center gap-2"
-                            >
-                                <Rocket size={16} /> I'm a Founder
-                            </Link>
-                            <Link
-                                to="/register/investor"
-                                className="px-8 py-3 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all flex items-center gap-2"
-                            >
-                                <TrendingUp size={16} /> I'm an Investor
-                            </Link>
-                        </div>
-                    </div>
-
-                    <div className="pt-12 flex items-center justify-center gap-8 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
-                        {/* Simple Trust indicators */}
-                        <span className="text-sm font-bold text-slate-400">Trusted by modern teams at</span>
-                        <div className="flex gap-6 font-black text-lg text-slate-300">
-                            <span>ACME Inc</span>
-                            <span>Global.vc</span>
-                            <span>Nebula AI</span>
-                        </div>
-                    </div>
+            <div className="ic-marquee">
+                <div className="ic-m-scroll">
+                    {[1, 2].map(idx => (
+                        <React.Fragment key={idx}>
+                            <span className="ic-m-item"><div className="ic-m-dot" /> AEROAI RAISED $5M IN SEED ROUND</span>
+                            <span className="ic-m-item"><div className="ic-m-dot" /> FINTECH PRO CLOSED 24 DEALS VIA NETWORK</span>
+                            <span className="ic-m-item"><div className="ic-m-dot" /> CLEANTECH HUB GENERATED 2.5K+ LEADS</span>
+                            <span className="ic-m-item"><div className="ic-m-dot" /> NEXUS VENTURES ALLOCATED $12M TO HEALTH-CORE</span>
+                            <span className="ic-m-item"><div className="ic-m-dot" /> GLOBAL VC SHORTLISTED 15 STARTUPS</span>
+                        </React.Fragment>
+                    ))}
                 </div>
             </div>
 
-            {/* Stats Dashboard Section (New) */}
-            <section className="py-24 bg-white border-y border-slate-100">
-                <div className="max-w-7xl mx-auto px-8">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-12 text-center">
-                        <div className="space-y-2">
-                            <div className="text-5xl font-black text-blue-600 tracking-tighter">$2.4B</div>
-                            <div className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Capital Deployed</div>
-                        </div>
-                        <div className="space-y-2">
-                            <div className="text-5xl font-black text-slate-900 tracking-tighter">850+</div>
-                            <div className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Vetted Investors</div>
-                        </div>
-                        <div className="space-y-2">
-                            <div className="text-5xl font-black text-blue-600 tracking-tighter">1.2k</div>
-                            <div className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Active Pitches</div>
-                        </div>
-                        <div className="space-y-2">
-                            <div className="text-5xl font-black text-slate-900 tracking-tighter">98%</div>
-                            <div className="text-xs font-black text-slate-400 uppercase tracking-[0.2em]">Match Accuracy</div>
-                        </div>
-                    </div>
+            <section className="ic-grid">
+                <div className="ic-card">
+                    <div className="ic-card-icon"><Rocket size={32} /></div>
+                    <h3 className="ic-card-title">Institutional <br />Founders</h3>
+                    <p className="ic-card-p">
+                        Scale beyond cold pitching. Our architecture ensures your vision lands directly on the terminals of strategic partners ready to deploy.
+                    </p>
+                    <Link to="/register/startup" className="btn-card btn-c-white">Submit Pitch <ArrowRight size={18} /></Link>
+                </div>
+
+                <div className="ic-card">
+                    <div className="ic-card-icon" style={{ color: '#60a5fa' }}><TrendingUp size={32} /></div>
+                    <h3 className="ic-card-title">Strategic <br />Capital</h3>
+                    <p className="ic-card-p">
+                        Access a sovereign stream of verified projects and high-conviction founders scaling with mathematical precision.
+                    </p>
+                    <Link to="/register/investor" className="btn-card btn-c-primary">Open Terminal <ArrowUpRight size={18} /></Link>
                 </div>
             </section>
 
-            {/* About Section */}
-            <section id="about" className="py-32 bg-slate-50 relative overflow-hidden">
-                <div className="max-w-7xl mx-auto px-8 relative z-10">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-                        <div className="space-y-8 animate-in fade-in slide-in-from-left-10 duration-1000">
-                            <div className="inline-block px-4 py-1 bg-blue-100 text-blue-700 text-[10px] font-black uppercase tracking-[0.3em] rounded-full">The New Standard</div>
-                            <h2 className="text-6xl font-black tracking-tight text-slate-900 leading-[1.1]">
-                                Engineering <br />
-                                <span className="text-blue-600">The Dealflow.</span>
-                            </h2>
-                            <p className="text-slate-600 leading-relaxed text-xl font-medium max-w-lg">
-                                InfiniteTechAI isn't just a platform; it's a high-entropy engine designed to strip away the inefficiencies of private market fundraising.
-                            </p>
-                            <div className="space-y-4">
-                                <div className="flex items-start gap-4">
-                                    <div className="mt-1 p-1 bg-blue-600 rounded">
-                                        <CheckCircle2 size={16} className="text-white" />
-                                    </div>
-                                    <p className="text-slate-700 font-bold">Automated Due Diligence workflows for faster closing.</p>
-                                </div>
-                                <div className="flex items-start gap-4">
-                                    <div className="mt-1 p-1 bg-blue-600 rounded">
-                                        <CheckCircle2 size={16} className="text-white" />
-                                    </div>
-                                    <p className="text-slate-700 font-bold">Encrypted Data Rooms with military-grade security.</p>
-                                </div>
-                                <div className="flex items-start gap-4">
-                                    <div className="mt-1 p-1 bg-blue-600 rounded">
-                                        <CheckCircle2 size={16} className="text-white" />
-                                    </div>
-                                    <p className="text-slate-700 font-bold">Smart Matching Engine powered by sector-specific data.</p>
-                                </div>
-                            </div>
-                        </div>
+            <section id="matrix" className="ic-matrix">
+                <div className="ic-matrix-inner">
+                    <div className="ic-badge">SYSTEM PROTOCOLS</div>
+                    <h2 style={{ fontSize: '48px', marginBottom: '24px' }}>The Core Gateway Grid</h2>
+                    <p style={{ maxWidth: '600px', margin: '0 auto' }}>Every connection made within the ecosystem is backed by institutional-grade intelligence and a global network of visionaries.</p>
 
-                        <div className="relative group perspective-1000">
-                            <div className="absolute -inset-4 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-[40px] opacity-20 blur-2xl group-hover:opacity-40 transition-opacity"></div>
-                            <div className="relative bg-white p-4 rounded-[40px] shadow-2xl border border-slate-200">
-                                <img
-                                    src="https://images.unsplash.com/photo-1551434678-e076c223a692?q=80&w=2670&auto=format&fit=crop"
-                                    className="rounded-[30px] w-full aspect-square object-cover shadow-inner"
-                                    alt="InfiniteTechAI Core"
-                                />
-                                <div className="absolute -bottom-10 -right-10 bg-slate-900 text-white p-8 rounded-3xl shadow-2xl max-w-[200px] hidden md:block border-4 border-white animate-bounce-slow">
-                                    <TrendingUp size={32} className="text-blue-500 mb-2" />
-                                    <p className="text-sm font-bold leading-tight">Closing rounds 3x faster than average.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Features Grid */}
-            <section id="features" className="bg-[#050505] py-40 relative">
-                <div className="max-w-7xl mx-auto px-8 relative z-10">
-                    <div className="flex flex-col lg:flex-row items-end justify-between mb-24 gap-8">
-                        <div className="space-y-4">
-                            <span className="text-blue-500 text-xs font-black tracking-[0.4em] uppercase block">Platform Features</span>
-                            <h2 className="text-6xl font-black text-white tracking-tighter leading-none">The Full Stack.</h2>
-                        </div>
-                        <p className="text-slate-400 max-w-sm text-lg font-medium">Everything needed to manage capital deployment or fundraising rounds globally.</p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-20">
+                    <div className="ic-m-grid">
                         {[
-                            {
-                                icon: <Cpu />,
-                                title: "Neural Matching Engine",
-                                desc: "Our proprietary AI analyzes 50+ data points including founder DNA, market traction, and investor thesis to predict high-probability matches.",
-                                img: "https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=2000&auto=format&fit=crop"
-                            },
-                            {
-                                icon: <Network />,
-                                title: "Smart Data Rooms",
-                                desc: "Secure, tracked document sharing. Know exactly when investors view your pitch deck and which slides they focus on.",
-                                img: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2000&auto=format&fit=crop"
-                            },
-                            {
-                                icon: <MessageSquare />,
-                                title: "Direct Founder Access",
-                                desc: "Bypass the warm intro barrier. Our direct messaging channel connects verified founders with decision-making partners instantly.",
-                                img: "https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?q=80&w=2000&auto=format&fit=crop"
-                            },
-                            {
-                                icon: <PieChart />,
-                                title: "Live Portfolio Tracking",
-                                desc: "Investors get a real-time dashboard of their portfolio performance, burn rates, and growth metrics in one unified view.",
-                                img: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2000&auto=format&fit=crop"
-                            },
-                            {
-                                icon: <Lock />,
-                                title: "Military-Grade Security",
-                                desc: "End-to-end encryption for all sensitive financial data and intellectual property. Your competitive advantage stays protected.",
-                                img: "https://images.unsplash.com/photo-1563986768609-322da13575f3?q=80&w=2000&auto=format&fit=crop"
-                            },
-                            {
-                                icon: <Globe />,
-                                title: "Global Deal Flow",
-                                desc: "Break geographical boundaries. Access high-growth startups from Silicon Valley to Singapore without leaving your office.",
-                                img: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2000&auto=format&fit=crop"
-                            }
-                        ].map((f, i) => (
-                            <div key={i} className="group relative">
-                                <div className="aspect-[16/10] overflow-hidden rounded-3xl mb-8 relative">
-                                    <div className="absolute inset-0 bg-blue-600/20 group-hover:bg-transparent transition-all z-10"></div>
-                                    <img src={f.img} className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700" alt={f.title} />
-                                    <div className="absolute top-6 left-6 z-20 w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-slate-900 shadow-xl group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                                        {f.icon}
-                                    </div>
+                            { title: "Precision Matchmaking", icon: <Target size={32} />, p: "Our neural engine connects elite founders with specific capital sources, reducing the average fundraise cycle by 65%.", q: "Strategic alignment is the ultimate multiplier." },
+                            { title: "LeadGen Matrix", icon: <Zap size={32} />, p: "Automated market analysis and B2B lead generation targeting high-intent prospects across 50+ institutional sectors.", q: "Data doesn't just inform; it executes." },
+                            { title: "Founders Domain", icon: <Rocket size={32} />, p: "A mission control center for building traction, managing pitches, and tracking real-time growth metrics in dark mode.", q: "Success is the byproduct of discipline." },
+                            { title: "Protocol Governance", icon: <ShieldCheck size={32} />, p: "Automated term sheets, NDAs, and MOU generation to ensure every deal is legally sound and lightning fast.", q: "Speed is the only non-negotiable." },
+                            { title: "Network Liquidity", icon: <Users size={32} />, p: "Host exclusive demo days and networking mixers with auto-lead capture and high-engagement rsvp architecture.", q: "Network is the only true moats." },
+                            { title: "Intelligence Edge", icon: <BarChart3 size={32} />, p: "In-depth market insights and sector-specific reports to help you navigate the ever-evolving capital landscape.", q: "Information is the currency of power." }
+                        ].map((item, i) => (
+                            <div key={i} className="ic-m-card">
+                                <div className="ic-m-card-icon">{item.icon}</div>
+                                <h3 className="ic-m-card-h3">{item.title}</h3>
+                                <p className="ic-m-card-p">{item.p}</p>
+                                <div className="ic-m-quote">
+                                    <Quote size={12} style={{ opacity: 0.5 }} />
+                                    <span>{item.q}</span>
                                 </div>
-                                <h3 className="text-2xl font-black text-white mb-3 tracking-tight group-hover:text-blue-500 transition-colors">{f.title}</h3>
-                                <p className="text-slate-500 text-sm leading-relaxed font-medium">{f.desc}</p>
                             </div>
                         ))}
                     </div>
                 </div>
             </section>
 
-            {/* Success Stories */}
-            <section id="stories" className="py-40 bg-white">
-                <div className="max-w-7xl mx-auto px-8">
-                    <div className="flex flex-col md:flex-row items-end justify-between mb-24 gap-8">
-                        <div className="space-y-4">
-                            <span className="text-blue-600 text-xs font-black tracking-[0.4em] uppercase block">Proof of Concept</span>
-                            <h2 className="text-6xl font-black tracking-tight text-slate-900 leading-none">Battle-Tested.</h2>
+            <section className="ic-cases" style={{ padding: '120px 40px', maxWidth: '1200px', margin: '0 auto' }}>
+                <div style={{ textAlign: 'left', marginBottom: '60px' }}>
+                    <div className="ic-badge">CASE STUDIES</div>
+                    <h2 style={{ fontSize: '48px' }}>Institutional Success.</h2>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
+                    <div className="ic-card" style={{ padding: '48px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '32px' }}>
+                            <div style={{ background: 'rgba(59,130,246,0.1)', padding: '12px', borderRadius: '12px', color: 'var(--brand-blue)' }}>
+                                <TrendingUp size={24} />
+                            </div>
+                            <span style={{ fontSize: '11px', fontWeight: 900, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em' }}>SERIES A EXECUTED</span>
                         </div>
-                        <div className="flex items-center gap-4 text-slate-400 font-bold uppercase text-xs tracking-[0.2em]">
-                            <ArrowUpRight className="text-blue-600" /> Over 450 Rounds Closed
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-                        <div className="group space-y-8">
-                            <div className="relative h-[500px] overflow-hidden rounded-[40px]">
-                                <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2670&auto=format&fit=crop" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" alt="Success Story" />
-                                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/20 to-transparent"></div>
-                                <div className="absolute bottom-10 left-10 right-10">
-                                    <div className="flex items-center gap-3 mb-4">
-                                        <span className="px-4 py-1.5 bg-blue-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest leading-none">Series B Secured</span>
-                                        <span className="px-4 py-1.5 bg-white/20 backdrop-blur-md text-white rounded-xl text-[10px] font-black uppercase tracking-widest leading-none">FinTech</span>
-                                    </div>
-                                    <h4 className="text-4xl font-black text-white mb-4 tracking-tighter leading-tight">Velox AI raised $45M from Tier-1 VCs.</h4>
-                                    <p className="text-slate-300 font-medium italic text-lg leading-relaxed">
-                                        "The Neural Matching system connected us with the right leads within 24 hours. InfiniteTechAI is the only tool we use for deal-flow management."
-                                    </p>
-                                </div>
+                        <h4 style={{ fontSize: '24px', marginBottom: '16px' }}>Project AeroAI</h4>
+                        <p style={{ fontSize: '14px', lineHeight: 1.6, marginBottom: '24px' }}>How a specialized AI startup used the Protocol to identify and close a $5.2M round in under 45 days with strategic partners in the EU market.</p>
+                        <div style={{ display: 'flex', gap: '40px' }}>
+                            <div>
+                                <div style={{ fontSize: '20px', fontWeight: 900, color: 'white' }}>$5.2M</div>
+                                <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: 700 }}>FUNDING RAISED</div>
+                            </div>
+                            <div>
+                                <div style={{ fontSize: '20px', fontWeight: 900, color: 'white' }}>45 Days</div>
+                                <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: 700 }}>CLOSE TIME</div>
                             </div>
                         </div>
-
-                        <div className="group space-y-8">
-                            <div className="relative h-[500px] overflow-hidden rounded-[40px]">
-                                <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=2670&auto=format&fit=crop" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000" alt="Success Story" />
-                                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/20 to-transparent"></div>
-                                <div className="absolute bottom-10 left-10 right-10">
-                                    <div className="flex items-center gap-3 mb-4">
-                                        <span className="px-4 py-1.5 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest leading-none">Seed Round Closed</span>
-                                        <span className="px-4 py-1.5 bg-white/20 backdrop-blur-md text-white rounded-xl text-[10px] font-black uppercase tracking-widest leading-none">CleanTech</span>
-                                    </div>
-                                    <h4 className="text-4xl font-black text-white mb-4 tracking-tighter leading-tight">EcoCharge closed $3.2M Seed in 21 days.</h4>
-                                    <p className="text-slate-300 font-medium italic text-lg leading-relaxed">
-                                        "As a first-time founder, the automated DD checklists were a lifesaver. We were investor-ready in under a week."
-                                    </p>
-                                </div>
+                    </div>
+                    <div className="ic-card" style={{ padding: '48px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '32px' }}>
+                            <div style={{ background: 'rgba(16,185,129,0.1)', padding: '12px', borderRadius: '12px', color: '#10b981' }}>
+                                <Zap size={24} />
+                            </div>
+                            <span style={{ fontSize: '11px', fontWeight: 900, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em' }}>MARKET EXPANSION</span>
+                        </div>
+                        <h4 style={{ fontSize: '24px', marginBottom: '16px' }}>FinTech Core</h4>
+                        <p style={{ fontSize: '14px', lineHeight: 1.6, marginBottom: '24px' }}>Leveraging the LeadGen Matrix to generate 2,500+ high-conviction institutional leads, resulting in a 40% uptick in enterprise partnerships.</p>
+                        <div style={{ display: 'flex', gap: '40px' }}>
+                            <div>
+                                <div style={{ fontSize: '20px', fontWeight: 900, color: 'white' }}>2.5k+</div>
+                                <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: 700 }}>DATA LEADS</div>
+                            </div>
+                            <div>
+                                <div style={{ fontSize: '20px', fontWeight: 900, color: 'white' }}>+40%</div>
+                                <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: 700 }}>REVENUE GROWTH</div>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* Footer */}
-            <footer className="bg-black py-24 px-8 border-t border-white/10 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600 opacity-5 blur-[120px]"></div>
-                <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-20 relative z-10">
-                    <div className="lg:col-span-4 space-y-8">
-                        <div className="flex items-center gap-3">
-                            <Infinity className="text-blue-500 w-10 h-10" />
-                            <span className="text-2xl font-black tracking-tighter text-white uppercase">INFINITETECHAI</span>
-                        </div>
-                        <p className="text-slate-500 text-sm leading-relaxed font-medium">
-                            The future of capital deployment is automated, secure, and data-driven. We are building the infrastructure for the next generation of global innovation.
-                        </p>
-                    </div>
+            <section id="services" className="ic-pillar-sec">
+                <style>{`
+                    .ic-deep-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 24px; overflow: hidden; margin-top: 60px; }
+                    .ic-deep-item { background: var(--bg-black); padding: 40px; transition: 0.3s; }
+                    .ic-deep-item:hover { background: rgba(255,255,255,0.02); }
+                    .ic-deep-item h5 { font-size: 14px; color: var(--brand-blue); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 0.1em; }
+                    .ic-deep-item ul { list-style: none; padding: 0; margin: 0; }
+                    .ic-deep-item li { font-size: 13px; color: var(--text-main); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+                    .ic-deep-item li::before { content: ''; width: 4px; height: 4px; background: var(--brand-blue); border-radius: 50%; }
+                `}</style>
+                <div style={{ textAlign: 'center', marginBottom: '80px' }}>
+                    <div className="ic-badge">TECHNICAL INFRASTRUCTURE</div>
+                    <h2 style={{ fontSize: '48px' }}>Service Deep Dive</h2>
+                </div>
 
-                    <div className="lg:col-span-8 grid grid-cols-2 md:grid-cols-4 gap-12">
-                        <div className="space-y-6">
-                            <h5 className="text-white font-black text-xs uppercase tracking-[0.2em]">Platform</h5>
-                            <ul className="space-y-4 text-xs font-bold text-slate-500 uppercase tracking-widest">
-                                <li><a href="#" className="hover:text-blue-500 transition-colors">Startups</a></li>
-                                <li><a href="#" className="hover:text-blue-500 transition-colors">Investors</a></li>
-                                <li><a href="#" className="hover:text-blue-500 transition-colors">Enterprise</a></li>
-                            </ul>
+                <div className="ic-deep-grid" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+                    <div className="ic-deep-item">
+                        <h5>Network Protocl</h5>
+                        <ul>
+                            <li>Private Deal Rooms</li>
+                            <li>Investor Relations CRM</li>
+                            <li>Automated Intros</li>
+                            <li>Verified Identity</li>
+                        </ul>
+                    </div>
+                    <div className="ic-deep-item">
+                        <h5>Capital Protocol</h5>
+                        <ul>
+                            <li>Cap Table Management</li>
+                            <li>Crowdfund Engine</li>
+                            <li>Debt Orchestration</li>
+                            <li>Liquidity Tracking</li>
+                        </ul>
+                    </div>
+                    <div className="ic-deep-item">
+                        <h5>Legal Protocol</h5>
+                        <ul>
+                            <li>Smart Term Sheets</li>
+                            <li>e-Signature Node</li>
+                            <li>KYC/AML Vault</li>
+                            <li>MOU Automation</li>
+                        </ul>
+                    </div>
+                    <div className="ic-deep-item">
+                        <h5>Intel Protocol</h5>
+                        <ul>
+                            <li>Sentiment Analysis</li>
+                            <li>Market Heatmaps</li>
+                            <li>Growth Benchmarking</li>
+                            <li>Competitor Nodes</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div className="ic-p-grid">
+                    <div className="ic-pillar" onClick={() => window.open('http://localhost:3009', '_blank')}>
+                        <div className="ic-p-img" style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1554224155-169641357599?auto=format&fit=crop&w=1200&q=80)' }}></div>
+                        <div className="ic-p-content">
+                            <h3 style={{ fontSize: '28px', marginBottom: '16px' }}>Capital Flows</h3>
+                            <p style={{ lineHeight: 1.6 }}>The definitive high-security fundraising portal for crowdfunding and institutional debt financing setups.</p>
+                            <div style={{ marginTop: '24px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--brand-blue)', fontWeight: 800, fontSize: '13px', textTransform: 'uppercase' }}>
+                                View Portal <ArrowUpRight size={14} />
+                            </div>
                         </div>
-                        <div className="space-y-6">
-                            <h5 className="text-white font-black text-xs uppercase tracking-[0.2em]">Legal</h5>
-                            <ul className="space-y-4 text-xs font-bold text-slate-500 uppercase tracking-widest">
-                                <li><a href="#" className="hover:text-blue-500 transition-colors">Privacy</a></li>
-                                <li><a href="#" className="hover:text-blue-500 transition-colors">Terms</a></li>
-                                <li><a href="#" className="hover:text-blue-500 transition-colors">Security</a></li>
-                            </ul>
+                    </div>
+                    <div className="ic-pillar" onClick={() => window.open('http://localhost:3006', '_blank')}>
+                        <div className="ic-p-img" style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=1200&q=80)' }}></div>
+                        <div className="ic-p-content">
+                            <h3 style={{ fontSize: '28px', marginBottom: '16px' }}>Network Ops</h3>
+                            <p style={{ lineHeight: 1.6 }}>Super-connect with verified HNWIs and venture partners through exclusive globally-hosted private events.</p>
+                            <div style={{ marginTop: '24px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--brand-blue)', fontWeight: 800, fontSize: '13px', textTransform: 'uppercase' }}>
+                                Access Calendar <ArrowUpRight size={14} />
+                            </div>
                         </div>
-                        <div className="md:col-span-2 space-y-10 flex flex-col items-center md:items-end">
-                            <button onClick={() => setShowSelection(true)} className="px-10 py-5 bg-white text-slate-900 font-black uppercase text-xs tracking-widest rounded-2xl hover:bg-blue-600 hover:text-white transition-all shadow-2xl active:scale-95">
-                                Join The Network
-                            </button>
-                            <p className="text-slate-600 text-[10px] font-black uppercase tracking-[0.2em] text-center md:text-right">
-                                © 2024 BusinessDevelopment Connect. <br /> All Rights Reserved.
-                            </p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="vision" className="ic-vision">
+                <Quote size={60} style={{ color: 'var(--brand-blue)', opacity: 0.1, marginBottom: '20px' }} />
+                <p className="ic-v-quote">
+                    "Innovation distinguishes between a leader and a follower. Our mission is to build the central nervous system for modern capital."
+                </p>
+                <div className="ic-v-author">— SYSTEM CORE ARCHITECTURE</div>
+            </section>
+
+            <footer className="ic-footer">
+                <div className="ic-f-inner">
+                    <div style={{ textAlign: 'left' }}>
+                        <div className="ic-logo" style={{ marginBottom: 24 }}>
+                            <div className="ic-logo-dot" />
+                            <span style={{ fontSize: 24, fontWeight: 900, letterSpacing: '-0.04em', fontStyle: 'italic' }}>INVESTOR</span>
+                        </div>
+                        <p style={{ maxWidth: 400, fontSize: '14px', lineHeight: 1.7 }}>Building the global sovereign protocol for high-conviction venture deployment and ecosystem growth.</p>
+                    </div>
+                    <div style={{ display: 'flex', gap: 80 }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                            <h4 style={{ color: 'white', fontSize: 11, textTransform: 'uppercase', marginBottom: 10, letterSpacing: '0.1em' }}>Protocols</h4>
+                            <a href="#" style={{ color: 'var(--text-main)', textDecoration: 'none', fontSize: 13, fontWeight: 600 }}>Network</a>
+                            <a href="#" style={{ color: 'var(--text-main)', textDecoration: 'none', fontSize: 13, fontWeight: 600 }}>Capital</a>
+                            <a href="#" style={{ color: 'var(--text-main)', textDecoration: 'none', fontSize: 13, fontWeight: 600 }}>Compliance</a>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                            <h4 style={{ color: 'white', fontSize: 11, textTransform: 'uppercase', marginBottom: 10, letterSpacing: '0.1em' }}>Access</h4>
+                            <a href="#" style={{ color: 'var(--text-main)', textDecoration: 'none', fontSize: 13, fontWeight: 600 }}>Terminal</a>
+                            <a href="#" style={{ color: 'var(--text-main)', textDecoration: 'none', fontSize: 13, fontWeight: 600 }}>Founders</a>
+                            <a href="#" style={{ color: 'var(--text-main)', textDecoration: 'none', fontSize: 13, fontWeight: 600 }}>Research</a>
+                        </div>
+                    </div>
+                </div>
+                <div className="ic-f-copy">
+                    <span>© 2026 INVESTOR GLOBAL ARCHITECTURE GRP.</span>
+                    <div style={{ display: 'flex', gap: 24 }}>
+                        <span>ALL SYSTEMS OPERATIONAL // v4.2.0</span>
+                        <div style={{ display: 'flex', gap: 16 }}>
+                            <Linkedin size={14} style={{ opacity: 0.5 }} />
+                            <Twitter size={14} style={{ opacity: 0.5 }} />
                         </div>
                     </div>
                 </div>

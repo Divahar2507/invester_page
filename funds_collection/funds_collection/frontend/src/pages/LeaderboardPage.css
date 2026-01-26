@@ -1,0 +1,180 @@
+.leaderboard-container {
+    padding-bottom: 2rem;
+}
+
+.leaderboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 2rem;
+    position: relative;
+    z-index: 50;
+}
+
+.leaderboard-title h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(to right, #fff, #a0a0a0);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Custom Dropdown */
+.custom-select-wrapper {
+    position: relative;
+    min-width: 220px;
+}
+
+/* Glass Table */
+.glass-table-container {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+.table-header {
+    display: grid;
+    grid-template-columns: 80px 2fr 1.5fr 1.5fr 1fr;
+    padding: 1.25rem 1.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-weight: 600;
+    color: var(--text-secondary);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+}
+
+.table-row {
+    display: grid;
+    grid-template-columns: 80px 2fr 1.5fr 1.5fr 1fr;
+    padding: 1rem 1.5rem;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    transition: background 0.2s;
+}
+
+.table-row:last-child {
+    border-bottom: none;
+}
+
+.table-row:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* Rank Badges */
+.rank-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.rank-1 .rank-cell {
+    background: linear-gradient(135deg, #FFD700 0%, #FDB931 100%);
+    color: #4a3b00;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+}
+
+.rank-2 .rank-cell {
+    background: linear-gradient(135deg, #E0E0E0 0%, #BDBDBD 100%);
+    color: #424242;
+    box-shadow: 0 0 15px rgba(224, 224, 224, 0.2);
+}
+
+.rank-3 .rank-cell {
+    background: linear-gradient(135deg, #CD7F32 0%, #A05A2C 100%);
+    color: #3e2613;
+    box-shadow: 0 0 15px rgba(205, 127, 50, 0.2);
+}
+
+.rank-other .rank-cell {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+/* Other Cells */
+.project-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.project-thumb {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.project-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.category-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+    text-transform: capitalize;
+}
+
+.raised-amount {
+    color: var(--success);
+    font-weight: 600;
+    font-family: monospace;
+    font-size: 1rem;
+}
+
+.progress-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.progress-track {
+    flex: 1;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: var(--primary);
+    border-radius: 3px;
+}
+
+.progress-text {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    width: 40px;
+}
+
+@media (max-width: 768px) {
+
+    .table-header,
+    .table-row {
+        grid-template-columns: 50px 2fr 1fr;
+    }
+
+    .table-header> :nth-child(3),
+    .table-header> :nth-child(5),
+    .table-row> :nth-child(3),
+    .table-row> :nth-child(5) {
+        display: none;
+    }
+}

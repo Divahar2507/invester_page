@@ -28,6 +28,9 @@ import ForgotPassword from './pages/common_page/ForgotPassword';
 import ResetPassword from './pages/common_page/ResetPassword';
 import CreatePitch from './pages/startup/CreatePitch';
 import BrowseInvestors from './pages/startup/BrowseInvestors';
+import Subscription from './pages/startup/Subscription';
+import UpgradePlans from './pages/startup/UpgradePlans';
+import Checkout from './pages/startup/Checkout';
 import Connections from './pages/common_page/Connections';
 
 // const SettingsPage = () => <div className="p-8 text-2xl font-bold">Settings Page (Coming Soon)</div>; // Removed placeholder
@@ -108,6 +111,9 @@ const App = () => {
                         <Route path="/create-pitch" element={<CreatePitch />} />
                         <Route path="/edit-pitch/:id" element={<CreatePitch />} />
                         <Route path="/browse-investors" element={<BrowseInvestors />} />
+                        <Route path="/subscription" element={<Subscription />} />
+                        <Route path="/plans" element={<UpgradePlans />} />
+                        <Route path="/checkout" element={<Checkout />} />
                     </Route>
                 </Routes>
             </Router>

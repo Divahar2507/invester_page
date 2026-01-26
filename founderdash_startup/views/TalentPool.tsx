@@ -1,16 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  Globe, 
-  Search, 
-  MapPin, 
   ShieldCheck, 
-  Filter, 
-  Star,
-  Users,
-  CheckCircle2,
-  X,
-  Briefcase
+  Star
 } from 'lucide-react';
 import { PartnerCard, UserRole } from '../types';
 
@@ -46,85 +38,62 @@ const TalentPool: React.FC<TalentPoolProps> = ({ initialFilter = 'All Categories
   });
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8">
-      {/* Filters Sidebar */}
-      <aside className="w-full lg:w-64 shrink-0">
-        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm sticky top-4">
-          <h3 className="font-bold text-slate-900 mb-6">Directory Filters</h3>
-          <div className="space-y-6">
-            <div>
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-3">Location</label>
-              <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                <Globe size={16} className="text-slate-400" />
-                <span className="text-sm font-medium text-slate-900">Global</span>
-              </div>
+    <div className="space-y-8">
+      {/* Directory Content Header */}
+      <div>
+        <h2 className="text-2xl font-bold text-slate-900">Partner Ecosystem</h2>
+        <p className="text-slate-500">Connect directly with professionals to fuel your growth.</p>
+      </div>
+
+      {/* Category Selection Tabs */}
+      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+        {categories.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setActiveFilter(cat)}
+            className={`whitespace-nowrap px-6 py-2 rounded-full text-sm font-semibold transition-all ${
+              activeFilter === cat 
+                ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' 
+                : 'bg-white text-slate-500 border border-slate-200 hover:border-slate-300'
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      {/* Partners Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {filteredPartners.map((partner) => (
+          <div key={partner.id} className="bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm flex flex-col group hover:shadow-lg transition-all">
+            <div className="h-40 relative">
+              <img src={partner.image} className="w-full h-full object-cover" alt="" />
+              {partner.verified && (
+                <div className="absolute top-4 left-4 bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1 uppercase">
+                  <ShieldCheck size={12} /> Verified
+                </div>
+              )}
             </div>
-            <div>
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-3">Min Rating</label>
-              <div className="flex items-center gap-2">
-                <Star size={16} className="text-yellow-500 fill-yellow-500" />
-                <span className="text-sm font-bold text-slate-900">4.5+ Stars</span>
+            <div className="p-6 flex flex-col flex-1">
+              <h4 className="font-bold text-slate-900 mb-2">{partner.name}</h4>
+              <p className="text-xs text-slate-400 mb-6 line-clamp-2">{partner.description}</p>
+              <div className="flex flex-wrap gap-2 mb-6">
+                {partner.tags.map(t => <span key={t} className="text-[9px] font-bold px-2 py-1 bg-slate-50 rounded text-slate-500 uppercase tracking-widest">{t}</span>)}
+              </div>
+              <div className="pt-4 border-t border-slate-50 flex items-center justify-between mt-auto">
+                <div className="flex items-center gap-1 text-xs font-bold text-slate-900">
+                  <Star size={12} className="text-yellow-500 fill-yellow-500" /> {partner.rating}
+                </div>
+                <button 
+                  onClick={() => onConnect(partner.id, partner.name)}
+                  className="bg-blue-600 text-white px-6 py-2 rounded-xl text-xs font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-100"
+                >
+                  Connect Directly
+                </button>
               </div>
             </div>
           </div>
-        </div>
-      </aside>
-
-      {/* Directory Content */}
-      <div className="flex-1 space-y-8">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-900">Partner Ecosystem</h2>
-          <p className="text-slate-500">Connect directly with professionals to fuel your growth.</p>
-        </div>
-
-        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setActiveFilter(cat)}
-              className={`whitespace-nowrap px-6 py-2 rounded-full text-sm font-semibold transition-all ${
-                activeFilter === cat 
-                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' 
-                  : 'bg-white text-slate-500 border border-slate-200 hover:border-slate-300'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {filteredPartners.map((partner) => (
-            <div key={partner.id} className="bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm flex flex-col group hover:shadow-lg transition-all">
-              <div className="h-40 relative">
-                <img src={partner.image} className="w-full h-full object-cover" alt="" />
-                {partner.verified && (
-                  <div className="absolute top-4 left-4 bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1 uppercase">
-                    <ShieldCheck size={12} /> Verified
-                  </div>
-                )}
-              </div>
-              <div className="p-6 flex flex-col flex-1">
-                <h4 className="font-bold text-slate-900 mb-2">{partner.name}</h4>
-                <p className="text-xs text-slate-400 mb-6 line-clamp-2">{partner.description}</p>
-                <div className="flex flex-wrap gap-2 mb-6">
-                  {partner.tags.map(t => <span key={t} className="text-[9px] font-bold px-2 py-1 bg-slate-50 rounded text-slate-500 uppercase tracking-widest">{t}</span>)}
-                </div>
-                <div className="pt-4 border-t border-slate-50 flex items-center justify-between mt-auto">
-                  <div className="flex items-center gap-1 text-xs font-bold text-slate-900">
-                    <Star size={12} className="text-yellow-500 fill-yellow-500" /> {partner.rating}
-                  </div>
-                  <button 
-                    onClick={() => onConnect(partner.id, partner.name)}
-                    className="bg-blue-600 text-white px-6 py-2 rounded-xl text-xs font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-100"
-                  >
-                    Connect Directly
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+        ))}
       </div>
     </div>
   );

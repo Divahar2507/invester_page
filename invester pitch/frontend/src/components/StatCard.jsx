@@ -16,8 +16,8 @@ const StatCard = ({ label, value, trend, isPositive, icon }) => {
                 )}
             </div>
             <div>
-                <p className="text-3xl font-bold text-slate-900 mb-1">{value}</p>
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{label}</p>
+                <p className="text-3xl font-extrabold text-slate-900 mb-1 tracking-tight">{value}</p>
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{label}</p>
             </div>
         </div>
     );

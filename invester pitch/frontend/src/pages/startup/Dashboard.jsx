@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Briefcase, Activity, Search, Sparkles, Loader2, Filter, MoreHorizontal, ChevronRight, Settings, Star, Zap, Users, Eye, MessageSquare, DollarSign, Plus, Bell, Clock, FileText, Rocket } from 'lucide-react';
+import { Briefcase, Activity, Search, Sparkles, Loader2, Filter, MoreHorizontal, ChevronRight, Settings, Star, Zap, Users, Eye, MessageSquare, DollarSign, Plus, Bell, Clock, FileText, Rocket, ArrowRight, ShieldCheck, Network } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { api } from '../../services/api';
 
@@ -60,7 +60,7 @@ const StartupDashboard = ({ user }) => {
     const currentDate = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500 font-sans text-slate-900">
+        <div className="space-y-8 animate-in fade-in duration-500 font-sans text-slate-900 pb-20">
             {/* Top Bar with Search & Actions (Mobile/Desktop) */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="relative flex-1 max-w-xl">
@@ -80,49 +80,113 @@ const StartupDashboard = ({ user }) => {
                         <Plus size={18} />
                         Create New Pitch
                     </Link>
+                    <Link
+                        to="/plans"
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-white text-blue-600 rounded-xl font-bold text-sm tracking-tight hover:bg-blue-50 transition-all shadow-xl shadow-blue-900/40 active:scale-95"
+                    >
+                        Enter Pro Terminal <ArrowRight size={18} />
+                    </Link>
                 </div>
             </div>
 
             {/* Greeting Section */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 bg-white p-8 rounded-[32px] border border-slate-100 shadow-sm relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2"></div>
+                <div className="relative z-10">
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="px-3 py-1 bg-blue-600 rounded-full text-[10px] font-black text-white uppercase tracking-widest flex items-center gap-1.5 shadow-lg shadow-blue-500/20">
+                            <Sparkles size={10} fill="white" /> Infinite Pro
+                        </div>
+                        <span className="px-3 py-1 bg-slate-100 rounded-full text-[10px] font-bold text-slate-500 uppercase tracking-widest">Startup Edition</span>
+                    </div>
+                    <h1 className="text-4xl font-black text-slate-900 tracking-tight mb-2">
                         Good morning, {user?.full_name?.split(' ')[0] || 'Founder'}
                     </h1>
-                    <p className="text-slate-500 font-medium">Here is your startup's daily brief and pitch performance.</p>
+                    <p className="text-slate-500 font-medium leading-relaxed max-w-lg">
+                        Welcome to your unified terminal. Your pitches are currently reaching <span className="text-blue-600 font-bold">128+</span> strategic partners.
+                    </p>
                 </div>
-                <div className="flex items-center gap-3">
-                    <span className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-full text-xs font-bold text-slate-600 shadow-sm">
-                        <span className="w-2 h-2 bg-emerald-500 rounded-full"></span> Online
-                    </span>
-                    <span className="px-3 py-1.5 bg-white border border-slate-200 rounded-full text-xs font-bold text-slate-600 shadow-sm">
-                        {currentDate}
-                    </span>
+                <div className="flex flex-col items-end gap-3 relative z-10">
+                    <div className="flex items-center gap-2">
+                        <span className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-full text-xs font-bold text-slate-600">
+                            Online
+                        </span>
+                        <span className="px-3 py-1.5 bg-slate-50 rounded-full text-xs font-bold text-slate-600">
+                            {currentDate}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            {/* PREMIUM UTILITIES: NEW SECTION */}
+            <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                        <Zap size={22} className="text-blue-600 fill-blue-600/10" /> Premium Utilities
+                    </h2>
+                    <span className="text-xs font-bold text-blue-600 cursor-pointer hover:underline uppercase tracking-widest">Configure Terminal</span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="group bg-gradient-to-br from-white to-blue-50/30 p-8 rounded-[32px] border border-blue-100 hover:border-blue-500/40 transition-all shadow-sm hover:shadow-xl cursor-pointer relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-blue-600/5 rounded-full blur-xl group-hover:bg-blue-600/10 transition-colors"></div>
+                        <div className="w-12 h-12 bg-blue-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform">
+                            <Rocket className="text-white w-6 h-6" />
+                        </div>
+                        <h4 className="text-lg font-black text-slate-900 mb-2">AI Pitch Scan</h4>
+                        <p className="text-sm text-slate-500 font-medium leading-relaxed">Let our algorithmic core review your deck for strategic gaps before sending.</p>
+                        <div className="mt-6 flex items-center gap-2 text-blue-600 text-xs font-black uppercase tracking-widest">
+                            Analyze Now <ArrowRight size={14} />
+                        </div>
+                    </div>
+
+                    <div className="group bg-gradient-to-br from-white to-indigo-50/30 p-8 rounded-[32px] border border-indigo-100 hover:border-indigo-500/40 transition-all shadow-sm hover:shadow-xl cursor-pointer relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-600/5 rounded-full blur-xl group-hover:bg-indigo-600/10 transition-colors"></div>
+                        <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-indigo-500/30 group-hover:scale-110 transition-transform">
+                            <Network className="text-white w-6 h-6" />
+                        </div>
+                        <h4 className="text-lg font-black text-slate-900 mb-2">Global Reach</h4>
+                        <p className="text-sm text-slate-500 font-medium leading-relaxed">Instantly feature your pitch on the terminal of 1,200+ global venture partners.</p>
+                        <div className="mt-6 flex items-center gap-2 text-indigo-600 text-xs font-black uppercase tracking-widest">
+                            Enable Outreach <ArrowRight size={14} />
+                        </div>
+                    </div>
+
+                    <div className="group bg-slate-900 p-8 rounded-[32px] border border-slate-800 hover:border-blue-500/40 transition-all shadow-xl cursor-pointer relative overflow-hidden">
+                        <div className="absolute -top-10 -right-10 w-40 h-40 bg-blue-600/20 rounded-full blur-3xl"></div>
+                        <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center mb-6 shadow-inner group-hover:scale-110 transition-transform">
+                            <ShieldCheck className="text-white w-6 h-6" />
+                        </div>
+                        <h4 className="text-lg font-black text-white mb-2 italic">Priority Terminal</h4>
+                        <p className="text-sm text-slate-400 font-medium leading-relaxed">Get 3x more visibility by placing your startup in the mandatory morning feed.</p>
+                        <div className="mt-6 flex items-center gap-2 text-white text-xs font-black uppercase tracking-widest">
+                            Claim Placement <ArrowRight size={14} />
+                        </div>
+                    </div>
                 </div>
             </div>
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <StatCard
-                    label="Total Pitches"
+                    label="Active Pitches"
                     value={totalPitches}
                     icon={<Briefcase size={22} className="text-blue-600" />}
                     bgClass="bg-blue-50"
-                    trend="+20%"
+                    trend="+2 new today"
                 />
                 <StatCard
-                    label="Investor Views"
+                    label="Partner Intelligence"
                     value={totalViews}
                     icon={<Eye size={22} className="text-purple-600" />}
                     bgClass="bg-purple-50"
-                    trend="+12%"
+                    trend="High Signal"
                 />
                 <StatCard
-                    label="Match Score"
+                    label="Algorithmic Match"
                     value={`${matchScore}%`}
                     icon={<Zap size={22} className="text-orange-600" />}
                     bgClass="bg-orange-50"
-                    trend="+5%"
+                    trend="Top 10%"
                 />
             </div>
 
@@ -143,7 +207,6 @@ const StartupDashboard = ({ user }) => {
                                             <div className="w-full h-full bg-slate-200 flex items-center justify-center text-xs text-slate-400 font-bold">PDF</div>
                                         ) : (
                                             <Briefcase className="text-slate-300" size={32} />
-                                            // Placeholder for thumbnail
                                         )}
                                         <div className="absolute top-2 left-2 px-2 py-1 bg-white/90 backdrop-blur rounded text-[10px] font-bold text-slate-700 uppercase tracking-wide shadow-sm">
                                             {pitch.status === 'active' ? 'v3.0' : 'Draft'}
@@ -233,7 +296,7 @@ const StartupDashboard = ({ user }) => {
                                 <ChevronRight size={20} />
                             </Link>
                         </div>
-                        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden text-left">
                             {investors.slice(0, 3).map((investor, idx) => {
                                 const matchPercent = [98, 89, 75][idx] || 60 + (investor.id * 7) % 30; // Mock match %
                                 return (
@@ -261,42 +324,21 @@ const StartupDashboard = ({ user }) => {
                         </div>
                     </div>
 
-                    {/* Recent Activity */}
-                    <div>
-                        <h2 className="text-lg font-bold text-slate-900 mb-4">Recent Activity</h2>
-                        <div className="space-y-6 pl-2">
-                            {/* Mock Activity Data - In real app, fetch from notifications/activity log */}
-                            {[
-                                { text: 'John Doe commented on slide 4 of "Series A Deck"', time: '10 min ago', active: true },
-                                { text: 'New match found: TechStar Accelerator', time: '2 hours ago', active: false },
-                                { text: 'You uploaded "Financials_2023.xlsx"', time: 'Yesterday', active: false },
-                            ].map((activity, i) => (
-                                <div key={i} className="relative pl-6 border-l-2 border-slate-200 last:border-0 pb-1">
-                                    <div className={`absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full border-2 border-white ${activity.active ? 'bg-blue-600 ring-2 ring-blue-100' : 'bg-slate-300'}`}></div>
-                                    <p className="text-sm font-medium text-slate-800 leading-snug">
-                                        {activity.text.split(':').map((part, idx) => idx === 0 && activity.text.includes(':') ? <span key={idx} className="font-bold">{part}:</span> : part)}
-                                    </p>
-                                    <span className="text-xs text-slate-400 mt-1 block">{activity.time}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Blue Promo Card */}
-                    <div className="bg-blue-600 rounded-2xl p-6 text-white relative overflow-hidden shadow-lg shadow-blue-500/30">
+                    {/* Blue Promo Card: ENHANCED */}
+                    <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[32px] p-8 text-white relative overflow-hidden shadow-2xl shadow-blue-500/40">
                         <div className="relative z-10">
-                            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mb-4 text-white">
-                                <Rocket size={20} />
+                            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-6 text-white backdrop-blur-md">
+                                <Rocket size={24} />
                             </div>
-                            <h3 className="font-bold text-lg mb-1">Boost your visibility</h3>
-                            <p className="text-blue-100 text-sm mb-4 leading-relaxed">Get featured on the main investor dashboard for 2x more views.</p>
-                            <button className="w-full py-2.5 bg-white text-blue-600 font-bold text-sm rounded-xl hover:bg-blue-50 transition-colors">
-                                Upgrade Plan
+                            <h3 className="font-black text-2xl mb-2 leading-tight">Scale to <br />Infinity.</h3>
+                            <p className="text-blue-100 text-sm mb-8 leading-relaxed font-medium">Get featured on the mandatory morning terminal for 4x more partner eyes.</p>
+                            <button className="w-full py-4 bg-white text-blue-600 font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-blue-50 transition-all active:scale-95 shadow-lg shadow-black/10">
+                                Enter Pro Terminal
                             </button>
                         </div>
-                        {/* Decorative circles */}
-                        <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
-                        <div className="absolute bottom-0 right-0 w-24 h-24 bg-blue-500/20 rounded-full blur-xl"></div>
+                        {/* Decorative elements */}
+                        <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+                        <div className="absolute bottom-[-20px] left-[-20px] w-32 h-32 bg-blue-400/20 rounded-full blur-2xl"></div>
                     </div>
                 </div>
             </div>
@@ -305,17 +347,17 @@ const StartupDashboard = ({ user }) => {
 };
 
 const StatCard = ({ label, value, icon, bgClass, trend }) => (
-    <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between h-full hover:shadow-md transition-shadow">
-        <div className="flex items-start justify-between mb-4">
-            <div className={`p-3 rounded-xl ${bgClass}`}>
+    <div className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm flex flex-col justify-between h-full hover:shadow-lg transition-all group">
+        <div className="flex items-start justify-between mb-6">
+            <div className={`p-4 rounded-2xl ${bgClass} group-hover:scale-110 transition-transform`}>
                 {icon}
             </div>
-            <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
-                <Sparkles size={8} fill="currentColor" /> {trend}
+            <span className="flex items-center gap-1 text-[9px] font-black text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full uppercase tracking-tighter">
+                {trend}
             </span>
         </div>
         <div>
-            <p className="text-sm font-medium text-slate-500 mb-1">{label}</p>
+            <p className="text-xs font-bold text-slate-400 mb-1 uppercase tracking-widest">{label}</p>
             <h3 className="text-3xl font-black text-slate-900 tracking-tight">{value}</h3>
         </div>
     </div>

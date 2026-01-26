@@ -10,9 +10,11 @@ export default function LandingPage({ onNavigate, onLogin, onSignup, events, use
             {/* 1. NAVBAR (Deep Contrast Header) */}
             <nav className="fixed w-full z-50 bg-slate-900/95 backdrop-blur-md border-b border-white/10 shadow-lg">
                 <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-primary-500 font-bold text-xl">E</div>
-                        <span className="text-xl font-bold text-white tracking-tight">Infinite BZ</span>
+                    <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 flex items-center justify-center">
+                            <div className="w-2.5 h-2.5 bg-sky-500 rounded-full shadow-[0_0_10px_rgba(14,165,233,0.4)]" />
+                        </div>
+                        <span className="text-xl font-black text-white tracking-tighter uppercase italic">INVESTORCONNECTER</span>
                     </div>
 
                     <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/80">
@@ -312,7 +314,7 @@ export default function LandingPage({ onNavigate, onLogin, onSignup, events, use
                                 <div className="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-sky-500"><Mail size={20} /></div>
                                 <div>
                                     <div className="text-white font-semibold">Email Us</div>
-                                    <div className="text-sm text-slate-500">hello@infinitebz.com</div>
+                                    <div className="text-sm text-slate-500">hello@investorconnecter.com</div>
                                 </div>
                             </div>
                             <div className="flex items-center gap-4">
@@ -353,7 +355,7 @@ export default function LandingPage({ onNavigate, onLogin, onSignup, events, use
                 </div>
 
                 <div className="border-t border-white/5 mt-20 pt-8 text-center text-sm text-slate-600">
-                    © 2024 Infinite BZ. All rights reserved.
+                    © 2024 INVESTORCONNECTER. All rights reserved.
                 </div>
             </footer>
 
