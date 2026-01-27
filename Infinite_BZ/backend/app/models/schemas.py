@@ -174,3 +174,10 @@ class Follow(SQLModel, table=True):
     # Relationships
     follower: Optional["User"] = Relationship(sa_relationship_kwargs={"foreign_keys": "Follow.follower_email", "primaryjoin": "Follow.follower_email == User.email"})
     followed: Optional["User"] = Relationship(sa_relationship_kwargs={"foreign_keys": "Follow.followed_email", "primaryjoin": "Follow.followed_email == User.email"})
+
+# --- Contact Form Model ---
+class ContactForm(SQLModel):
+    first_name: str
+    last_name: str
+    email: str
+    message: str

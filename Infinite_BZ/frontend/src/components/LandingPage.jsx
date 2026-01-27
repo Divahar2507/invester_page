@@ -1,8 +1,16 @@
-import { useState } from 'react';
-import { ArrowRight, CheckCircle2, Calendar, Database, MousePointer2, ChevronDown, ChevronUp, Clock, MapPin, Mail, Phone, MessageSquare, ExternalLink, Search } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ArrowRight, CheckCircle2, Calendar, Database, MousePointer2, ChevronDown, ChevronUp, Clock, MapPin, Mail, Phone, MessageSquare, ExternalLink, Search, Infinity } from 'lucide-react';
 
 export default function LandingPage({ onNavigate, onLogin, onSignup, events, user }) {
     const upcomingEvents = events.slice(0, 3);
+    const [randomEvent, setRandomEvent] = useState(null);
+
+    useEffect(() => {
+        if (events.length > 0) {
+            const randomIndex = Math.floor(Math.random() * events.length);
+            setRandomEvent(events[randomIndex]);
+        }
+    }, [events]);
 
     return (
         <div className="min-h-screen bg-slate-900 text-white font-sans selection:bg-primary-500/30">
@@ -10,11 +18,11 @@ export default function LandingPage({ onNavigate, onLogin, onSignup, events, use
             {/* 1. NAVBAR (Deep Contrast Header) */}
             <nav className="fixed w-full z-50 bg-slate-900/95 backdrop-blur-md border-b border-white/10 shadow-lg">
                 <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 flex items-center justify-center">
-                            <div className="w-2.5 h-2.5 bg-sky-500 rounded-full shadow-[0_0_10px_rgba(14,165,233,0.4)]" />
+                    <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-primary-500 font-bold text-xl">
+                            <Infinity size={20} strokeWidth={3} />
                         </div>
-                        <span className="text-xl font-black text-white tracking-tighter uppercase italic">INVESTORCONNECTER</span>
+                        <span className="text-xl font-bold text-white tracking-tight">Infinite BZ</span>
                     </div>
 
                     <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/80">
@@ -25,25 +33,19 @@ export default function LandingPage({ onNavigate, onLogin, onSignup, events, use
                     </div>
 
                     {/* Login/Signup Buttons */}
-                    <div className="flex items-center gap-4">
-                        {!user && (
-                            <button onClick={() => onLogin()} className="hidden md:block text-sm font-medium text-white hover:text-white/80 transition-colors">
-                                Log In
-                            </button>
-                        )}
-
-                        <button onClick={user ? onLogin : onSignup} className="hidden md:block text-sm font-medium text-white hover:text-white/80 transition-colors">
-                            {user ? `Hi, ${user.full_name?.split(' ')[0] || 'User'} (Sign Out)` : 'Sign Up'}
+                    <div className="flex items-center gap-6">
+                        <button
+                            onClick={() => onLogin()}
+                            className="text-sm font-bold text-white hover:text-primary-400 transition-colors"
+                        >
+                            Log In
                         </button>
-
-                        {!user && (
-                            <button
-                                onClick={onSignup}
-                                className="bg-primary-500 hover:bg-primary-600 text-slate-900 text-sm font-bold px-5 py-2.5 rounded-lg transition-all shadow-lg shadow-primary-500/20"
-                            >
-                                Get Started
-                            </button>
-                        )}
+                        <button
+                            onClick={onSignup}
+                            className="bg-primary-500 hover:bg-primary-600 text-slate-900 text-sm font-bold px-6 py-2.5 rounded-xl transition-all shadow-lg shadow-primary-500/20 active:scale-95"
+                        >
+                            Sign Up
+                        </button>
                     </div>
                 </div>
             </nav>
@@ -64,43 +66,46 @@ export default function LandingPage({ onNavigate, onLogin, onSignup, events, use
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4">
                             <button
-                                onClick={onNavigate}
+                                onClick={onLogin}
                                 className="bg-primary-500 hover:bg-primary-600 text-slate-900 font-bold px-8 py-4 rounded-xl transition-all shadow-lg shadow-primary-500/25 flex items-center justify-center gap-2"
                             >
                                 Find Events Free
                                 <ArrowRight size={20} />
                             </button>
-                            <button className="px-8 py-4 rounded-xl font-semibold text-white border border-white/30 hover:bg-white/10 transition-all">
+                            <button
+                                onClick={onLogin}
+                                className="px-8 py-4 rounded-xl font-semibold text-white border border-white/30 hover:bg-white/10 transition-all"
+                            >
                                 Request Feature
                             </button>
                         </div>
 
-                        <div className="mt-12 text-sm text-white/70 flex items-center gap-4">
-                            <div className="flex -space-x-2">
-                                {[1, 2, 3, 4].map(i => (
-                                    <div key={i} className="w-8 h-8 rounded-full bg-slate-800 border-2 border-primary-500" />
-                                ))}
-                            </div>
-                            Trusted by 500+ professionals in Chennai
-                        </div>
+
                     </div>
 
                     <div className="relative">
                         <div className="absolute -inset-1 bg-gradient-to-r from-primary-500 to-white rounded-2xl blur opacity-30"></div>
-                        <div className="relative rounded-2xl overflow-hidden border border-white/20 shadow-2xl bg-white/10 backdrop-blur-sm">
-                            <img
-                                src="https://images.unsplash.com/photo-1544531586-fde5298cdd40?q=80&w=2070&auto=format&fit=crop"
-                                alt="Conference Hall"
-                                className="w-full object-cover opacity-90"
-                            />
-
-                            <div className="absolute bottom-6 left-6 right-6 bg-slate-900/90 backdrop-blur-xl p-4 rounded-xl border border-white/10 flex items-center justify-between">
-                                <div>
-                                    <div className="text-xs text-primary-400 font-bold mb-1">NEXT UP</div>
-                                    <div className="text-white font-semibold">Tech Meetup @ IIT Madras</div>
+                        <div className="relative rounded-2xl overflow-hidden border border-white/20 shadow-2xl bg-white/10 backdrop-blur-sm aspect-video">
+                            {randomEvent ? (
+                                <>
+                                    <img
+                                        src="https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop"
+                                        alt="Event Background"
+                                        className="w-full h-full object-cover opacity-80 hover:scale-105 transition-transform duration-700"
+                                    />
+                                    <div className="absolute bottom-6 left-6 right-6 bg-slate-900/90 backdrop-blur-xl p-4 rounded-xl border border-white/10 flex items-center justify-between">
+                                        <div className="flex-1 min-w-0 mr-4">
+                                            <div className="text-xs text-primary-400 font-bold mb-1">NEXT UP</div>
+                                            <div className="text-white font-semibold truncate">{randomEvent.title}</div>
+                                        </div>
+                                        <button onClick={onLogin} className="px-4 py-2 bg-primary-500 rounded-lg text-xs font-bold text-slate-900 hover:bg-primary-400 whitespace-nowrap">JOIN</button>
+                                    </div>
+                                </>
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center bg-slate-800 text-slate-500">
+                                    <span className="flex items-center gap-2"><Calendar className="animate-pulse" /> Loading Events...</span>
                                 </div>
-                                <button onClick={onNavigate} className="px-4 py-2 bg-primary-500 rounded-lg text-xs font-bold text-slate-900 hover:bg-primary-400">JOIN</button>
-                            </div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -193,7 +198,7 @@ export default function LandingPage({ onNavigate, onLogin, onSignup, events, use
                             <h2 className="text-3xl font-bold text-white mb-2">Upcoming in Chennai</h2>
                             <p className="text-slate-400">Don't miss out on these popular events.</p>
                         </div>
-                        <button onClick={onNavigate} className="text-sky-400 font-semibold hover:text-sky-300 flex items-center gap-2">
+                        <button onClick={onLogin} className="text-sky-400 font-semibold hover:text-sky-300 flex items-center gap-2">
                             View All Events <ArrowRight size={16} />
                         </button>
                     </div>
@@ -259,14 +264,24 @@ export default function LandingPage({ onNavigate, onLogin, onSignup, events, use
 
                     <div className="grid md:grid-cols-2 gap-8">
                         {[
-                            { quote: "Finally a unified list. I used to check 3 different sites every Friday. This saved me so much time.", author: "Arjun K.", role: "Product Manager" },
-                            { quote: "The curated data is actually accurate. Finding free networking events properly categorized is a game changer.", author: "Priya S.", role: "Freelance Developer" }
+                            {
+                                quote: "Finally a unified list. I used to check 3 different sites every Friday. This saved me so much time.",
+                                author: "Arjun K.",
+                                role: "Product Manager",
+                            },
+                            {
+                                quote: "The curated data is actually accurate. Finding free networking events properly categorized is a game changer.",
+                                author: "Priya S.",
+                                role: "Freelance Developer",
+                            }
                         ].map((t, i) => (
                             <div key={i} className="bg-slate-900 p-8 rounded-2xl border border-white/5 relative">
                                 <div className="text-sky-500 text-4xl font-serif absolute top-6 left-6">"</div>
                                 <p className="text-lg text-slate-300 italic mb-6 pl-6 relative z-10">{t.quote}</p>
                                 <div className="flex items-center gap-4 pl-6">
-                                    <div className="w-10 h-10 rounded-full bg-slate-700" />
+                                    <div className="w-10 h-10 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center text-sky-500 font-bold text-lg">
+                                        {t.author[0]}
+                                    </div>
                                     <div>
                                         <div className="text-white font-bold">{t.author}</div>
                                         <div className="text-xs text-slate-500">{t.role}</div>
@@ -314,7 +329,7 @@ export default function LandingPage({ onNavigate, onLogin, onSignup, events, use
                                 <div className="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-sky-500"><Mail size={20} /></div>
                                 <div>
                                     <div className="text-white font-semibold">Email Us</div>
-                                    <div className="text-sm text-slate-500">hello@investorconnecter.com</div>
+                                    <div className="text-sm text-slate-500">Infinite@BZ</div>
                                 </div>
                             </div>
                             <div className="flex items-center gap-4">
@@ -328,34 +343,12 @@ export default function LandingPage({ onNavigate, onLogin, onSignup, events, use
                     </div>
 
                     <div className="bg-slate-900 p-8 rounded-2xl border border-white/5">
-                        <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1">
-                                    <label className="text-xs font-bold text-slate-400">FIRST NAME</label>
-                                    <input type="text" className="w-full bg-[#0B1221] border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-sky-500 transition-colors" />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-xs font-bold text-slate-400">LAST NAME</label>
-                                    <input type="text" className="w-full bg-[#0B1221] border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-sky-500 transition-colors" />
-                                </div>
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-slate-400">EMAIL</label>
-                                <input type="email" className="w-full bg-[#0B1221] border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-sky-500 transition-colors" />
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-xs font-bold text-slate-400">MESSAGE</label>
-                                <textarea rows={4} className="w-full bg-[#0B1221] border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-sky-500 transition-colors"></textarea>
-                            </div>
-                            <button className="w-full bg-sky-500 hover:bg-sky-400 text-white font-bold py-4 rounded-lg transition-colors shadow-lg shadow-sky-500/20">
-                                Send Message
-                            </button>
-                        </form>
+                        <ContactForm />
                     </div>
                 </div>
 
                 <div className="border-t border-white/5 mt-20 pt-8 text-center text-sm text-slate-600">
-                    © 2024 INVESTORCONNECTER. All rights reserved.
+                    © 2024 Infinite BZ. All rights reserved.
                 </div>
             </footer>
 
@@ -370,3 +363,106 @@ export default function LandingPage({ onNavigate, onLogin, onSignup, events, use
         </div>
     )
 }
+
+function ContactForm() {
+    const [formData, setFormData] = useState({
+        first_name: '',
+        last_name: '',
+        email: '',
+        message: ''
+    });
+    const [status, setStatus] = useState('idle'); // idle, loading, success, error
+
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setStatus('loading');
+
+        try {
+            const res = await fetch('http://localhost:8000/api/v1/contact', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+
+            if (res.ok) {
+                setStatus('success');
+                setFormData({ first_name: '', last_name: '', email: '', message: '' });
+            } else {
+                setStatus('error');
+            }
+        } catch (err) {
+            console.error(err);
+            setStatus('error');
+        }
+    };
+
+    return (
+        <form className="space-y-4" onSubmit={handleSubmit}>
+            <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-400">FIRST NAME</label>
+                    <input
+                        name="first_name"
+                        value={formData.first_name}
+                        onChange={handleChange}
+                        required
+                        type="text"
+                        className="w-full bg-[#0B1221] border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-sky-500 transition-colors"
+                    />
+                </div>
+                <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-400">LAST NAME</label>
+                    <input
+                        name="last_name"
+                        value={formData.last_name}
+                        onChange={handleChange}
+                        required
+                        type="text"
+                        className="w-full bg-[#0B1221] border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-sky-500 transition-colors"
+                    />
+                </div>
+            </div>
+            <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-400">EMAIL</label>
+                <input
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    type="email"
+                    className="w-full bg-[#0B1221] border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-sky-500 transition-colors"
+                />
+            </div>
+            <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-400">MESSAGE</label>
+                <textarea
+                    name="message"
+                    value={formData.message}
+                    onChange={handleChange}
+                    required
+                    rows={4}
+                    className="w-full bg-[#0B1221] border border-slate-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-sky-500 transition-colors"
+                ></textarea>
+            </div>
+
+            <button
+                type="submit"
+                disabled={status === 'loading' || status === 'success'}
+                className={`w-full font-bold py-4 rounded-lg transition-all shadow-lg text-white ${status === 'success'
+                    ? 'bg-green-500 shadow-green-500/20'
+                    : 'bg-sky-500 hover:bg-sky-400 shadow-sky-500/20'
+                    }`}
+            >
+                {status === 'loading' ? 'Sending...' : status === 'success' ? 'Message Sent!' : 'Send Message'}
+            </button>
+
+            {status === 'error' && <p className="text-red-400 text-sm text-center">Something went wrong. Please try again.</p>}
+        </form>
+    );
+}
+
+

@@ -16,6 +16,10 @@ class ResetPasswordRequest(BaseModel):
     otp: str
     new_password: str
 
+class VerifyOTPRequest(BaseModel):
+    email: EmailStr
+    otp: str
+
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 def get_auth_service(session: AsyncSession = Depends(get_session)) -> AuthService:
@@ -24,6 +28,14 @@ def get_auth_service(session: AsyncSession = Depends(get_session)) -> AuthServic
 @router.post("/register", response_model=UserRead)
 async def register(user: UserCreate, service: AuthService = Depends(get_auth_service)):
     return await service.register_user(user)
+
+@router.post("/verify-signup-otp")
+async def verify_signup_otp(request: VerifyOTPRequest, service: AuthService = Depends(get_auth_service)):
+    return await service.verify_signup_otp(request.email, request.otp)
+
+@router.post("/resend-otp")
+async def resend_otp(request: ForgotPasswordRequest, service: AuthService = Depends(get_auth_service)):
+    return await service.resend_verification_otp(request.email)
 
 @router.post("/login", response_model=Token)
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), service: AuthService = Depends(get_auth_service)):

@@ -1,490 +1,499 @@
-import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Check, X } from 'lucide-react';
-import Sidebar from './Sidebar';
+import { useState, useEffect } from 'react';
+import {
+    User, Mail, Phone, Briefcase, Building, FileText, Camera,
+    Upload, CheckCircle2, Shield, CreditCard, Link as LinkIcon,
+    ArrowLeft, Save, Users, X, Bell, Lock, Globe, Trash2,
+    Linkedin, Twitter, Facebook, ExternalLink, ChevronRight,
+    MapPin, Languages, Clock
+} from 'lucide-react';
 
 export default function SettingsPage({ user, onNavigate }) {
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    jobTitle: '',
-    company: '',
-    bio: '',
-    profileImage: null
-  });
+    const [activeTab, setActiveTab] = useState('profile'); // profile, account, notifications, security, social
+    const [formData, setFormData] = useState({
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        jobTitle: '',
+        company: '',
+        bio: '',
+        location: '',
+        timezone: 'Asia/Kolkata',
+        language: 'English (US)',
+        profileImage: null,
+        socials: {
+            linkedin: '',
+            twitter: '',
+            website: ''
+        },
+        notifications: {
+            eventUpdates: true,
+            marketing: false,
+            securityAlerts: true
+        }
+    });
 
-  const [profileImagePreview, setProfileImagePreview] = useState(null);
+    const [previewImage, setPreviewImage] = useState(null);
+    const [isSaving, setIsSaving] = useState(false);
+    const [saveSuccess, setSaveSuccess] = useState(false);
+    const [followers, setFollowers] = useState([]);
+    const [showFollowersModal, setShowFollowersModal] = useState(false);
 
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-  const [showFollowingModal, setShowFollowingModal] = useState(false);
-  const [followingData, setFollowingData] = useState([]);
-  const [followersCount, setFollowersCount] = useState(0);
+    useEffect(() => {
+        if (user) {
+            setFormData(prev => ({
+                ...prev,
+                firstName: user.first_name || '',
+                lastName: user.last_name || '',
+                email: user.email || '',
+                phone: user.phone || '',
+                jobTitle: user.job_title || '',
+                company: user.company || '',
+                bio: user.bio || '',
+                profileImage: user.profile_image || null
+            }));
+            if (user.profile_image) {
+                setPreviewImage(user.profile_image);
+            }
+        }
+    }, [user]);
 
-  // Calculate profile completion percentage
-  const calculateProfileCompletion = () => {
-    const fields = [
-      formData.firstName,
-      formData.lastName,
-      formData.email,
-      formData.phone,
-      formData.jobTitle,
-      formData.company,
-      formData.bio,
-      formData.profileImage
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        if (name.includes('.')) {
+            const [parent, child] = name.split('.');
+            setFormData(prev => ({
+                ...prev,
+                [parent]: { ...prev[parent], [child]: value }
+            }));
+        } else {
+            setFormData(prev => ({ ...prev, [name]: value }));
+        }
+    };
+
+    const handleToggle = (key) => {
+        setFormData(prev => ({
+            ...prev,
+            notifications: {
+                ...prev.notifications,
+                [key]: !prev.notifications[key]
+            }
+        }));
+    };
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setPreviewImage(reader.result);
+                setFormData(prev => ({ ...prev, profileImage: reader.result }));
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleSave = async () => {
+        setIsSaving(true);
+        // Simulate API call
+        setTimeout(() => {
+            setIsSaving(false);
+            setSaveSuccess(true);
+            setTimeout(() => setSaveSuccess(false), 3000);
+        }, 1200);
+    };
+
+    const tabs = [
+        { id: 'profile', label: 'Public Profile', icon: <User size={18} /> },
+        { id: 'account', label: 'Account Settings', icon: <Building size={18} /> },
+        { id: 'security', label: 'Security', icon: <Lock size={18} /> },
+        { id: 'notifications', label: 'Notifications', icon: <Bell size={18} /> },
+        { id: 'social', label: 'Social Connections', icon: <LinkIcon size={18} /> }
     ];
 
-    const filledFields = fields.filter(field => field && field.trim() !== '').length;
-    const totalFields = fields.length;
-    return Math.round((filledFields / totalFields) * 100);
-  };
+    return (
+        <div className="min-h-screen bg-[#0f172a] text-slate-200 font-sans selection:bg-primary-500/30">
+            {/* Top Bar Overlay */}
+            <div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary-500 via-indigo-500 to-primary-500 z-50"></div>
 
-  // Update form data when user data is available
-  useEffect(() => {
-    if (user) {
-      // First, populate with Google auth data
-      const nameParts = user.full_name ? user.full_name.split(' ') : ['', ''];
-      const firstName = nameParts[0] || '';
-      const lastName = nameParts.slice(1).join(' ') || '';
-
-      setFormData(prev => ({
-        ...prev,
-        firstName: firstName,
-        lastName: lastName,
-        email: user.email || ''
-      }));
-
-      // Then, fetch existing profile data from database
-      fetchProfileData();
-      fetchFollowersData();
-    }
-  }, [user]);
-
-  // Fetch followers data when modal is opened
-  useEffect(() => {
-    if (showFollowingModal) {
-      fetchFollowersData();
-    }
-  }, [showFollowingModal]);
-
-  const fetchProfileData = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/v1/user/profile', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        }
-      });
-
-      if (response.ok) {
-        const profileData = await response.json();
-        setFormData(prev => ({
-          ...prev,
-          firstName: profileData.first_name || prev.firstName,
-          lastName: profileData.last_name || prev.lastName,
-          jobTitle: profileData.job_title || prev.jobTitle,
-          company: profileData.company || prev.company,
-          phone: profileData.phone || prev.phone,
-          bio: profileData.bio || prev.bio,
-          profileImage: profileData.profile_image || prev.profileImage
-        }));
-      }
-    } catch (error) {
-      console.error('Error fetching profile data:', error);
-    }
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        alert('Please select a valid image file.');
-        return;
-      }
-
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        alert('Image size should be less than 5MB.');
-        return;
-      }
-
-      // Create preview URL
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const imageData = e.target.result;
-        setProfileImagePreview(imageData);
-        setFormData(prev => ({ ...prev, profileImage: imageData }));
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const fetchFollowersData = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:8000/api/v1/user/followers', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setFollowingData(data.followers || []);
-        setFollowersCount(data.count || 0);
-      }
-    } catch (error) {
-      console.error('Error fetching followers data:', error);
-    }
-  };
-
-  const handleSave = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/v1/user/profile', {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          job_title: formData.jobTitle,
-          company: formData.company,
-          phone: formData.phone,
-          bio: formData.bio,
-          profile_image: formData.profileImage || null
-        })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log('Profile updated successfully:', data);
-
-        // Show success message
-        setShowSuccessMessage(true);
-
-        // Hide success message after 3 seconds
-        setTimeout(() => {
-          setShowSuccessMessage(false);
-        }, 3000);
-      } else {
-        const errorData = await response.json();
-        console.error('Error updating profile:', errorData);
-        alert('Failed to update profile. Please try again.');
-      }
-    } catch (error) {
-      console.error('Error saving data:', error);
-      alert('An error occurred while saving. Please try again.');
-    }
-  };
-
-  return (
-    <div className="min-h-screen flex font-sans">
-      <Sidebar
-        activePage="settings"
-        onNavigate={(view) => {
-          if (view === 'dashboard' || view === 'my-events' || view === 'my-registrations') onNavigate('dashboard');
-          else if (view === 'settings') onNavigate('settings');
-        }}
-        onLogout={() => onNavigate('landing')}
-        onCreateClick={() => onNavigate('create-event')}
-      />
-
-      <main className="flex-1 lg:ml-64 p-8">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-white">Settings</h1>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          {/* Left Sidebar - Profile Card */}
-          <div className="lg:col-span-1">
-            <div className="bg-slate-800 border border-slate-700 rounded-xl p-6">
-              <div className="text-center">
-                <div className="w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden flex items-center justify-center">
-                  {profileImagePreview || formData.profileImage ? (
-                    <img
-                      src={profileImagePreview || formData.profileImage}
-                      alt="Profile"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-2xl font-bold">
-                      {formData.firstName && formData.lastName ?
-                        `${formData.firstName[0]}${formData.lastName[0]}`.toUpperCase() :
-                        'AR'
-                      }
+            <div className="max-w-7xl mx-auto px-4 lg:px-8 py-10">
+                {/* Header Section */}
+                <div className="flex items-center justify-between mb-12">
+                    <div className="flex items-center gap-6">
+                        <button
+                            onClick={() => onNavigate('dashboard')}
+                            className="w-10 h-10 flex items-center justify-center bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 hover:border-white/20 transition-all group"
+                        >
+                            <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
+                        </button>
+                        <div>
+                            <h1 className="text-4xl font-black bg-gradient-to-br from-white to-slate-400 bg-clip-text text-transparent">
+                                Settings
+                            </h1>
+                            <p className="text-slate-500 text-sm mt-1">Manage your account preferences and profile</p>
+                        </div>
                     </div>
-                  )}
+
+                    <button
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        className="flex items-center gap-2 px-6 py-3 bg-primary-500 hover:bg-primary-400 text-slate-900 rounded-xl font-black transition-all shadow-lg shadow-primary-500/20 active:scale-95 disabled:opacity-50"
+                    >
+                        {isSaving ? "Saving..." : <><Save size={18} /> Save Changes</>}
+                    </button>
                 </div>
 
-                {/* Image Upload Button */}
-                <div className="mb-4">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    className="hidden"
-                    id="profile-image-upload"
-                  />
-                  <label
-                    htmlFor="profile-image-upload"
-                    className="px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-slate-300 hover:bg-slate-600 cursor-pointer transition-colors text-sm"
-                  >
-                    Choose Image
-                  </label>
-                  {profileImagePreview && (
-                    <div className="text-xs text-slate-400 mt-1">
-                      Image selected
-                    </div>
-                  )}
-                  <div className="text-xs text-slate-400 mt-2 cursor-pointer hover:text-slate-300" onClick={() => setShowFollowingModal(true)}>
-                    {followersCount} following
-                  </div>
-                </div>
-                <h3 className="text-lg font-semibold text-white mb-1">
-                  {formData.firstName || formData.lastName ?
-                    `${formData.firstName} ${formData.lastName}`.trim() :
-                    'Arjun Reddy'
-                  }
-                </h3>
-                <p className="text-sm text-blue-400 mb-4">
-                  {formData.jobTitle && formData.company ?
-                    `${formData.jobTitle} @ ${formData.company}` :
-                    'Product Manager @ TechFlow'
-                  }
-                </p>
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                    {/* Professional Left Sidebar */}
+                    <div className="lg:col-span-3 space-y-4 sticky top-10">
+                        <nav className="bg-white/5 border border-white/10 rounded-3xl p-3 backdrop-blur-xl">
+                            {tabs.map(tab => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id)}
+                                    className={`w-full flex items-center gap-3 px-4 py-4 rounded-2xl transition-all duration-300 relative group ${activeTab === tab.id
+                                        ? 'bg-primary-500/10 text-primary-400 font-bold'
+                                        : 'text-slate-400 hover:bg-white/5 hover:text-white'
+                                        }`}
+                                >
+                                    {tab.icon}
+                                    <span className="text-sm">{tab.label}</span>
+                                    {activeTab === tab.id && (
+                                        <div className="absolute right-4 w-1.5 h-1.5 bg-primary-500 rounded-full shadow-[0_0_8px_rgba(14,165,233,0.8)]"></div>
+                                    )}
+                                </button>
+                            ))}
+                        </nav>
 
-                <div className="grid grid-cols-3 gap-4 py-4 border-t border-b border-slate-600 mb-6">
-                  <div>
-                    <div className="text-lg font-bold text-white">{calculateProfileCompletion()}%</div>
-                    <div className="text-xs text-slate-400">PROFILE</div>
-                  </div>
-                  <div className="flex flex-col items-center">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-lg font-bold ${
-                      user?.is_active
-                        ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                        : 'bg-red-500/20 text-red-400 border border-red-500/30'
-                    }`}>
-                      {user?.is_active ? <Check size={20} /> : <X size={20} />}
-                    </div>
-                    <div className="text-xs text-slate-400 mt-1">Active</div>
-                  </div>
-                  <div>
-                    <div className="text-lg font-bold text-white">Pro</div>
-                    <div className="text-xs text-slate-400">PLAN</div>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="flex items-start gap-3 p-3 bg-slate-700 rounded-lg">
-                    <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs mt-0.5">✓</div>
-                    <div className="text-left">
-                      <div className="font-semibold text-sm text-white">12</div>
-                      <div className="text-xs text-slate-400">Events Attended</div>
-                      <div className="text-xs text-green-400 font-medium">+2 this week</div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3 p-3 bg-slate-700 rounded-lg">
-                    <div className="w-5 h-5 bg-purple-500 rounded-full flex items-center justify-center text-white text-xs mt-0.5">⚡</div>
-                    <div className="text-left">
-                      <div className="font-semibold text-sm text-white">45</div>
-                      <div className="text-xs text-slate-400">Auto-Registrations</div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3 p-3 bg-slate-700 rounded-lg">
-                    <div className="w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center text-white text-xs mt-0.5">🔗</div>
-                    <div className="text-left">
-                      <div className="font-semibold text-sm text-white">3</div>
-                      <div className="text-xs text-slate-400">Linked Accounts</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Content - Form */}
-          <div className="lg:col-span-3">
-            {/* Success Message */}
-            {showSuccessMessage && (
-              <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
-                <div className="flex items-center gap-2 text-green-400">
-                  <span className="text-lg">✓</span>
-                  <span className="font-medium">Saved</span>
-                </div>
-              </div>
-            )}
-
-            {/* Personal Information Form */}
-            <div className="bg-slate-800 border border-slate-700 rounded-xl p-8">
-              <h3 className="text-lg font-semibold text-white mb-6">Personal Information</h3>
-              <p className="text-xs text-slate-400 mb-6">Used for event registration</p>
-
-              <div className="grid grid-cols-2 gap-6 mb-6">
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">First Name</label>
-                  <input
-                    type="text"
-                    name="firstName"
-                    value={formData.firstName}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white outline-none focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Last Name</label>
-                  <input
-                    type="text"
-                    name="lastName"
-                    value={formData.lastName}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white outline-none focus:border-blue-500"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-6 mb-6">
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Email Address</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white outline-none focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Phone Number</label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white outline-none focus:border-blue-500"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-6 mb-6">
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Job Title</label>
-                  <input
-                    type="text"
-                    name="jobTitle"
-                    value={formData.jobTitle}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white outline-none focus:border-blue-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Company</label>
-                  <input
-                    type="text"
-                    name="company"
-                    value={formData.company}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white outline-none focus:border-blue-500"
-                  />
-                </div>
-              </div>
-
-
-
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Bio / Intro</label>
-                <textarea
-                  name="bio"
-                  value={formData.bio}
-                  onChange={handleInputChange}
-                  rows="3"
-                  className="w-full px-4 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white outline-none focus:border-blue-500"
-                />
-              </div>
-
-              <div className="flex justify-end mt-8">
-                <button
-                  onClick={handleSave}
-                  className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 flex items-center gap-2"
-                >
-                  Save Changes
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Following Modal */}
-        {showFollowingModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/95 backdrop-blur-md animate-in fade-in duration-200">
-            <div className="bg-slate-800 w-full max-w-md mx-4 rounded-3xl shadow-2xl border border-slate-700/50 max-h-[80vh] flex flex-col">
-              {/* Header */}
-              <div className="flex items-center justify-between p-6 border-b border-slate-700">
-                <h3 className="text-xl font-bold text-white">Followers ({followersCount})</h3>
-                <button
-                  onClick={() => setShowFollowingModal(false)}
-                  className="p-2 hover:bg-slate-700 rounded-full transition-colors"
-                >
-                  <X size={20} className="text-slate-400" />
-                </button>
-              </div>
-
-              {/* Content */}
-              <div className="flex-1 overflow-y-auto p-6">
-                {followingData.length > 0 ? (
-                  <div className="space-y-4">
-                    {followingData.map((user, index) => (
-                      <div key={index} className="flex items-center gap-3 p-3 bg-slate-700/50 rounded-xl">
-                        <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center">
-                          {user.profile_image ? (
-                            <img
-                              src={user.profile_image}
-                              alt={user.full_name || user.email}
-                              className="w-full h-full object-contain bg-slate-700"
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold text-sm">
-                              {user.first_name && user.last_name ?
-                                `${user.first_name[0]}${user.last_name[0]}`.toUpperCase() :
-                                user.email[0].toUpperCase()
-                              }
+                        {/* Profile Quick Glance */}
+                        <div className="bg-gradient-to-br from-indigo-500/10 to-primary-500/10 border border-white/10 rounded-3xl p-6 backdrop-blur-xl">
+                            <div className="flex items-center gap-4 mb-4">
+                                <div className="w-12 h-12 rounded-2xl overflow-hidden border-2 border-primary-500/30">
+                                    {previewImage ? (
+                                        <img src={previewImage} alt="Profile" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="w-full h-full bg-slate-800 flex items-center justify-center text-lg font-bold">
+                                            {formData.firstName?.[0] || 'U'}
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="min-w-0">
+                                    <h3 className="font-bold truncate text-white">{formData.firstName} {formData.lastName}</h3>
+                                    <p className="text-xs text-slate-500 truncate">{formData.email}</p>
+                                </div>
                             </div>
-                          )}
+                            <div className="pt-4 border-t border-white/5">
+                                <p className="text-[10px] uppercase tracking-widest font-black text-slate-500 mb-2">Account ID</p>
+                                <code className="text-[10px] text-primary-400 font-mono bg-white/5 px-2 py-1 rounded">IBZ_USER_0072</code>
+                            </div>
                         </div>
-                        <div className="flex-1">
-                          <p className="text-white font-medium text-sm">
-                            {user.first_name && user.last_name ?
-                              `${user.first_name} ${user.last_name}` :
-                              user.full_name || 'User'
-                            }
-                          </p>
-                          <p className="text-slate-400 text-xs">{user.email}</p>
+                    </div>
+
+                    {/* Main Content Area */}
+                    <div className="lg:col-span-9 space-y-8">
+                        {saveSuccess && (
+                            <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-4 flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
+                                <CheckCircle2 className="text-green-500" size={20} />
+                                <span className="text-green-400 text-sm font-bold">Changes saved successfully!</span>
+                            </div>
+                        )}
+
+                        <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 lg:p-12 backdrop-blur-2xl shadow-2xl relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/5 blur-[100px] -z-10 group-hover:bg-primary-500/10 transition-colors duration-700"></div>
+
+                            {activeTab === 'profile' && (
+                                <section className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-500">
+                                    <div className="flex flex-col md:flex-row md:items-center gap-8 pb-10 border-b border-white/5">
+                                        <div className="relative group/camera">
+                                            <div className="w-32 h-32 rounded-3xl overflow-hidden border-4 border-white/10 shadow-2xl">
+                                                {previewImage ? (
+                                                    <img src={previewImage} alt="Profile" className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <div className="w-full h-full bg-slate-800 flex items-center justify-center text-4xl font-bold">
+                                                        {formData.firstName?.[0] || 'U'}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <label className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover/camera:opacity-100 transition-opacity cursor-pointer rounded-3xl backdrop-blur-sm">
+                                                <Camera size={28} className="text-white" />
+                                                <input type="file" className="hidden" onChange={handleImageChange} accept="image/*" />
+                                            </label>
+                                        </div>
+                                        <div>
+                                            <h2 className="text-2xl font-black text-white">Public Profile</h2>
+                                            <p className="text-slate-500 text-sm max-w-md mt-1">
+                                                This information will be displayed on your organizer profile and event pages.
+                                            </p>
+                                            <div className="flex gap-4 mt-6">
+                                                <button className="px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-bold transition-all">
+                                                    Change Photo
+                                                </button>
+                                                <button className="px-5 py-2.5 text-red-400 hover:bg-red-500/10 border border-transparent rounded-xl text-xs font-bold transition-all">
+                                                    Remove
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-8">
+                                        <FormGroup label="First Name" name="firstName" value={formData.firstName} onChange={handleInputChange} placeholder="John" />
+                                        <FormGroup label="Last Name" name="lastName" value={formData.lastName} onChange={handleInputChange} placeholder="Doe" />
+                                        <FormGroup label="Job Title" name="jobTitle" value={formData.jobTitle} onChange={handleInputChange} placeholder="Product Designer" icon={<Briefcase size={18} />} />
+                                        <FormGroup label="Company" name="company" value={formData.company} onChange={handleInputChange} placeholder="Tech Industries" icon={<Building size={18} />} />
+                                        <FormGroup label="Location" name="location" value={formData.location} onChange={handleInputChange} placeholder="Chennai, India" icon={<MapPin size={18} />} />
+                                        <div className="md:col-span-2 space-y-3">
+                                            <label className="text-xs font-black uppercase tracking-widest text-slate-500">Bio</label>
+                                            <textarea
+                                                name="bio"
+                                                value={formData.bio}
+                                                onChange={handleInputChange}
+                                                rows={4}
+                                                className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all placeholder:text-slate-600 resize-none"
+                                                placeholder="Tell the community about yourself..."
+                                            />
+                                        </div>
+                                    </div>
+                                </section>
+                            )}
+
+                            {activeTab === 'account' && (
+                                <section className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-500">
+                                    <div>
+                                        <h2 className="text-2xl font-black text-white">Account Settings</h2>
+                                        <p className="text-slate-500 text-sm mt-1">Manage your critical account details and identity.</p>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        <FormGroup label="Email Address" name="email" value={formData.email} onChange={handleInputChange} icon={<Mail size={18} />} type="email" disabled />
+                                        <FormGroup label="Phone Number" name="phone" value={formData.phone} onChange={handleInputChange} placeholder="+91 00000 00000" icon={<Phone size={18} />} />
+                                        <div className="space-y-3">
+                                            <label className="text-xs font-black uppercase tracking-widest text-slate-500">Timezone</label>
+                                            <div className="relative">
+                                                <select
+                                                    name="timezone"
+                                                    value={formData.timezone}
+                                                    onChange={handleInputChange}
+                                                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 pr-12 text-white appearance-none focus:outline-none focus:border-primary-500 transition-all"
+                                                >
+                                                    <option value="Asia/Kolkata">India Standard Time (IST)</option>
+                                                    <option value="UTC">Universal Coordinated Time (UTC)</option>
+                                                    <option value="America/New_York">Eastern Time (ET)</option>
+                                                </select>
+                                                <Clock size={18} className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-3">
+                                            <label className="text-xs font-black uppercase tracking-widest text-slate-500">Preferred Language</label>
+                                            <div className="relative">
+                                                <select
+                                                    name="language"
+                                                    value={formData.language}
+                                                    onChange={handleInputChange}
+                                                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 pr-12 text-white appearance-none focus:outline-none focus:border-primary-500 transition-all"
+                                                >
+                                                    <option value="English (US)">English (US)</option>
+                                                    <option value="English (UK)">English (UK)</option>
+                                                    <option value="Tamil">Tamil</option>
+                                                </select>
+                                                <Languages size={18} className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none" />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="pt-8 border-t border-white/5 space-y-6">
+                                        <div>
+                                            <h3 className="text-lg font-bold text-red-400">Danger Zone</h3>
+                                            <p className="text-slate-500 text-xs">Once you delete your account, there is no going back. Please be certain.</p>
+                                        </div>
+                                        <button className="px-6 py-3 border border-red-500/20 bg-red-500/5 hover:bg-red-500/10 text-red-400 rounded-xl text-sm font-bold transition-all flex items-center gap-2">
+                                            <Trash2 size={18} /> Delete Account
+                                        </button>
+                                    </div>
+                                </section>
+                            )}
+
+                            {activeTab === 'notifications' && (
+                                <section className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-500">
+                                    <div>
+                                        <h2 className="text-2xl font-black text-white">Notifications</h2>
+                                        <p className="text-slate-500 text-sm mt-1">Control how you want to be notified about updates.</p>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <ToggleRow
+                                            title="Event Updates"
+                                            description="Receive updates about events you're following or registered for."
+                                            isActive={formData.notifications.eventUpdates}
+                                            onToggle={() => handleToggle('eventUpdates')}
+                                            icon={<Bell size={20} className="text-sky-400" />}
+                                        />
+                                        <ToggleRow
+                                            title="Security Alerts"
+                                            description="Get notified about login attempts and password changes."
+                                            isActive={formData.notifications.securityAlerts}
+                                            onToggle={() => handleToggle('securityAlerts')}
+                                            icon={<Shield size={20} className="text-indigo-400" />}
+                                        />
+                                        <ToggleRow
+                                            title="Marketing Emails"
+                                            description="Occasional updates about new features and platform news."
+                                            isActive={formData.notifications.marketing}
+                                            onToggle={() => handleToggle('marketing')}
+                                            icon={<ExternalLink size={20} className="text-emerald-400" />}
+                                        />
+                                    </div>
+                                </section>
+                            )}
+
+                            {activeTab === 'security' && (
+                                <section className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-500">
+                                    <div>
+                                        <h2 className="text-2xl font-black text-white">Security</h2>
+                                        <p className="text-slate-500 text-sm mt-1">Secure your account with multi-factor authentication and password policy.</p>
+                                    </div>
+
+                                    <div className="bg-white/5 border border-white/10 rounded-3xl p-8 space-y-6">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-4">
+                                                <div className="p-3 bg-primary-500/10 rounded-2xl">
+                                                    <Lock size={24} className="text-primary-400" />
+                                                </div>
+                                                <div>
+                                                    <h3 className="font-bold">Password Management</h3>
+                                                    <p className="text-xs text-slate-500">Last changed 3 months ago</p>
+                                                </div>
+                                            </div>
+                                            <button className="px-6 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-xs font-black transition-all">
+                                                Update Password
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-white/5 border border-white/10 rounded-3xl p-8 space-y-6">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-4">
+                                                <div className="p-3 bg-indigo-500/10 rounded-2xl">
+                                                    <Shield size={24} className="text-indigo-400" />
+                                                </div>
+                                                <div>
+                                                    <h3 className="font-bold">Two-Factor Authentication</h3>
+                                                    <p className="text-xs text-slate-500">Add an extra layer of security to your account.</p>
+                                                </div>
+                                            </div>
+                                            <button className="px-6 py-2.5 bg-primary-500/10 hover:bg-primary-500/20 border border-primary-500/20 text-primary-400 rounded-xl text-xs font-black transition-all">
+                                                Enable 2FA
+                                            </button>
+                                        </div>
+                                    </div>
+                                </section>
+                            )}
+
+                            {activeTab === 'social' && (
+                                <section className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-500">
+                                    <div>
+                                        <h2 className="text-2xl font-black text-white">Social Connections</h2>
+                                        <p className="text-slate-500 text-sm mt-1">Link your professional profiles to increase trust and networking.</p>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        <FormGroup
+                                            label="LinkedIn Profile"
+                                            name="socials.linkedin"
+                                            value={formData.socials.linkedin}
+                                            onChange={handleInputChange}
+                                            placeholder="linkedin.com/in/username"
+                                            icon={<Linkedin size={18} className="text-blue-400" />}
+                                        />
+                                        <FormGroup
+                                            label="Twitter / X"
+                                            name="socials.twitter"
+                                            value={formData.socials.twitter}
+                                            onChange={handleInputChange}
+                                            placeholder="twitter.com/username"
+                                            icon={<Twitter size={18} className="text-sky-400" />}
+                                        />
+                                        <FormGroup
+                                            label="Personal Website"
+                                            name="socials.website"
+                                            value={formData.socials.website}
+                                            onChange={handleInputChange}
+                                            placeholder="www.example.com"
+                                            icon={<Globe size={18} className="text-emerald-400" />}
+                                        />
+                                    </div>
+
+                                    <div className="pt-8 border-t border-white/5">
+                                        <h3 className="text-lg font-bold mb-6">Connected Accounts</h3>
+                                        <div className="space-y-4">
+                                            <div className="flex items-center justify-between p-5 bg-white/5 border border-white/10 rounded-2xl">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center">
+                                                        <svg className="w-6 h-6" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" /><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" /><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" /><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" /></svg>
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-bold text-sm">Google Account</p>
+                                                        <p className="text-[10px] text-green-500 font-black flex items-center gap-1">
+                                                            <CheckCircle2 size={10} /> CONNECTED
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <button className="text-xs font-bold text-slate-500 hover:text-red-400 transition-colors">
+                                                    Disconnect
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+                            )}
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <p className="text-slate-400 text-sm">No followers yet</p>
-                  </div>
-                )}
-              </div>
+                    </div>
+                </div>
             </div>
-          </div>
-        )}
-      </main>
-    </div>
-  );
+        </div>
+    );
+}
+
+function FormGroup({ label, name, value, onChange, placeholder, icon, type = "text", disabled = false }) {
+    return (
+        <div className="space-y-3">
+            <label className="text-xs font-black uppercase tracking-widest text-slate-500 px-1">{label}</label>
+            <div className="relative group">
+                <input
+                    type={type}
+                    name={name}
+                    value={value}
+                    onChange={onChange}
+                    disabled={disabled}
+                    placeholder={placeholder}
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all placeholder:text-slate-700 disabled:opacity-50 disabled:bg-white/[0.02]"
+                />
+                {icon && (
+                    <div className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-primary-500 transition-colors">
+                        {icon}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
+
+function ToggleRow({ title, description, isActive, onToggle, icon }) {
+    return (
+        <div className="flex items-center justify-between p-6 bg-white/5 border border-white/10 rounded-3xl hover:bg-white/[0.07] transition-all cursor-pointer group" onClick={onToggle}>
+            <div className="flex items-center gap-6">
+                <div className="p-3 bg-white/5 rounded-2xl group-hover:scale-110 transition-transform">
+                    {icon}
+                </div>
+                <div>
+                    <h3 className="font-bold text-white mb-1">{title}</h3>
+                    <p className="text-xs text-slate-500 max-w-sm">{description}</p>
+                </div>
+            </div>
+            <button
+                className={`w-14 h-8 rounded-full relative transition-all duration-300 ${isActive ? 'bg-primary-500' : 'bg-slate-700'}`}
+            >
+                <div className={`absolute top-1 w-6 h-6 bg-white rounded-full shadow-lg transition-all duration-300 ${isActive ? 'left-7' : 'left-1'}`}></div>
+            </button>
+        </div>
+    );
 }

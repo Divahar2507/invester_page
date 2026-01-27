@@ -13,7 +13,7 @@ from app.auth import (
     create_access_token,
     ACCESS_TOKEN_EXPIRE_MINUTES
 )
-from app.core.email_utils import send_reset_email
+from app.core.email_utils import send_reset_email, send_verification_email
 
 GOOGLE_CLIENT_ID = "616951204268-dsfdjvqp7mfn41gingbs7oqntp8f4f5g.apps.googleusercontent.com"
 
@@ -25,24 +25,92 @@ class AuthService:
         # Check if user exists
         statement = select(User).where(User.email == user_create.email)
         result = await self.session.execute(statement)
-        if result.scalars().first():
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Email already registered"
+        existing_user = result.scalars().first()
+        
+        if existing_user:
+            if existing_user.is_active:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="Email already registered and verified"
+                )
+            else:
+                # User exists but not verified. We can "re-register" by updating them
+                # or just tell them to verify. Let's allow update and re-send OTP.
+                db_user = existing_user
+                db_user.full_name = user_create.full_name
+                db_user.hashed_password = get_password_hash(user_create.password)
+        else:
+            # Create New User
+            hashed_pwd = get_password_hash(user_create.password)
+            db_user = User(
+                email=user_create.email,
+                full_name=user_create.full_name,
+                hashed_password=hashed_pwd,
+                is_active=False  # Must verify first
             )
+            self.session.add(db_user)
 
-        # Create User
-        hashed_pwd = get_password_hash(user_create.password)
-        db_user = User(
-            email=user_create.email,
-            full_name=user_create.full_name,
-            hashed_password=hashed_pwd,
-            is_active=True
-        )
-        self.session.add(db_user)
+        # Generate OTP
+        otp = "".join([str(secrets.randbelow(10)) for _ in range(6)])
+        db_user.reset_otp = otp  # Using reset_otp field for simplicity, or we could add signup_otp
+        db_user.otp_expires_at = datetime.utcnow() + timedelta(minutes=10)
+        
         await self.session.commit()
         await self.session.refresh(db_user)
+        
+        # Send Verification Email
+        await send_verification_email(db_user.email, otp)
+        
         return db_user
+
+    async def verify_signup_otp(self, email: str, otp: str):
+        statement = select(User).where(User.email == email)
+        result = await self.session.execute(statement)
+        user = result.scalars().first()
+
+        if not user:
+            raise HTTPException(status_code=400, detail="User not found")
+        
+        if user.is_active:
+             return {"message": "Account already verified", "verified": True}
+
+        if not user.reset_otp or user.reset_otp != otp:
+            raise HTTPException(status_code=400, detail="Invalid OTP")
+        
+        if not user.otp_expires_at or user.otp_expires_at < datetime.utcnow():
+            raise HTTPException(status_code=400, detail="OTP has expired")
+
+        user.is_active = True
+        user.reset_otp = None
+        user.otp_expires_at = None
+        
+        self.session.add(user)
+        await self.session.commit()
+        
+        return {"message": "Email verified successfully. You can now login.", "verified": True}
+
+    async def resend_verification_otp(self, email: str):
+        statement = select(User).where(User.email == email)
+        result = await self.session.execute(statement)
+        user = result.scalars().first()
+
+        if not user:
+            raise HTTPException(status_code=400, detail="User not found")
+        
+        if user.is_active:
+            raise HTTPException(status_code=400, detail="Account already verified")
+
+        # Generate new OTP
+        otp = "".join([str(secrets.randbelow(10)) for _ in range(6)])
+        user.reset_otp = otp
+        user.otp_expires_at = datetime.utcnow() + timedelta(minutes=10)
+        
+        self.session.add(user)
+        await self.session.commit()
+
+        await send_verification_email(user.email, otp)
+        
+        return {"message": "Verification OTP resent."}
 
     async def login_user(self, email: str, password: str) -> Token:
         statement = select(User).where(User.email == email)
@@ -54,6 +122,12 @@ class AuthService:
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Incorrect email or password",
                 headers={"WWW-Authenticate": "Bearer"},
+            )
+        
+        if not user.is_active:
+             raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Please verify your email before logging in",
             )
         
         return self._create_token(user.email)
@@ -82,7 +156,7 @@ class AuthService:
                     email=email,
                     full_name=idinfo.get("name"),
                     hashed_password=hashed_pwd,
-                    is_active=True
+                    is_active=True # Google users are pre-verified
                 )
                 self.session.add(user)
                 await self.session.commit()

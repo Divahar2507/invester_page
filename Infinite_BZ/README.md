@@ -1,97 +1,78 @@
 # InfiniteBZ - Community Event Platform
 
-**Short Description**: Only for Chennai. InfiniteBZ is a hyperlocal event aggregation and management platform designed to connect the Chennai tech and startup community. It scrapes events from multiple sources and provides a seamless registration experience for local meetups.
+**InfiniteBZ** is a hyperlocal event aggregation and management platform designed to connect the tech and startup community in Chennai. It scrapes events from multiple sources (Meetup, Eventbrite) and provides a seamless unified registration experience.
 
 ---
 
-## 🎯 Project Purpose
+## 🚀 Features
 
-The main goal is to solve the fragmented event discovery problem in Chennai.
-*   **For Attendees**: One place to find all tech/startup events (Aggregated + Exclusive).
-*   **For Organizers**: A free, feature-rich platform to list events, manage tickets, and track registrations.
-
-### Key Features
-*   **Auto-Scraping**: Automatically pulls events from Eventbrite & Meetup using Playwright.
-*   **Ticketing Engine**: Create Free, Paid, or VIP tickets with capacity limits.
-*   **Smart Registration**: 3-step checkout flow (Tickets -> Details -> Payment).
-*   **PDF Tickets**: Auto-generates professional PDF tickets with QR codes and emails them to attendees.
-*   **Interactive Dashboard**: Analytics for organizers to see views and sales.
+*   **Event Aggregation**: Automatically scrapes and aggregates events from Meetup and Eventbrite.
+*   **Unified Ticketing**: Create Free, Paid, or VIP tickets with capacity management.
+*   **Smart AI Chatbot**: A context-aware assistant powered by **Groq (Llama 3)** to help users find events using natural language.
+*   **PDF Ticket Generation**: Auto-generates professional PDF tickets with QR codes.
+*   **Email Notifications**: Automated confirmation emails with ticket attachments.
+*   **Interactive Dashboard**: Analytics for organizers to track views and registrations.
+*   **Secure Authentication**: JWT-based login/signup system.
 
 ---
 
-## 📅 Update Summary
+## �️ Tech Stack
 
-### Previous Push (What was already there)
-*   Basic Event Listing & Search functionality.
-*   Authentication System (Login/Signup with JWT).
-*   Scraper groundwork (Playwright setup).
-*   Basic "Create Event" form.
+### Backend
+*   **Framework**: Python (FastAPI)
+*   **Database**: PostgreSQL (AsyncPG + SQLModel)
+*   **AI/LLM**: LangChain + Groq (Llama 3)
+*   **Scraping**: Playwright
+*   **Tasks**: APScheduler (Background jobs)
 
-### 🚀 Current Update (My New Module Work)
-I have built the **Full Registration & Ticketing Module**.
-Before this update, clicking "Register" just blindly added a user to an event. Now, it is a complete e-commerce style flow.
-
-#### **What I Added:**
-1.  **Checkout Modal (`CheckoutModal.jsx`)**:
-    *   A completely new 3-step popup.
-    *   Step 1: **Select Tickets** (e.g., 2 VIP, 1 General).
-    *   Step 2: **Attendee Info** (Name, Phone, Email).
-    *   Step 3: **Payment & Confirmation**.
-2.  **Ticketing Backend**:
-    *   Updated Database to store `TicketClass` and Registration Details.
-    *   New API endpoints to handle ticket selection payloads.
-3.  **Event Details Redesign**:
-    *   The "Event Details" popup now shows **Agenda**, **Speakers**, and **Ticket Prices** clearly.
-    *   Fixed layout issues where text was overlapping.
+### Frontend
+*   **Framework**: React (Vite)
+*   **Styling**: Vanilla CSS / Tailwind (if configured)
+*   **State**: React Hooks
 
 ---
 
-## 📂 Updated Files & Purpose
+## 📋 Prerequisites
 
-| File | Purpose |
-| :--- | :--- |
-| `frontend/src/components/CheckoutModal.jsx` | **[NEW]** The main UI for the 3-step registration process. |
-| `frontend/src/components/EventDetailModal.jsx` | Refactored to include the "Speakers" tab and open the new Checkout Modal. |
-| `frontend/src/components/Dashboard.jsx` | Updated to handle the new registration API payload correctly. |
-| `backend/app/api/routes.py` | Updated `/register` endpoint to accept `tickets` and `attendee` data. |
-| `backend/app/models/schemas.py` | Added `raw_data` JSON column to `UserRegistration` table. |
-| `backend/app/services/ticket_service.py` | **[NEW]** Logic to generate the PDF Ticket. |
-| `backend/migrate_schema.py` | **[NEW]** Script to manually update the database (run this if you get DB errors). |
+Before running the project, ensure you have the following installed:
+
+1.  **Python 3.10+**
+2.  **Node.js 18+**
+3.  **PostgreSQL Database** (Running locally or hosted)
 
 ---
 
-## 📁 Folder Structure
-```
-Infinite_BZ/
-├── backend/
-│   ├── app/
-│   │   ├── api/            # API Route definitions (endpoints)
-│   │   ├── core/           # Config, Database, Email utils
-│   │   ├── models/         # Database Schemas (User, Event, Ticket)
-│   │   └── services/       # Business Logic (Scraper, PDF Gen)
-│   ├── requirements.txt    # Python dependencies
-│   ├── run.py              # Entry point to start server
-│   └── migrate_schema.py   # Database migration script
-└── frontend/
-    ├── src/
-    │   ├── components/     # React Components (UI)
-    │   └── ...
-    ├── package.json        # Node dependencies
-    └── vite.config.js      # Build config
+## ⚙️ Configuration (.env)
+
+Create a `.env` file in the `backend/` directory with the following variables:
+
+```env
+# Database Connection (PostgreSQL)
+DATABASE_URL=postgresql+asyncpg://postgres:password@localhost:5432/infinite_bz
+
+# AI Chatbot (Groq API needed for Llama 3)
+GROQ_API_KEY=your_groq_api_key_here
+
+# Email Settings (Gmail SMTP)
+MAIL_USERNAME=your_email@gmail.com
+MAIL_PASSWORD=your_app_password
+MAIL_FROM=your_email@gmail.com
+MAIL_PORT=587
+MAIL_SERVER=smtp.gmail.com
+
+# Security (JWT)
+SECRET_KEY=your_super_secret_key
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
 ```
 
 ---
 
-## ⚙️ Setup Instructions
+## 🏗️ Installation & Setup
 
-### 1. Clone & Prepare
-```bash
-git clone <repo-url>
-cd Infinite_BZ
-```
+### 1. Backend Setup
 
-### 2. Backend Setup
-**Prerequisites**: Python 3.10+ installed.
+Open a terminal and run:
 
 ```bash
 cd backend
@@ -99,78 +80,75 @@ cd backend
 # Create Virtual Environment
 python -m venv venv
 
-# Activate (Windows)
+# Activate Virtual Environment
+# Windows:
 .\venv\Scripts\activate
-# Activate (Mac/Linux)
+# Mac/Linux:
 source venv/bin/activate
 
 # Install Dependencies
 pip install -r requirements.txt
 
-# Install Playwright Browsers (Required for Scraper)
+# Install Playwright Browsers
 playwright install
+
+# Initialize Database
+# The application automatically creates tables on startup if they don't exist.
 ```
 
-### 3. Frontend Setup
-**Prerequisites**: Node.js installed.
+### 2. Frontend Setup
+
+Open a new terminal and run:
 
 ```bash
 cd frontend
+
+# Install Dependencies
 npm install
 ```
 
 ---
 
-## ▶️ How to Run (Step-by-Step)
+## ▶️ Running the Application
 
-You need **two terminals** open (one for Backend, one for Frontend).
+You need to run both the backend and frontend terminals simultaneously.
 
-**Terminal 1: Backend**
+### Terminal 1: Backend Server
+
 ```bash
 cd backend
-# Make sure venv is activated!
+# Ensure venv is activated
 python run.py
 ```
-*   Server starts at: `http://localhost:8000`
-*   **Swagger API Docs**: `http://localhost:8000/docs` (Useful for testing APIs)
+*   **Server URL**: `http://localhost:8000`
+*   **API Docs**: `http://localhost:8000/docs`
 
-**Terminal 2: Frontend**
+### Terminal 2: Frontend Server
+
 ```bash
 cd frontend
 npm run dev
 ```
-*   App opens at: `http://localhost:5173` (or similar port)
+*   **Local App URL**: `http://localhost:5174` (or similar)
 
 ---
 
-## 📝 Requirements Explanation
+## 🤖 Using the AI Chatbot
 
-Here is why we use these libraries in `backend/requirements.txt`:
+1.  Ensure `GROQ_API_KEY` is set in `backend/.env`.
+2.  Start the backend server.
+3.  Open the frontend application.
+4.  Look for the **Chat Widget** (usually bottom-right).
+5.  Ask questions like:
+    *   *"Show me tech events in Chennai this weekend"*
+    *   *"Are there any Python meetups?"*
 
-| Library | Purpose |
-| :--- | :--- |
-| **`fastapi`** | The main web framework. Fast, async, and auto-generates API docs. |
-| **`uvicorn`** | The server that runs the FastAPI app. |
-| **`sqlalchemy` & `sqlmodel`** | ORM to interact with the PostgreSQL database using Python classes. |
-| **`asyncpg`** | Async driver for PostgreSQL (makes DB queries super fast). |
-| **`playwright`** | Controls a real browser to scrape events from complex sites like Eventbrite. |
-| **`apscheduler`** | Runs background jobs (like scraping events every 24 hours). |
-| **`passlib[bcrypt]`** | Securely hashes user passwords (security standard). |
-| **`python-jose`** | Handles JWT tokens for secure Login/Signup. |
-| **`fastapi-mail`** | Sends emails (Welcome emails, OTPs, Tickets). |
-| **`reportlab`** | GENERATES PDF FILES. Used to create the event tickets. |
-| **`qrcode`** | Generates the QR code images for the tickets. |
+The chatbot queries the live database to provide accurate, context-aware answers.
 
 ---
 
-## ⚠️ Notes for Collaborators
+## 🐞 Troubleshooting
 
-1.  **Database Error?**
-    If you pull the code and get an error like `column "raw_data" does not exist`, simply run:
-    ```bash
-    cd backend
-    python migrate_schema.py
-    ```
-    This will update your local database to match the new changes.
-
-    If you see "Registration failed: Could not validate credentials", just **Logout and Login again**. The server restart invalidated old sessions.
+*   **Database Errors**: Ensure PostgreSQL is running and the `DATABASE_URL` is correct.
+*   **Browser/Playwright Errors**: If scraping fails, try running `playwright install` again.
+*   **Registration Failed**: If you see "Could not validate credentials", try logging out and logging back in.

@@ -31,7 +31,7 @@ export default function CreateEventPage({ user, onNavigate, onLogout, onSave }) 
         registrationDeadline: "",
         meetingLink: "",
         meetingLinkPrivate: true,
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        timezone: "Asia/Kolkata",
         agendaItems: [],
         speakers: [],
         tickets: []

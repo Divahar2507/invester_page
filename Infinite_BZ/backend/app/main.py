@@ -21,6 +21,7 @@ from app.api.auth_routes import router as auth_router
 from app.api.admin_routes import router as admin_router
 from app.models.schemas import Event
 from app.services.scraper import scrape_and_process_events 
+from chat_service import router as chat_router 
 
 # --- THE BACKGROUND TASK ---
 async def scheduled_scraper_task():
@@ -134,6 +135,7 @@ app.add_middleware(
 app.include_router(router, prefix="/api/v1")
 app.include_router(auth_router, prefix="/api/v1")
 app.include_router(admin_router, prefix="/api/v1")
+app.include_router(chat_router, prefix="/api", tags=["AI Chat"])
 
 # Mount uploads directory to serve images
 import os
