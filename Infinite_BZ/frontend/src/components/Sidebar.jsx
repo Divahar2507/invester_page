@@ -3,7 +3,17 @@ import { LayoutDashboard, ClipboardList, TrendingUp, Settings, LogOut, ScanLine,
 export default function Sidebar({ activePage, onNavigate, onLogout, onCreateClick }) {
     return (
         <aside className="w-64 bg-slate-900 border-r border-white/20 flex flex-col fixed h-full z-20 hidden lg:flex text-white transition-all duration-300">
-            {/* Logo area removed as per request */}
+            <div className="p-6">
+                <div className="flex items-center gap-3 font-bold text-xl text-white cursor-pointer" onClick={() => onNavigate('dashboard')}>
+                    <div className="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center shadow-lg shadow-primary-500/20">
+                        <i className="text-white not-italic">BZ</i>
+                    </div>
+                    <div>
+                        InfiniteBZ
+                        <span className="block text-[10px] font-normal text-white/70">Chennai Edition</span>
+                    </div>
+                </div>
+            </div>
 
             <nav className="flex-1 px-4 space-y-1 mt-6">
                 <NavItem
@@ -25,16 +35,16 @@ export default function Sidebar({ activePage, onNavigate, onLogout, onCreateClic
                     onClick={() => onNavigate('my-registrations')}
                 />
                 <NavItem
+                    icon={<ScanLine size={20} />}
+                    label="Scan Tickets"
+                    active={activePage === 'check-in'}
+                    onClick={() => onNavigate('check-in')}
+                />
+                <NavItem
                     icon={<Settings size={20} />}
                     label="Settings"
                     active={activePage === 'settings'}
                     onClick={() => onNavigate('settings')}
-                />
-                <NavItem
-                    icon={<ScanLine size={20} />}
-                    label="Check-in Tool"
-                    active={activePage === 'check-in'}
-                    onClick={() => onNavigate('check-in')}
                 />
             </nav>
 

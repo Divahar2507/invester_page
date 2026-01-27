@@ -11,6 +11,8 @@ import MarkdownEditor from './MarkdownEditor';
 import ImageGalleryUploader from './ImageGalleryUploader';
 
 export default function CreateEventPage({ user, onNavigate, onLogout, onSave }) {
+    console.log("CreateEventPage Rendered");
+    const [step, setStep] = useState(1);
     const [formData, setFormData] = useState({
         title: "",
         description: "",

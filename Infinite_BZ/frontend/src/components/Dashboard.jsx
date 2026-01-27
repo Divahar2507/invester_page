@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import {
     LayoutDashboard, Users, Calendar, Settings, LogOut,
     TrendingUp, AlertCircle, CheckCircle2, MoreHorizontal,
-    Search, Bell, Plus, Download, MessageSquare, ClipboardList, X, Eye, UserPlus, UserMinus, Trash2, MessageCircle
+    Search, Bell, Plus, Download, MessageSquare, ClipboardList, X, Eye, UserPlus, UserMinus, Trash2, MessageCircle, RefreshCw
 } from 'lucide-react';
 import CityDropdown from './CityDropdown';
 import CreateEventModal from './CreateEventModal';
@@ -193,7 +193,7 @@ export default function Dashboard({ user, onLogout, onNavigate }) {
 
     const handleRegisterClick = (event) => {
         // CHECK SOURCE: If InfiniteBZ, open Detail Modal
-        if (event.raw_data?.source === 'INVESTOR') {
+        if (event.raw_data?.source === 'InfiniteBZ') {
             setSelectedInternalEvent(event);
             setShowDetailModal(true);
             return;
@@ -353,7 +353,7 @@ export default function Dashboard({ user, onLogout, onNavigate }) {
                     else onNavigate(view); // Catch-all for check-in or others
                 }}
                 onLogout={onLogout}
-                onCreateClick={() => onNavigate('create-event')}
+                onCreateClick={() => setShowCreateEventModal(true)}
             />
 
             {/* MAIN CONTENT */}
@@ -484,7 +484,7 @@ export default function Dashboard({ user, onLogout, onNavigate }) {
                                 />
                                 <FilterDropdown
                                     label="Source"
-                                    options={["All", "Eventbrite", "Meetup", "INVESTOR"]}
+                                    options={["All", "Eventbrite", "Meetup", "InfiniteBZ"]}
                                     selected={selectedSource}
                                     onChange={setSelectedSource}
                                 />
@@ -521,6 +521,8 @@ export default function Dashboard({ user, onLogout, onNavigate }) {
                                             <EventCard
                                                 key={event.id}
                                                 event={event}
+                                                user={user}
+                                                onNavigate={onNavigate}
                                                 isRegistered={newlyRegisteredIds.includes(event.id)}
                                                 onRegister={() => handleRegisterClick(event)}
                                             />
@@ -1067,8 +1069,11 @@ function FilterDropdown({ label, options, selected, onChange }) {
     )
 }
 
-function EventCard({ event, onRegister, isRegistered }) {
+function EventCard({ event, onRegister, isRegistered, user, onNavigate }) {
     const [registering, setRegistering] = useState(false);
+
+    // Check if current user is the creator
+    const isCreator = user && event.raw_data?.created_by === user.email;
 
     const handleClick = async () => {
         if (event.raw_data?.source === 'InfiniteBZ') {

@@ -6,6 +6,7 @@ import Dashboard from './components/Dashboard';
 import CreateEventPage from './components/CreateEventPage';
 import SettingsPage from './components/SettingsPage';
 import MyRegistrationsPage from './components/MyRegistrationsPage';
+import OrganizerCheckInPage from './components/OrganizerCheckInPage';
 import ErrorBoundary from './components/ErrorBoundary';
 import OrganizerCheckIn from './components/OrganizerCheckIn';
 
@@ -14,6 +15,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null); // User state
+  const [checkInEventId, setCheckInEventId] = useState(null);
 
   // View State: 'landing' or 'feed' or 'auth' or 'dashboard'
   const [currentView, setCurrentView] = useState('landing');
@@ -23,6 +25,10 @@ export default function App() {
     fetchEvents();
     checkUserSession();
   }, []);
+
+  useEffect(() => {
+    console.log("App: checkInEventId updated to:", checkInEventId);
+  }, [checkInEventId]);
 
   const fetchEvents = async () => {
     try {
@@ -81,6 +87,8 @@ export default function App() {
     setUser(null);
     setCurrentView('landing');
   };
+
+  console.log("App Render: currentView =", currentView);
 
   return (
     <>
@@ -143,53 +151,36 @@ export default function App() {
           <Dashboard
             user={user}
             onLogout={handleLogout}
-            onNavigate={(view) => {
+            onNavigate={(view, eventId) => {
+              console.log("App onNavigate:", view, eventId);
               window.scrollTo(0, 0);
-              setCurrentView(view);
+
+              if (view === 'check-in') {
+                if (eventId) {
+                  setCheckInEventId(eventId);
+                }
+                setCurrentView(view);
+              } else {
+                setCurrentView(view);
+              }
             }}
           />
         </ErrorBoundary>
       )}
 
-      {currentView === 'create-event' && (
-        <CreateEventPage
-          user={user}
+      {/* ... previous code ... */}
+
+      {currentView === 'check-in' && (
+        <OrganizerCheckInPage
+          eventId={checkInEventId}
           onNavigate={(view) => {
             window.scrollTo(0, 0);
-            setCurrentView(view);
-          }}
-          onLogout={handleLogout}
-          onSave={async (eventData) => {
-            // We can handle saving here or pass a callback that uses the API
-            // For now, let's reuse the logic or move it here.
-            // Actually CreateEventPage has onSave prop.
-            // Let's implement the API call logic inside CreateEventPage or pass a wrapper here.
-            // For consistency with Dashboard, let's just pass a simple fetch wrapper or let CreateEventPage handle it.
-            // CreateEventPage expects onSave(payload).
-
-            try {
-              const token = localStorage.getItem('token');
-              const res = await fetch('/api/v1/events', {
-                method: 'POST',
-                headers: {
-                  'Authorization': `Bearer ${token}`,
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(eventData)
-              });
-              if (res.ok) {
-                const newEvent = await res.json();
-                return newEvent;
-              } else {
-                const data = await res.json();
-                throw new Error(data.detail || data.message || "Unknown error");
-              }
-            } catch (err) {
-              console.error("Create event error", err);
-              throw err;
-            }
+            setCurrentView(view || 'dashboard');
           }}
         />
+      )}
+      {currentView === 'my-registrations' && (
+        <MyRegistrationsPage />
       )}
 
       {currentView === 'settings' && (
@@ -197,24 +188,34 @@ export default function App() {
           user={user}
           onNavigate={(view) => {
             window.scrollTo(0, 0);
-            setCurrentView(view);
+            setCurrentView(view || 'dashboard');
           }}
         />
       )}
 
-      {currentView === 'check-in' && (
-        <OrganizerCheckIn
-          user={user}
-          onLogout={handleLogout}
+      {currentView === 'create-event' && (
+        <CreateEventPage
           onNavigate={(view) => {
             window.scrollTo(0, 0);
-            setCurrentView(view);
+            setCurrentView(view || 'dashboard');
+          }}
+          onSave={async (eventData) => {
+            const token = localStorage.getItem('token');
+            const res = await fetch('/api/v1/events', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(eventData)
+            });
+            if (!res.ok) {
+              const err = await res.json();
+              throw new Error(err.message || "Failed to create event");
+            }
+            return await res.json();
           }}
         />
-      )}
-      {currentView === 'my-registrations' && (
-        <MyRegistrationsPage />
-
       )}
     </>
   );

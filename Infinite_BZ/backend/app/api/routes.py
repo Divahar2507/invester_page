@@ -176,22 +176,19 @@ async def delete_event(
     if creator_email != current_user.email:
          raise HTTPException(status_code=403, detail="Not authorized to delete this event")
 
-    # 3. Store deletion info in raw_data before deleting
-    from datetime import datetime
-    event.raw_data = event.raw_data or {}
-    event.raw_data["deleted_at"] = datetime.now().isoformat()
-    event.raw_data["deleted_by"] = current_user.email
-
-    # Update the event instead of deleting (soft delete for activity tracking)
-    session.add(event)
-    await session.commit()
-
-    # Delete all registrations for this event first to avoid foreign key constraint
+    # 3. Delete dependencies first
+    # Delete all registrations for this event
     delete_reg_stmt = delete(UserRegistration).where(UserRegistration.event_id == event_id)
     await session.execute(delete_reg_stmt)
 
-    # Actually delete the event
-    await session.delete(event)
+    # Delete all ticket classes for this event
+    delete_tickets_stmt = delete(TicketClass).where(TicketClass.event_id == event_id)
+    await session.execute(delete_tickets_stmt)
+
+    # 4. Delete the event (Core delete to ensure order)
+    delete_event_stmt = delete(Event).where(Event.id == event_id)
+    await session.execute(delete_event_stmt)
+
     await session.commit()
 
     return {"status": "success", "message": "Event deleted"}

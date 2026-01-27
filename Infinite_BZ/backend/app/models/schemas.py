@@ -117,6 +117,9 @@ class UserRegistration(SQLModel, table=True):
     # Store checkout details (attendee info, ticket breakdown)
     raw_data: Dict[str, Any] = Field(default={}, sa_column=Column(JSONB))
 
+    # Check-in Status
+    checked_in_at: Optional[datetime] = None
+
 # --- User Authentication Models ---
 
 class UserBase(SQLModel):

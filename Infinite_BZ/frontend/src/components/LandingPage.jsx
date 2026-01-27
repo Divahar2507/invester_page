@@ -314,7 +314,7 @@ export default function LandingPage({ onNavigate, onLogin, onSignup, events, use
                                 <div className="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-sky-500"><Mail size={20} /></div>
                                 <div>
                                     <div className="text-white font-semibold">Email Us</div>
-                                    <div className="text-sm text-slate-500">hello@investorconnecter.com</div>
+                                    <div className="text-sm text-slate-500">hello@infinitebz.com</div>
                                 </div>
                             </div>
                             <div className="flex items-center gap-4">
@@ -355,7 +355,7 @@ export default function LandingPage({ onNavigate, onLogin, onSignup, events, use
                 </div>
 
                 <div className="border-t border-white/5 mt-20 pt-8 text-center text-sm text-slate-600">
-                    © 2024 INVESTORCONNECTER. All rights reserved.
+                    © 2024 Infinite BZ. All rights reserved.
                 </div>
             </footer>
 
