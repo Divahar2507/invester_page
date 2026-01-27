@@ -236,7 +236,7 @@ export default function MyEvents({ onCreateNew, onNavigate }) {
                                             <div className="flex items-center gap-4">
                                                 <div className="w-16 h-16 rounded-lg bg-slate-800 flex-shrink-0 overflow-hidden border border-slate-700/50">
                                                     {event.image_url ? (
-                                                        <img src={event.image_url} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+                                                        <img src={event.image_url?.startsWith('http') ? event.image_url : `http://localhost:8000/${event.image_url?.replace(/^\//, '')}`} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
                                                     ) : (
                                                         <div className="w-full h-full bg-gradient-to-br from-indigo-500/20 to-purple-500/20 flex items-center justify-center">
                                                             <Calendar size={20} className="text-slate-500" />

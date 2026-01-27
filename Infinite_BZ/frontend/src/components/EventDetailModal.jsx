@@ -12,7 +12,7 @@ export default function EventDetailModal({ event, isOpen, onClose, onRegister, i
     const [isFollowing, setIsFollowing] = useState(false);
     const [isLoadingFollow, setIsLoadingFollow] = useState(false);
     const [isLoadingCheckFollow, setIsLoadingCheckFollow] = useState(false);
-    const isInternal = event.raw_data?.source === 'INVESTOR';
+    const isInternal = event.raw_data?.source === 'InfiniteBZ';
     const isOnline = event.online_event || event.mode === 'online';
 
     const [showCheckout, setShowCheckout] = useState(false);
