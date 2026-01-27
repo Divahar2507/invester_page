@@ -14,7 +14,7 @@ export default function LandingPage({ onNavigate, onLogin, onSignup, events, use
                         <div className="w-8 h-8 flex items-center justify-center">
                             <div className="w-2.5 h-2.5 bg-sky-500 rounded-full shadow-[0_0_10px_rgba(14,165,233,0.4)]" />
                         </div>
-                        <span className="text-xl font-black text-white tracking-tighter uppercase italic">INVESTORCONNECTER</span>
+                        <span className="text-xl font-black text-white tracking-tighter uppercase italic">Infinite BZ</span>
                     </div>
 
                     <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/80">

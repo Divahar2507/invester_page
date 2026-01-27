@@ -97,6 +97,42 @@ def seed_data(db: Session):
             "category": "Startup",
             "image_url": "https://images.unsplash.com/photo-1558002038-1091a166111c?auto=format&fit=crop&q=80&w=1000",
             "pdf_url": None
+        },
+        {
+            "title": "Vertical Forest Residential",
+            "description": "A luxury residential building covered in thousands of trees and plants to improve air quality and provide natural cooling.",
+            "target_amount": 12000000,
+            "current_amount": 8500000,
+            "category": "Growth",
+            "image_url": "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&q=80&w=1000",
+            "pdf_url": None
+        },
+        {
+            "title": "Bio-Plastic Packaging Hub",
+            "description": "Manufacturing plant for 100% biodegradable packaging made from seaweed. Aiming to replace all single-use plastics in the retail sector.",
+            "target_amount": 3500000,
+            "current_amount": 1200000,
+            "category": "Startup",
+            "image_url": "https://images.unsplash.com/photo-1611284446314-60a58ac0deb9?auto=format&fit=crop&q=80&w=1000",
+            "pdf_url": None
+        },
+        {
+            "title": "Renewable Energy storage Node",
+            "description": "Next-generation battery storage facility for stabilizing the local grid with 100% renewable energy input.",
+            "target_amount": 8000000,
+            "current_amount": 2000000,
+            "category": "Startup",
+            "image_url": "https://images.unsplash.com/photo-1593941707882-a5bba14938c7?auto=format&fit=crop&q=80&w=1000",
+            "pdf_url": None
+        },
+        {
+            "title": "Desalination Tech Pilot",
+            "description": "Low-energy seawater desalination system powered by wave energy. Providing clean drinking water to coastal arid regions.",
+            "target_amount": 2500000,
+            "current_amount": 950000,
+            "category": "Research",
+            "image_url": "https://images.unsplash.com/photo-1518152006812-edab29b069ac?auto=format&fit=crop&q=80&w=1000",
+            "pdf_url": None
         }
     ]
 

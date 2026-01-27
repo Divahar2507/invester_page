@@ -26,6 +26,7 @@ import {
   BarChart3,
   XCircle,
   Trash2,
+  Sparkles,
 } from 'lucide-react';
 
 const DEFAULT_PERSONAS = ['CTO', 'Marketing Manager', 'Sales Director'];
@@ -198,6 +199,23 @@ function SortableItem({ item, onDelete, onAction }) {
 
 const PersonaMapping = ({ icps, selectedIcpId, onSelectIcp }) => {
   const [extraPersonas, setExtraPersonas] = useState([]);
+  const [generating, setGenerating] = useState(false);
+
+  const handleGenerateAI = async (force = false) => {
+    if (!selectedIcpId || !activePersona) return;
+    setGenerating(true);
+    try {
+      const res = await fetch(`http://localhost:8003/api/insights/${encodeURIComponent(activePersona)}?icpId=${selectedIcpId}&force=${force}`);
+      if (res.ok) {
+        const data = await res.json();
+        setInsights(data);
+      }
+    } catch (e) {
+      console.error('AI Generation failed', e);
+    } finally {
+      setGenerating(false);
+    }
+  };
   const personas = useMemo(
     () => [...DEFAULT_PERSONAS, ...extraPersonas],
     [extraPersonas]
@@ -633,7 +651,7 @@ const PersonaMapping = ({ icps, selectedIcpId, onSelectIcp }) => {
           </select>
         </div>
         {/* PERSONA TABS */}
-        <div style={{ display: 'flex', gap: 10, overflowX: 'auto' }}>
+        <div style={{ display: 'flex', gap: 10, overflowX: 'auto', alignItems: 'center' }}>
           {personas.map(p => (
             <button
               key={p}
@@ -645,12 +663,36 @@ const PersonaMapping = ({ icps, selectedIcpId, onSelectIcp }) => {
                 background: activePersona === p ? '#2563eb' : '#e2e8f0',
                 color: activePersona === p ? '#fff' : '#475569',
                 fontWeight: 600,
+                whiteSpace: 'nowrap',
                 cursor: 'pointer'
               }}
             >
               {p}
             </button>
           ))}
+
+          <button
+            onClick={() => handleGenerateAI(true)}
+            disabled={generating || !selectedIcpId}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '8px 16px',
+              borderRadius: 20,
+              border: 'none',
+              background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
+              color: '#fff',
+              fontWeight: 700,
+              cursor: (generating || !selectedIcpId) ? 'not-allowed' : 'pointer',
+              opacity: (generating || !selectedIcpId) ? 0.7 : 1,
+              whiteSpace: 'nowrap'
+            }}
+          >
+            <Sparkles size={16} className={generating ? 'animate-spin' : ''} />
+            {generating ? 'Generating...' : 'Spark AI'}
+          </button>
+
           <div style={{ display: 'flex', background: '#e2e8f0', borderRadius: 20, padding: 2 }}>
             <input
               value={newPersona}

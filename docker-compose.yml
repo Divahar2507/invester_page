@@ -103,6 +103,8 @@ services:
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:Diva%402004@db-leadgen:5432/leadgen_db
       GROQ_API_KEY: ${GROQ_API_KEY}
+      BREVO_API_KEY: ${BREVO_API_KEY}
+      BREVO_SENDER_EMAIL: ${BREVO_SENDER_EMAIL}
     ports:
       - "8003:8000"
     depends_on:
@@ -303,7 +305,7 @@ services:
   # INNOSPHERE ADMIN FRONTEND - Port 3008
   frontend-innosphere:
     build:
-      context: "./innosphere_admin/innosphere-admin-&-collaboration-portal"
+      context: "./innosphere_admin/innosphere"
       dockerfile: Dockerfile
     container_name: innosphere_frontend
     ports:
@@ -333,7 +335,7 @@ services:
   # FUNDS COLLECTION BACKEND - Port 8007
   backend-funds:
     build:
-      context: "./funds_collection/funds_collection/backend"
+      context: "./funds_collection/backend"
       dockerfile: Dockerfile
     container_name: funds_backend
     restart: unless-stopped

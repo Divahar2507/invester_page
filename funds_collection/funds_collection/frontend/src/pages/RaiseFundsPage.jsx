@@ -20,7 +20,8 @@ const RaiseFundsPage = () => {
     const handleFundCreation = async (fundData) => {
         setIsSubmitting(true);
         try {
-            const response = await fetch('http://localhost:8001/funds', {
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8007';
+            const response = await fetch(`${apiUrl}/funds`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(fundData)

@@ -200,7 +200,7 @@ const Landing = () => {
                 <div className="ic-nav-inner">
                     <Link to="/" className="ic-logo">
                         <div className="ic-logo-dot" />
-                        INVESTOR
+                        INVESTOR CONNECT
                     </Link>
                     <div className="ic-nav-links">
                         <a href="#matrix" className="ic-nav-link">Protocols</a>
@@ -214,218 +214,57 @@ const Landing = () => {
                 </div>
             </nav>
 
-            <header className="ic-hero">
-                <div className="ic-badge">
-                    <Zap size={14} />
-                    <span>THE DEPLOYMENT SOVEREIGN LAYER</span>
-                </div>
-                <h1 className="ic-hero-title">High-Conviction <br />Capital Allocation.</h1>
-                <p className="ic-hero-sub">
-                    The institutional gateway where elite founders and strategic partners align with technical precision. Engineered for zero-noise deal flow.
-                </p>
-                <div style={{ display: 'flex', gap: 20, justifyContent: 'center' }}>
-                    <Link to="/register/startup" className="btn-start" style={{ padding: '20px 48px', fontSize: '16px' }}>Connect as Founder</Link>
-                    <Link to="/register/investor" className="btn-login" style={{ padding: '20px 48px', fontSize: '16px', background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)', borderRadius: '16px', opacity: 1 }}>Enter as Partner</Link>
-                </div>
-            </header>
+            <div style={{ height: '140px' }} /> {/* Spacer for fixed nav */}
 
-            <div className="ic-marquee">
-                <div className="ic-m-scroll">
-                    {[1, 2].map(idx => (
-                        <React.Fragment key={idx}>
-                            <span className="ic-m-item"><div className="ic-m-dot" /> AEROAI RAISED $5M IN SEED ROUND</span>
-                            <span className="ic-m-item"><div className="ic-m-dot" /> FINTECH PRO CLOSED 24 DEALS VIA NETWORK</span>
-                            <span className="ic-m-item"><div className="ic-m-dot" /> CLEANTECH HUB GENERATED 2.5K+ LEADS</span>
-                            <span className="ic-m-item"><div className="ic-m-dot" /> NEXUS VENTURES ALLOCATED $12M TO HEALTH-CORE</span>
-                            <span className="ic-m-item"><div className="ic-m-dot" /> GLOBAL VC SHORTLISTED 15 STARTUPS</span>
-                        </React.Fragment>
-                    ))}
-                </div>
-            </div>
-
-            <section className="ic-grid">
-                <div className="ic-card">
-                    <div className="ic-card-icon"><Rocket size={32} /></div>
-                    <h3 className="ic-card-title">Institutional <br />Founders</h3>
+            <section id="portals" className="ic-grid" style={{ marginTop: '0' }}>
+                <div className="ic-card" style={{ '--accent': '#8957e5' }}>
+                    <div className="ic-card-icon" style={{ background: 'rgba(137, 87, 229, 0.1)', color: '#8957e5' }}><Rocket size={32} /></div>
+                    <span style={{ color: '#8957e5', fontSize: 10, fontWeight: 900, letterSpacing: '0.3em', marginBottom: 12, display: 'block' }}>FOUNDER OPS</span>
+                    <h3 className="ic-card-title">Startup <br />Portal</h3>
                     <p className="ic-card-p">
-                        Scale beyond cold pitching. Our architecture ensures your vision lands directly on the terminals of strategic partners ready to deploy.
+                        Premium infrastructure designed to empower founders. Build your pitch, connect with verified investors, and manage your venture growth from seed to liquidity.
                     </p>
-                    <Link to="/register/startup" className="btn-card btn-c-white">Submit Pitch <ArrowRight size={18} /></Link>
+                    <div style={{ marginBottom: 40 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'white', fontSize: 13, marginBottom: 12, fontWeight: 500 }}>
+                            <CheckCircle2 size={16} color="#8957e5" /> Advanced Pitch Builder
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'white', fontSize: 13, marginBottom: 12, fontWeight: 500 }}>
+                            <CheckCircle2 size={16} color="#8957e5" /> Investor Matchmaking
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'white', fontSize: 13, marginBottom: 12, fontWeight: 500 }}>
+                            <CheckCircle2 size={16} color="#8957e5" /> Unified Messaging Hub
+                        </div>
+                    </div>
+                    <Link to="/register/startup" className="btn-start" style={{ background: 'linear-gradient(135deg, #8957e5 0%, #f62d8f 100%)', color: 'white', display: 'flex', justifyContent: 'center', gap: 10 }}>
+                        Initialize Startup Gate <ArrowRight size={18} />
+                    </Link>
                 </div>
 
-                <div className="ic-card">
-                    <div className="ic-card-icon" style={{ color: '#60a5fa' }}><TrendingUp size={32} /></div>
-                    <h3 className="ic-card-title">Strategic <br />Capital</h3>
+                <div className="ic-card" style={{ '--accent': '#3b82f6' }}>
+                    <div className="ic-card-icon"><TrendingUp size={32} /></div>
+                    <span style={{ color: '#3b82f6', fontSize: 10, fontWeight: 900, letterSpacing: '0.3em', marginBottom: 12, display: 'block' }}>CAPITAL INTEL</span>
+                    <h3 className="ic-card-title">Investor <br />Portal</h3>
                     <p className="ic-card-p">
-                        Access a sovereign stream of verified projects and high-conviction founders scaling with mathematical precision.
+                        Access a sovereign stream of high-conviction deal flow. Discover verified pitches, manage your portfolio, and export institutional reports.
                     </p>
-                    <Link to="/register/investor" className="btn-card btn-c-primary">Open Terminal <ArrowUpRight size={18} /></Link>
+                    <div style={{ marginBottom: 40 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'white', fontSize: 13, marginBottom: 12, fontWeight: 500 }}>
+                            <CheckCircle2 size={16} color="#3b82f6" /> Dynamic Pitch Discovery
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'white', fontSize: 13, marginBottom: 12, fontWeight: 500 }}>
+                            <CheckCircle2 size={16} color="#3b82f6" /> Portfolio Intelligence
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'white', fontSize: 13, marginBottom: 12, fontWeight: 500 }}>
+                            <CheckCircle2 size={16} color="#3b82f6" /> Institutional Reporting
+                        </div>
+                    </div>
+                    <Link to="/register/investor" className="btn-start" style={{ background: 'linear-gradient(135deg, #2f81f7 0%, #17cf97 100%)', color: 'white', display: 'flex', justifyContent: 'center', gap: 10 }}>
+                        Enter Partner Terminal <ArrowUpRight size={18} />
+                    </Link>
                 </div>
             </section>
 
-            <section id="matrix" className="ic-matrix">
-                <div className="ic-matrix-inner">
-                    <div className="ic-badge">SYSTEM PROTOCOLS</div>
-                    <h2 style={{ fontSize: '48px', marginBottom: '24px' }}>The Core Gateway Grid</h2>
-                    <p style={{ maxWidth: '600px', margin: '0 auto' }}>Every connection made within the ecosystem is backed by institutional-grade intelligence and a global network of visionaries.</p>
 
-                    <div className="ic-m-grid">
-                        {[
-                            { title: "Precision Matchmaking", icon: <Target size={32} />, p: "Our neural engine connects elite founders with specific capital sources, reducing the average fundraise cycle by 65%.", q: "Strategic alignment is the ultimate multiplier." },
-                            { title: "LeadGen Matrix", icon: <Zap size={32} />, p: "Automated market analysis and B2B lead generation targeting high-intent prospects across 50+ institutional sectors.", q: "Data doesn't just inform; it executes." },
-                            { title: "Founders Domain", icon: <Rocket size={32} />, p: "A mission control center for building traction, managing pitches, and tracking real-time growth metrics in dark mode.", q: "Success is the byproduct of discipline." },
-                            { title: "Protocol Governance", icon: <ShieldCheck size={32} />, p: "Automated term sheets, NDAs, and MOU generation to ensure every deal is legally sound and lightning fast.", q: "Speed is the only non-negotiable." },
-                            { title: "Network Liquidity", icon: <Users size={32} />, p: "Host exclusive demo days and networking mixers with auto-lead capture and high-engagement rsvp architecture.", q: "Network is the only true moats." },
-                            { title: "Intelligence Edge", icon: <BarChart3 size={32} />, p: "In-depth market insights and sector-specific reports to help you navigate the ever-evolving capital landscape.", q: "Information is the currency of power." }
-                        ].map((item, i) => (
-                            <div key={i} className="ic-m-card">
-                                <div className="ic-m-card-icon">{item.icon}</div>
-                                <h3 className="ic-m-card-h3">{item.title}</h3>
-                                <p className="ic-m-card-p">{item.p}</p>
-                                <div className="ic-m-quote">
-                                    <Quote size={12} style={{ opacity: 0.5 }} />
-                                    <span>{item.q}</span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            <section className="ic-cases" style={{ padding: '120px 40px', maxWidth: '1200px', margin: '0 auto' }}>
-                <div style={{ textAlign: 'left', marginBottom: '60px' }}>
-                    <div className="ic-badge">CASE STUDIES</div>
-                    <h2 style={{ fontSize: '48px' }}>Institutional Success.</h2>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
-                    <div className="ic-card" style={{ padding: '48px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '32px' }}>
-                            <div style={{ background: 'rgba(59,130,246,0.1)', padding: '12px', borderRadius: '12px', color: 'var(--brand-blue)' }}>
-                                <TrendingUp size={24} />
-                            </div>
-                            <span style={{ fontSize: '11px', fontWeight: 900, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em' }}>SERIES A EXECUTED</span>
-                        </div>
-                        <h4 style={{ fontSize: '24px', marginBottom: '16px' }}>Project AeroAI</h4>
-                        <p style={{ fontSize: '14px', lineHeight: 1.6, marginBottom: '24px' }}>How a specialized AI startup used the Protocol to identify and close a $5.2M round in under 45 days with strategic partners in the EU market.</p>
-                        <div style={{ display: 'flex', gap: '40px' }}>
-                            <div>
-                                <div style={{ fontSize: '20px', fontWeight: 900, color: 'white' }}>$5.2M</div>
-                                <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: 700 }}>FUNDING RAISED</div>
-                            </div>
-                            <div>
-                                <div style={{ fontSize: '20px', fontWeight: 900, color: 'white' }}>45 Days</div>
-                                <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: 700 }}>CLOSE TIME</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="ic-card" style={{ padding: '48px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '32px' }}>
-                            <div style={{ background: 'rgba(16,185,129,0.1)', padding: '12px', borderRadius: '12px', color: '#10b981' }}>
-                                <Zap size={24} />
-                            </div>
-                            <span style={{ fontSize: '11px', fontWeight: 900, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em' }}>MARKET EXPANSION</span>
-                        </div>
-                        <h4 style={{ fontSize: '24px', marginBottom: '16px' }}>FinTech Core</h4>
-                        <p style={{ fontSize: '14px', lineHeight: 1.6, marginBottom: '24px' }}>Leveraging the LeadGen Matrix to generate 2,500+ high-conviction institutional leads, resulting in a 40% uptick in enterprise partnerships.</p>
-                        <div style={{ display: 'flex', gap: '40px' }}>
-                            <div>
-                                <div style={{ fontSize: '20px', fontWeight: 900, color: 'white' }}>2.5k+</div>
-                                <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: 700 }}>DATA LEADS</div>
-                            </div>
-                            <div>
-                                <div style={{ fontSize: '20px', fontWeight: 900, color: 'white' }}>+40%</div>
-                                <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', fontWeight: 700 }}>REVENUE GROWTH</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section id="services" className="ic-pillar-sec">
-                <style>{`
-                    .ic-deep-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 24px; overflow: hidden; margin-top: 60px; }
-                    .ic-deep-item { background: var(--bg-black); padding: 40px; transition: 0.3s; }
-                    .ic-deep-item:hover { background: rgba(255,255,255,0.02); }
-                    .ic-deep-item h5 { font-size: 14px; color: var(--brand-blue); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 0.1em; }
-                    .ic-deep-item ul { list-style: none; padding: 0; margin: 0; }
-                    .ic-deep-item li { font-size: 13px; color: var(--text-main); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-                    .ic-deep-item li::before { content: ''; width: 4px; height: 4px; background: var(--brand-blue); border-radius: 50%; }
-                `}</style>
-                <div style={{ textAlign: 'center', marginBottom: '80px' }}>
-                    <div className="ic-badge">TECHNICAL INFRASTRUCTURE</div>
-                    <h2 style={{ fontSize: '48px' }}>Service Deep Dive</h2>
-                </div>
-
-                <div className="ic-deep-grid" style={{ maxWidth: '1200px', margin: '0 auto' }}>
-                    <div className="ic-deep-item">
-                        <h5>Network Protocl</h5>
-                        <ul>
-                            <li>Private Deal Rooms</li>
-                            <li>Investor Relations CRM</li>
-                            <li>Automated Intros</li>
-                            <li>Verified Identity</li>
-                        </ul>
-                    </div>
-                    <div className="ic-deep-item">
-                        <h5>Capital Protocol</h5>
-                        <ul>
-                            <li>Cap Table Management</li>
-                            <li>Crowdfund Engine</li>
-                            <li>Debt Orchestration</li>
-                            <li>Liquidity Tracking</li>
-                        </ul>
-                    </div>
-                    <div className="ic-deep-item">
-                        <h5>Legal Protocol</h5>
-                        <ul>
-                            <li>Smart Term Sheets</li>
-                            <li>e-Signature Node</li>
-                            <li>KYC/AML Vault</li>
-                            <li>MOU Automation</li>
-                        </ul>
-                    </div>
-                    <div className="ic-deep-item">
-                        <h5>Intel Protocol</h5>
-                        <ul>
-                            <li>Sentiment Analysis</li>
-                            <li>Market Heatmaps</li>
-                            <li>Growth Benchmarking</li>
-                            <li>Competitor Nodes</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div className="ic-p-grid">
-                    <div className="ic-pillar" onClick={() => window.open('http://localhost:3009', '_blank')}>
-                        <div className="ic-p-img" style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1554224155-169641357599?auto=format&fit=crop&w=1200&q=80)' }}></div>
-                        <div className="ic-p-content">
-                            <h3 style={{ fontSize: '28px', marginBottom: '16px' }}>Capital Flows</h3>
-                            <p style={{ lineHeight: 1.6 }}>The definitive high-security fundraising portal for crowdfunding and institutional debt financing setups.</p>
-                            <div style={{ marginTop: '24px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--brand-blue)', fontWeight: 800, fontSize: '13px', textTransform: 'uppercase' }}>
-                                View Portal <ArrowUpRight size={14} />
-                            </div>
-                        </div>
-                    </div>
-                    <div className="ic-pillar" onClick={() => window.open('http://localhost:3006', '_blank')}>
-                        <div className="ic-p-img" style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1515187029135-18ee286d815b?auto=format&fit=crop&w=1200&q=80)' }}></div>
-                        <div className="ic-p-content">
-                            <h3 style={{ fontSize: '28px', marginBottom: '16px' }}>Network Ops</h3>
-                            <p style={{ lineHeight: 1.6 }}>Super-connect with verified HNWIs and venture partners through exclusive globally-hosted private events.</p>
-                            <div style={{ marginTop: '24px', display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--brand-blue)', fontWeight: 800, fontSize: '13px', textTransform: 'uppercase' }}>
-                                Access Calendar <ArrowUpRight size={14} />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section id="vision" className="ic-vision">
-                <Quote size={60} style={{ color: 'var(--brand-blue)', opacity: 0.1, marginBottom: '20px' }} />
-                <p className="ic-v-quote">
-                    "Innovation distinguishes between a leader and a follower. Our mission is to build the central nervous system for modern capital."
-                </p>
-                <div className="ic-v-author">— SYSTEM CORE ARCHITECTURE</div>
-            </section>
 
             <footer className="ic-footer">
                 <div className="ic-f-inner">

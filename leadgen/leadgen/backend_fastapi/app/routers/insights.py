@@ -17,7 +17,7 @@ async def get_personas(db: AsyncSession = Depends(get_db)):
 
 # Insights routes
 @router.get("/insights/{persona}")
-async def get_insights(persona: str, icpId: int = Query(...), db: AsyncSession = Depends(get_db)):
+async def get_insights(persona: str, icpId: int = Query(...), force: bool = Query(False), db: AsyncSession = Depends(get_db)):
     # Node logic: decodeURIComponent(persona) - FastAPI handles decoding automatically typically
     # But just in case
     import urllib.parse
@@ -25,7 +25,7 @@ async def get_insights(persona: str, icpId: int = Query(...), db: AsyncSession =
 
     # Ensure insights exist (generates via Groq if not)
     from ..services.icp_analysis import ensure_persona_insights_for_icp
-    await ensure_persona_insights_for_icp(icpId, decoded_persona, db)
+    await ensure_persona_insights_for_icp(icpId, decoded_persona, db, force=force)
     
     query = select(PersonaInsight).where(
         PersonaInsight.icp_id == icpId,

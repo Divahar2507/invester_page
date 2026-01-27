@@ -100,20 +100,30 @@ async def analyze_icp_with_dataset_and_groq(icp: Any, db: AsyncSession, sort_by:
         
     return formatted_leads
 
-async def ensure_persona_insights_for_icp(icp_id: int, persona: str, db: AsyncSession):
+async def ensure_persona_insights_for_icp(icp_id: int, persona: str, db: AsyncSession, force: bool = False):
     from ..models import PersonaInsight, ICP
     from .groq_service import create_chat_completion, extract_json
-    from sqlalchemy import select
+    from sqlalchemy import select, delete
     
     # 1. Check if insights already exist for this ICP + Persona
-    result = await db.execute(
-        select(PersonaInsight).where(
-            PersonaInsight.icp_id == icp_id,
-            PersonaInsight.persona == persona
-        ).limit(1)
-    )
-    if result.scalars().first():
-        return  # Already exists
+    if not force:
+        result = await db.execute(
+            select(PersonaInsight).where(
+                PersonaInsight.icp_id == icp_id,
+                PersonaInsight.persona == persona
+            ).limit(1)
+        )
+        if result.scalars().first():
+            return  # Already exists
+    else:
+        # Delete existing insights for this persona+icp
+        await db.execute(
+            delete(PersonaInsight).where(
+                PersonaInsight.icp_id == icp_id,
+                PersonaInsight.persona == persona
+            )
+        )
+        await db.commit()
         
     # 2. Get ICP details
     icp_result = await db.execute(select(ICP).where(ICP.id == icp_id))

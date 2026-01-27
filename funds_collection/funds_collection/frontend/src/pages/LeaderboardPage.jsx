@@ -12,7 +12,8 @@ const LeaderboardPage = () => {
         const fetchFunds = async () => {
             setLoading(true);
             try {
-                let url = 'http://localhost:8001/funds';
+                const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8007';
+                let url = `${apiUrl}/funds`;
                 if (filter !== 'All') {
                     url += `?category=${filter}`;
                 }

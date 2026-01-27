@@ -11,13 +11,11 @@ const FundsCatalogPage = () => {
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        fetchFunds();
-    }, []);
-
     const fetchFunds = async (category = 'All') => {
+        setLoading(true);
         try {
-            let url = 'http://localhost:8001/funds';
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8007';
+            let url = `${apiUrl}/funds`;
             if (category && category !== 'All') {
                 url += `?category=${category}`;
             }
@@ -32,6 +30,10 @@ const FundsCatalogPage = () => {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        fetchFunds();
+    }, []);
 
     const filteredFunds = funds.filter(fund =>
         fund.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -119,14 +121,19 @@ const FundsCatalogPage = () => {
                                     </div>
                                 </div>
 
-                                <div className="fund-actions">
+                                <div className="fund-actions" style={{ display: 'flex', gap: '12px' }}>
                                     <button
                                         className="btn btn-outline flex-1"
                                         onClick={() => navigate(`/funds/${fund.id}`)}
                                     >
                                         View Details
                                     </button>
-
+                                    <button
+                                        className="btn btn-primary flex-1"
+                                        onClick={() => navigate(`/funds/${fund.id}`)}
+                                    >
+                                        Invest Now
+                                    </button>
                                 </div>
                             </div>
                         </motion.div>

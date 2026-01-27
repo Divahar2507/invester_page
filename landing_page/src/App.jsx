@@ -52,7 +52,7 @@ const LandingPage = () => {
 
   const services = [
     {
-      title: "Node-Matched Connectivity",
+      title: "Networking Events",
       desc: "Architecting high-value connections through recursive ecosystem mapping.",
       icon: <Network size={22} />,
       image: "/service_events.png",
@@ -60,7 +60,7 @@ const LandingPage = () => {
       keyword: "Node Connect"
     },
     {
-      title: "Institutional Alpha Filter",
+      title: "Investor & Startup",
       desc: "Direct deployment pipeline for high-conviction deal flow and venture capital.",
       icon: <Users size={22} />,
       image: "/service_investors.png",
@@ -68,23 +68,23 @@ const LandingPage = () => {
       keyword: "Capital Intel"
     },
     {
-      title: "Sovereign Compliance Layer",
+      title: "Education & Research",
       desc: "Encrypted data rooms and automated institutional governance frameworks.",
       icon: <FileText size={22} />,
       image: "/service_docs.png",
-      link: "http://localhost:3001",
+      link: "http://localhost:3008",
       keyword: "Sovereign Data"
     },
     {
-      title: "Autonomous Growth Outbound",
+      title: "LeadGen AI",
       desc: "Verification-first lead generation powered by predictive sentiment analysis.",
       icon: <Rocket size={22} />,
       image: "/service_leadgen.png",
       link: "http://localhost:3003",
-      keyword: "LeadGen AI"
+      keyword: "LeadGenAI"
     },
     {
-      title: "Liquidity Orchestration",
+      title: "Funding & Investment",
       desc: "Cross-border treasury tracking and decentralized financial architecture.",
       icon: <CircleDollarSign size={22} />,
       image: "/service_funds.png",
@@ -92,7 +92,7 @@ const LandingPage = () => {
       keyword: "Liquidity Net"
     },
     {
-      title: "Predictive Alpha Research",
+      title: "Human Resources",
       desc: "Deep-stack market intelligence designed for institutional decision makers.",
       icon: <LineChart size={22} />,
       image: "/service_research.png",
@@ -185,12 +185,35 @@ const LandingPage = () => {
                 }
                 .btn-launch:hover { transform: translateY(-3px); box-shadow: 0 10px 30px var(--brand-glow); background: #388bfd; }
 
-                /* HERO */
+                /* HERO SECTION - NEW BACKGROUND */
                 .bridge-hero {
-                    padding: 220px 40px 120px;
+                    padding: 280px 40px 200px;
                     text-align: center;
                     position: relative;
                     z-index: 1;
+                    background: radial-gradient(circle at 50% 10%, rgba(47, 129, 247, 0.15), transparent 60%);
+                }
+
+                .bridge-hero::before {
+                    content: '';
+                    position: absolute;
+                    inset: 0;
+                    background-image: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop');
+                    background-size: cover;
+                    background-position: center 20%;
+                    opacity: 0.25;
+                    z-index: -1;
+                    mask-image: linear-gradient(to bottom, black 30%, transparent 95%);
+                    pointer-events: none;
+                }
+
+                .bridge-hero::after {
+                    content: '';
+                    position: absolute;
+                    inset: 0;
+                    background: radial-gradient(circle at 50% 50%, transparent 0%, var(--bg) 90%);
+                    z-index: -1;
+                    pointer-events: none;
                 }
                 .bridge-container { max-width: 1200px; margin: 0 auto; }
                 
@@ -327,18 +350,37 @@ const LandingPage = () => {
             <Cpu size={14} style={{ marginRight: 8 }} />
             Institutional Tech Protocol
           </div>
-          <h1 className="bridge-h1">The Sovereign Layer <br />for Modern Venture.</h1>
+          <h1 className="bridge-h1">STARTUP ECOSYSTEM <br /> <br />FOR MODERN VENTURE.</h1>
           <p className="bridge-p">
             Architecting verified intelligence to synchronize institutional fundraising,
             high-value networking, and recursive deal governance.
           </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-            <button className="btn-launch" style={{ padding: '14px 30px', fontSize: 15, borderRadius: 10 }}>
+            <button className="btn-launch" style={{ padding: '16px 36px', fontSize: 18, borderRadius: 14 }}>
               Initialize Integration
             </button>
-            <button style={{ background: 'transparent', border: '1px solid #30363d', color: '#fff', padding: '14px 30px', fontSize: 15, borderRadius: 10, cursor: 'pointer', fontWeight: 500 }}>
+            <button style={{ background: 'transparent', border: '1px solid #30363d', color: '#fff', padding: '16px 36px', fontSize: 15, borderRadius: 14, cursor: 'pointer', fontWeight: 600 }}>
               View Documentation
             </button>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '60px', marginTop: '100px', textAlign: 'left', borderTop: '1px solid #30363d', paddingTop: '60px' }}>
+            <div>
+              <h2 style={{ fontSize: '32px', fontWeight: 700, color: '#fff' }}>Startup <br />Ecosystem</h2>
+              <p style={{ color: '#8b949e', fontSize: '16px', marginTop: '20px', lineHeight: 1.6 }}>
+                The definitive protocol for institutional-grade venture operations, empowering founders with unified intelligence and high-conviction networking.
+              </p>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
+              <div style={{ background: 'rgba(255,255,255,0.02)', padding: '30px', borderRadius: '24px', border: '1px solid #30363d' }}>
+                <h3 style={{ color: '#fff', fontSize: '18px', marginBottom: '10px' }}>Global Reach</h3>
+                <p style={{ color: '#8b949e', fontSize: '14px' }}>Connect with institutional partners across 50+ global nodes.</p>
+              </div>
+              <div style={{ background: 'rgba(255,255,255,0.02)', padding: '30px', borderRadius: '24px', border: '1px solid #30363d' }}>
+                <h3 style={{ color: '#fff', fontSize: '18px', marginBottom: '10px' }}>Verified Flow</h3>
+                <p style={{ color: '#8b949e', fontSize: '14px' }}>Every connection is backed by predictive sentiment and risk analysis.</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>

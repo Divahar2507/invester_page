@@ -74,37 +74,56 @@ async def send_personalized_emails(subject: str, body_template: str, leads: List
     return {"sent": sent, "skipped": skipped, "errors": errors}
 
 async def fetch_brevo_aggregated_stats(days: int = 1):
-    if not settings.BREVO_API_KEY:
-         raise ValueError("BREVO_API_KEY must be set in .env")
-    
     now = datetime.now()
     start = now - timedelta(days=days)
-    
     start_date = start.strftime("%Y-%m-%d")
     end_date = now.strftime("%Y-%m-%d")
+
+    default_stats = {
+        "range": {"from": start_date, "to": end_date},
+        "events": 0,
+        "delivered": 0,
+        "opens": 0,
+        "clicks": 0,
+        "bounced": 0,
+        "softBounces": 0,
+        "hardBounces": 0,
+        "raw": {}
+    }
+
+    if not settings.BREVO_API_KEY:
+         print("BREVO_API_KEY not set, returning empty stats")
+         return default_stats
     
     url = "https://api.brevo.com/v3/smtp/statistics/aggregatedReport"
     
-    async with httpx.AsyncClient() as client:
-        resp = await client.get(url, headers={"api-key": settings.BREVO_API_KEY}, params={"startDate": start_date, "endDate": end_date})
-        data = resp.json() if resp.status_code == 200 else {}
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(url, headers={"api-key": settings.BREVO_API_KEY}, params={"startDate": start_date, "endDate": end_date}, timeout=5.0)
+            if resp.status_code != 200:
+                print(f"Brevo API error: {resp.status_code} - {resp.text}")
+                return default_stats
+            data = resp.json()
+            
+        events = data.get("requests", 0)
+        delivered = data.get("delivered", 0)
+        opens = data.get("uniqueOpens", data.get("opens", 0))
+        clicks = data.get("uniqueClicks", data.get("clicks", 0))
+        soft_bounces = data.get("softBounces", 0)
+        hard_bounces = data.get("hardBounces", 0)
+        bounced = soft_bounces + hard_bounces
         
-    events = data.get("requests", 0)
-    delivered = data.get("delivered", 0)
-    opens = data.get("uniqueOpens", data.get("opens", 0))
-    clicks = data.get("uniqueClicks", data.get("clicks", 0))
-    soft_bounces = data.get("softBounces", 0)
-    hard_bounces = data.get("hardBounces", 0)
-    bounced = soft_bounces + hard_bounces
-    
-    return {
-        "range": data.get("range", {"from": start_date, "to": end_date}),
-        "events": events,
-        "delivered": delivered,
-        "opens": opens,
-        "clicks": clicks,
-        "bounced": bounced,
-        "softBounces": soft_bounces,
-        "hardBounces": hard_bounces,
-        "raw": data
-    }
+        return {
+            "range": data.get("range", {"from": start_date, "to": end_date}),
+            "events": events,
+            "delivered": delivered,
+            "opens": opens,
+            "clicks": clicks,
+            "bounced": bounced,
+            "softBounces": soft_bounces,
+            "hardBounces": hard_bounces,
+            "raw": data
+        }
+    except Exception as e:
+        print(f"Exception fetching Brevo stats: {e}")
+        return default_stats
