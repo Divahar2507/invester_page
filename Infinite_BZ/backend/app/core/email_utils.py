@@ -80,44 +80,6 @@ async def send_reset_email(email: EmailStr, otp: str):
         print(f"EXTREME ERROR: Failed to send email via SMTP: {e}")
         return False
 
-async def send_verification_email(email: EmailStr, otp: str):
-    """
-    Sends the sign-up verification OTP via Real SMTP.
-    """
-    if not ENABLE_EMAIL:
-        print(f"FAILED TO SEND EMAIL to {email}: Email credentials not configured.")
-        return False
-
-    print(f"Sending Verification OTP email to {email} via {MAIL_SERVER}...")
-    try:
-        message = MessageSchema(
-            subject="Verify Your Email - Infinite BZ",
-            recipients=[email],
-            body=f"""
-            <html>
-                <body style="font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4;">
-                    <div style="max-w-md: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px;">
-                        <h2 style="color: #333 text-align: center;">Welcome to Infinite BZ!</h2>
-                        <p>Thank you for signing up. To complete your registration, please verify your email address by entering the following OTP:</p>
-                        <div style="text-align: center; margin: 30px 0;">
-                            <h1 style="color: #22d3ee; font-size: 42px; letter-spacing: 10px; margin: 0;">{otp}</h1>
-                        </div>
-                        <p>This code will expire in 10 minutes.</p>
-                        <p style="font-size: 12px; color: #888 text-align: center;">If you didn't create an account, you can safely ignore this email.</p>
-                    </div>
-                </body>
-            </html>
-            """,
-            subtype=MessageType.html
-        )
-        fm = FastMail(conf)
-        await fm.send_message(message)
-        print("Verification email sent successfully.")
-        return True
-    except Exception as e:
-        print(f"EXTREME ERROR: Failed to send verification email via SMTP: {e}")
-        return False
-
 async def send_ticket_email(email: EmailStr, name: str, event_title: str, ticket_path: str):
     """
     Sends the PDF Ticket via Real SMTP using fastapi-mail.
@@ -159,7 +121,6 @@ async def send_ticket_email(email: EmailStr, name: str, event_title: str, ticket
     except Exception as e:
         print(f"EXTREME ERROR: Failed to send ticket email via SMTP: {e}")
         return False
-
 def generate_qr_code(data: str) -> str:
     """
     Generate QR code for given data and return as base64 string.
@@ -384,44 +345,3 @@ async def send_event_ticket_email(email: EmailStr, event_data: dict, confirmatio
             except Exception as e:
                 print(f"Warning: Could not delete temp file {temp_file_path}: {e}")
 
-async def send_contact_form_email(data: dict):
-    """
-    Sends the contact form submission to the admin email.
-    """
-    if not ENABLE_EMAIL:
-        print("FAILED TO SEND CONTACT EMAIL: Email credentials not configured.")
-        return False
-
-    # The target email as requested by the user
-    ADMIN_EMAIL = "aravindan0072@gmail.com" 
-
-    print(f"Sending Contact Form email to {ADMIN_EMAIL}...")
-    try:
-        message = MessageSchema(
-            subject=f"New Inquiry from {data['first_name']} {data['last_name']}",
-            recipients=[ADMIN_EMAIL],
-            body=f"""
-            <html>
-                <body style="font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4;">
-                    <div style="max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; border-left: 5px solid #06b6d4;">
-                        <h2 style="color: #333;">New Contact Form Submission</h2>
-                        <p><strong>Name:</strong> {data['first_name']} {data['last_name']}</p>
-                        <p><strong>Email:</strong> {data['email']}</p>
-                        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-                        <h3 style="color: #555;">Message:</h3>
-                        <p style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; color: #333; line-height: 1.6;">
-                            {data['message']}
-                        </p>
-                    </div>
-                </body>
-            </html>
-            """,
-            subtype=MessageType.html
-        )
-        fm = FastMail(conf)
-        await fm.send_message(message)
-        print("Contact email sent successfully.")
-        return True
-    except Exception as e:
-        print(f"ERROR: Failed to send contact email: {e}")
-        return False

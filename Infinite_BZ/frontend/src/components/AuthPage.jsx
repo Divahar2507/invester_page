@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { Eye, EyeOff, Loader2, Calendar, MapPin, Search, ArrowRight, CheckCircle2, Linkedin, ShieldCheck, Check, X, ArrowLeft, User } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Calendar, MapPin, Search, ArrowRight, CheckCircle2, Linkedin, ShieldCheck, Check, X, ArrowLeft } from 'lucide-react';
 import { TermsModal, PrivacyModal } from './LegalDocs';
 import { GoogleLogin } from '@react-oauth/google';
 
 export default function AuthPage({ onBack, onComplete, initialMode = 'login' }) {
-    const [mode, setMode] = useState(initialMode); // 'login' | 'signup' | 'forgot' | 'verify'
+    const [mode, setMode] = useState(initialMode); // 'login' | 'signup' | 'forgot'
     const [showPassword, setShowPassword] = useState(false);
     const [agreed, setAgreed] = useState(false);
 
@@ -14,7 +14,6 @@ export default function AuthPage({ onBack, onComplete, initialMode = 'login' }) 
     const [fullName, setFullName] = useState('');
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [resendLoading, setResendLoading] = useState(false);
 
     const [resetStep, setResetStep] = useState(1); // 1: Email, 2: OTP & New Password
     const [otp, setOtp] = useState('');
@@ -109,93 +108,22 @@ export default function AuthPage({ onBack, onComplete, initialMode = 'login' }) 
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    email: email.trim(),
-                    password: password,
-                    full_name: fullName.trim(),
-                    is_active: false
+                    email,
+                    password,
+                    full_name: fullName,
+                    is_active: true
                 }),
             });
 
             const data = await res.json();
-            if (!res.ok) {
-                let errorMsg = 'Signup failed';
-                if (data.detail) {
-                    if (Array.isArray(data.detail)) {
-                        errorMsg = data.detail.map(err => `${err.loc.join('.')}: ${err.msg}`).join(', ');
-                    } else {
-                        errorMsg = data.detail;
-                    }
-                }
-                throw new Error(errorMsg);
-            }
+            if (!res.ok) throw new Error(data.detail || 'Signup failed');
 
-            // Instead of auto-login, go to verification mode
-            setMode('verify');
-            setOtp('');
+            // Auto login after signup
+            await handleLogin(e);
         } catch (err) {
             setError(err.message);
         } finally {
             setLoading(false);
-        }
-    };
-
-    const handleVerifyOTP = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setError(null);
-
-        try {
-            const res = await fetch('/api/v1/auth/verify-signup-otp', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    email: email.trim(),
-                    otp: otp.trim()
-                }),
-            });
-
-            const data = await res.json();
-            if (!res.ok) {
-                let errorMsg = 'Verification failed';
-                if (data.detail) {
-                    if (Array.isArray(data.detail)) {
-                        errorMsg = data.detail.map(err => `${err.loc.join('.')}: ${err.msg}`).join(', ');
-                    } else {
-                        errorMsg = data.detail;
-                    }
-                }
-                throw new Error(errorMsg);
-            }
-
-            alert("Email verified successfully! You can now login.");
-            setMode('login');
-            setPassword(''); // Clear password for security
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleResendOTP = async () => {
-        setResendLoading(true);
-        setError(null);
-
-        try {
-            const res = await fetch('/api/v1/auth/resend-otp', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email }),
-            });
-
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.detail || 'Resend failed');
-
-            alert("A new OTP has been sent to your email.");
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setResendLoading(false);
         }
     };
 
@@ -296,7 +224,6 @@ export default function AuthPage({ onBack, onComplete, initialMode = 'login' }) 
                             {mode === 'login' && 'Welcome Back'}
                             {mode === 'signup' && 'Create/Join Account'}
                             {mode === 'forgot' && 'Reset Password'}
-                            {mode === 'verify' && 'Verify Email'}
                         </h2>
                         <p className="text-slate-400">
                             {mode === 'login' && 'Enter your details to access your dashboard.'}
@@ -306,12 +233,11 @@ export default function AuthPage({ onBack, onComplete, initialMode = 'login' }) 
                                     ? 'No worries, we\'ll send you reset instructions.'
                                     : 'Check your email for the OTP.'
                             )}
-                            {mode === 'verify' && `We've sent a 6-digit code to ${email}`}
                         </p>
                     </div>
 
                     {/* Mode Switcher */}
-                    {mode !== 'forgot' && mode !== 'verify' && (
+                    {mode !== 'forgot' && (
                         <div className="grid grid-cols-2 p-1 bg-[#0B1221] rounded-xl border border-white/10">
                             <button
                                 onClick={() => toggleMode('login')}
@@ -331,11 +257,7 @@ export default function AuthPage({ onBack, onComplete, initialMode = 'login' }) 
                     )}
 
                     {/* Form */}
-                    <form className="space-y-5" onSubmit={
-                        mode === 'forgot' ? handleForgotPassword :
-                            mode === 'verify' ? handleVerifyOTP :
-                                (mode === 'login' ? handleLogin : handleSignup)
-                    }>
+                    <form className="space-y-5" onSubmit={mode === 'forgot' ? handleForgotPassword : (mode === 'login' ? handleLogin : handleSignup)}>
                         {/* Error Message */}
                         {error && (
                             <div className="bg-red-500/10 border border-red-500/20 text-red-500 text-sm p-3 rounded-lg text-center">
@@ -359,7 +281,7 @@ export default function AuthPage({ onBack, onComplete, initialMode = 'login' }) 
                         )}
 
                         {/* EMAIL ADDRESS - ALL MODES */}
-                        {(mode !== 'forgot' && mode !== 'verify' || (mode === 'forgot' && resetStep === 1)) && (
+                        {(mode !== 'forgot' || resetStep === 1) && (
                             <div className="space-y-1.5">
                                 <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Email Address</label>
                                 <input
@@ -371,37 +293,6 @@ export default function AuthPage({ onBack, onComplete, initialMode = 'login' }) 
                                     required={mode !== 'forgot' || resetStep === 1}
                                     disabled={mode === 'forgot' && resetStep === 2}
                                 />
-                            </div>
-                        )}
-
-                        {/* SIGNUP OTP VERIFICATION */}
-                        {mode === 'verify' && (
-                            <div className="space-y-4">
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Enter 6-Digit Code</label>
-                                    <input
-                                        type="text"
-                                        placeholder="······"
-                                        maxLength={6}
-                                        value={otp}
-                                        onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                                        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-4 text-white focus:outline-none focus:border-sky-500 transition-colors placeholder:text-slate-600 tracking-[1em] text-center font-mono text-2xl"
-                                        required
-                                    />
-                                </div>
-                                <div className="text-center">
-                                    <p className="text-sm text-slate-500">
-                                        Didn't receive the code?{' '}
-                                        <button
-                                            type="button"
-                                            onClick={handleResendOTP}
-                                            disabled={resendLoading}
-                                            className="text-primary-500 hover:text-primary-400 font-bold disabled:opacity-50"
-                                        >
-                                            {resendLoading ? 'Sending...' : 'Resend OTP'}
-                                        </button>
-                                    </p>
-                                </div>
                             </div>
                         )}
 
@@ -539,17 +430,14 @@ export default function AuthPage({ onBack, onComplete, initialMode = 'login' }) 
                             type="submit"
                             className={`w-full font-bold py-3.5 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 transform active:scale-[0.98] ${(loading || (mode === 'signup' && (!agreed || password !== confirmPassword)) || (mode === 'forgot' && resetStep === 2 && newPassword !== confirmPassword))
                                 ? 'bg-slate-800 text-slate-500 cursor-not-allowed hidden-spinner'
-                                : 'bg-gradient-to-r from-primary-600 to-primary-800 hover:from-primary-500 hover:to-primary-700 text-white shadow-primary-500/25 ring-1 ring-white/10 font-bold'
+                                : 'bg-gradient-to-r from-primary-500 to-primary-700 hover:from-primary-400 hover:to-primary-600 text-slate-900 shadow-primary-500/25 ring-1 ring-white/10'
                                 }`}
                         >
-                            {loading ? (
-                                <Loader2 className="animate-spin" size={20} />
-                            ) : (
+                            {loading ? 'Processing...' : (
                                 <>
                                     {mode === 'login' && 'Sign In'}
                                     {mode === 'signup' && 'Create Account'}
                                     {mode === 'forgot' && (resetStep === 1 ? 'Send Reset Link' : 'Reset Password')}
-                                    {mode === 'verify' && 'Verify & Activate'}
                                 </>
                             )}
                         </button>
@@ -583,9 +471,9 @@ export default function AuthPage({ onBack, onComplete, initialMode = 'login' }) 
                         </>
                     )}
 
-                    {(mode === 'forgot' || mode === 'verify') && (
+                    {mode === 'forgot' && (
                         <button
-                            onClick={() => toggleMode('login')}
+                            onClick={() => setMode('login')}
                             className="w-full text-sm text-slate-400 hover:text-white transition-colors"
                         >
                             Back to Log In

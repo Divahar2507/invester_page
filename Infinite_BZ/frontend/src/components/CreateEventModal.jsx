@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Calendar, MapPin, Type, AlignLeft, Clock, Globe, X, Check, ChevronRight, ChevronLeft, Image as ImageIcon, Plus, Trash2, User, List, Link as LinkIcon, Twitter, Linkedin, Sparkles, Ticket, Upload } from 'lucide-react';
+import { Calendar, MapPin, Type, AlignLeft, Clock, Globe, X, Check, ChevronRight, ChevronLeft, Image as ImageIcon, Plus, Trash2, User, List, Link as LinkIcon, Twitter, Linkedin, Sparkles, Ticket } from 'lucide-react';
 import TicketManager from './TicketManager';
 
 export default function CreateEventModal({ isOpen, onClose, onSave, initialData = null }) {
     const [step, setStep] = useState(1);
     const [isAnimating, setIsAnimating] = useState(false);
-    const [isUploading, setIsUploading] = useState(false);
     const [formData, setFormData] = useState({
         title: "",
         category: "Business",
@@ -65,34 +64,6 @@ export default function CreateEventModal({ isOpen, onClose, onSave, initialData 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
-    };
-
-    const handleImageUpload = async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        setIsUploading(true);
-        const formData = new FormData();
-        formData.append('file', file);
-
-        try {
-            const res = await fetch('http://localhost:8000/api/v1/upload', {
-                method: 'POST',
-                body: formData,
-            });
-
-            if (res.ok) {
-                const data = await res.json();
-                setFormData(prev => ({ ...prev, imageUrl: data.url }));
-            } else {
-                alert("Upload failed");
-            }
-        } catch (err) {
-            console.error("Upload error", err);
-            alert("Error uploading image");
-        } finally {
-            setIsUploading(false);
-        }
     };
 
     const handleNext = () => {
@@ -239,26 +210,16 @@ export default function CreateEventModal({ isOpen, onClose, onSave, initialData 
                                         </div>
                                     </div>
                                     <div className="group">
-                                        <label className="text-sm font-medium text-slate-300 mb-2 block group-focus-within:text-primary-400 transition-colors">Cover Image</label>
-                                        <div className="flex gap-2">
-                                            <div className="relative flex-1">
-                                                <ImageIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-primary-500 transition-colors" size={20} />
-                                                <input
-                                                    name="imageUrl"
-                                                    value={formData.imageUrl}
-                                                    onChange={handleChange}
-                                                    placeholder="Enter URL or upload..."
-                                                    className="w-full bg-slate-800/50 border border-slate-700 rounded-xl pl-12 pr-4 py-4 text-white placeholder:text-slate-600 focus:outline-none focus:border-primary-500 transition-all"
-                                                />
-                                            </div>
-                                            <label className={`flex items-center justify-center px-4 rounded-xl border border-dashed border-slate-600 cursor-pointer hover:bg-slate-800 transition-colors ${isUploading ? 'opacity-50 cursor-wait' : ''}`}>
-                                                <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" disabled={isUploading} />
-                                                {isUploading ? (
-                                                    <div className="w-5 h-5 border-2 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
-                                                ) : (
-                                                    <Upload size={20} className="text-slate-400" />
-                                                )}
-                                            </label>
+                                        <label className="text-sm font-medium text-slate-300 mb-2 block group-focus-within:text-primary-400 transition-colors">Cover Image URL</label>
+                                        <div className="relative">
+                                            <ImageIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-primary-500 transition-colors" size={20} />
+                                            <input
+                                                name="imageUrl"
+                                                value={formData.imageUrl}
+                                                onChange={handleChange}
+                                                placeholder="https://example.com/image.jpg"
+                                                className="w-full bg-slate-800/50 border border-slate-700 rounded-xl pl-12 pr-4 py-4 text-white placeholder:text-slate-600 focus:outline-none focus:border-primary-500 transition-all"
+                                            />
                                         </div>
                                     </div>
                                 </div>

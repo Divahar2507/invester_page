@@ -1,4 +1,4 @@
-import { LayoutDashboard, ClipboardList, TrendingUp, Settings, LogOut, ScanLine, Plus, Infinity as InfinityIcon } from 'lucide-react';
+import { LayoutDashboard, ClipboardList, TrendingUp, Settings, LogOut, ScanLine, Plus } from 'lucide-react';
 
 export default function Sidebar({ activePage, onNavigate, onLogout, onCreateClick }) {
     return (
@@ -6,10 +6,11 @@ export default function Sidebar({ activePage, onNavigate, onLogout, onCreateClic
             <div className="p-6">
                 <div className="flex items-center gap-3 font-bold text-xl text-white cursor-pointer" onClick={() => onNavigate('dashboard')}>
                     <div className="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center shadow-lg shadow-primary-500/20">
-                        <InfinityIcon size={20} className="text-white" />
+                        <i className="text-white not-italic">BZ</i>
                     </div>
                     <div>
                         InfiniteBZ
+                        <span className="block text-[10px] font-normal text-white/70">Chennai Edition</span>
                     </div>
                 </div>
             </div>
@@ -34,16 +35,16 @@ export default function Sidebar({ activePage, onNavigate, onLogout, onCreateClic
                     onClick={() => onNavigate('my-registrations')}
                 />
                 <NavItem
+                    icon={<ScanLine size={20} />}
+                    label="Scan Tickets"
+                    active={activePage === 'check-in'}
+                    onClick={() => onNavigate('check-in')}
+                />
+                <NavItem
                     icon={<Settings size={20} />}
                     label="Settings"
                     active={activePage === 'settings'}
                     onClick={() => onNavigate('settings')}
-                />
-                <NavItem
-                    icon={<ScanLine size={20} />}
-                    label="Check-in Tool"
-                    active={activePage === 'check-in'}
-                    onClick={() => onNavigate('check-in')}
                 />
             </nav>
 
@@ -69,7 +70,7 @@ function NavItem({ icon, label, active, onClick }) {
         <button
             onClick={onClick}
             className={`flex items-center gap-3 px-4 py-3 w-full rounded-xl transition-all mb-1 ${active
-                ? 'bg-primary-500/10 text-white font-bold border border-primary-500/20'
+                ? 'bg-white/10 text-white font-bold border border-white/5'
                 : 'text-white/70 hover:bg-white/5 hover:text-white'
                 }`}
         >

@@ -2,7 +2,7 @@ from datetime import datetime
 from sqlalchemy import or_, delete
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.schemas import Event, UserRegistration
+from app.models.schemas import Event, UserRegistration, TicketClass
 
 async def delete_expired_events(session: AsyncSession):
     """
@@ -25,9 +25,14 @@ async def delete_expired_events(session: AsyncSession):
     expired_event_ids = [e.id for e in expired_events if e.id is not None]
     
     if expired_event_ids:
-        # Delete associated registrations first
+        # 1. Delete associated registrations first (References TicketClass and Event)
         await session.execute(
             delete(UserRegistration).where(UserRegistration.event_id.in_(expired_event_ids))
+        )
+
+        # 2. Delete related TicketClass records (References Event)
+        await session.execute(
+            delete(TicketClass).where(TicketClass.event_id.in_(expired_event_ids))
         )
     
     count = 0

@@ -6,8 +6,8 @@ import Dashboard from './components/Dashboard';
 import CreateEventPage from './components/CreateEventPage';
 import SettingsPage from './components/SettingsPage';
 import MyRegistrationsPage from './components/MyRegistrationsPage';
+import OrganizerCheckInPage from './components/OrganizerCheckInPage';
 import ErrorBoundary from './components/ErrorBoundary';
-import ChatWidget from './components/ChatWidget';
 import OrganizerCheckIn from './components/OrganizerCheckIn';
 
 export default function App() {
@@ -15,6 +15,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [user, setUser] = useState(null); // User state
+  const [checkInEventId, setCheckInEventId] = useState(null);
 
   // View State: 'landing' or 'feed' or 'auth' or 'dashboard'
   const [currentView, setCurrentView] = useState('landing');
@@ -24,6 +25,10 @@ export default function App() {
     fetchEvents();
     checkUserSession();
   }, []);
+
+  useEffect(() => {
+    console.log("App: checkInEventId updated to:", checkInEventId);
+  }, [checkInEventId]);
 
   const fetchEvents = async () => {
     try {
@@ -61,6 +66,11 @@ export default function App() {
       if (res.ok) {
         const userData = await res.json();
         setUser(userData);
+        // Only redirect to dashboard if we are on landing page or auth
+        // Assuming we want auto-redirect on session check too if just visited
+        // For now, let's keep landing unless explicitly logged in, OR 
+        // if the user refreshes on Dashboard? 
+        // Let's rely on explicit navigation for now, but handle login redirection below.
       } else {
         localStorage.removeItem('token');
       }
@@ -78,6 +88,8 @@ export default function App() {
     setCurrentView('landing');
   };
 
+  console.log("App Render: currentView =", currentView);
+
   return (
     <>
       {currentView === 'landing' && (
@@ -89,9 +101,15 @@ export default function App() {
             setCurrentView('feed');
           }}
           onLogin={() => {
-            setAuthMode('login');
-            window.scrollTo(0, 0);
-            setCurrentView('auth');
+            if (user) {
+              // If already logged in, go to Dashboard
+              window.scrollTo(0, 0);
+              setCurrentView('dashboard');
+            } else {
+              setAuthMode('login');
+              window.scrollTo(0, 0);
+              setCurrentView('auth');
+            }
           }}
           onSignup={() => {
             setAuthMode('signup');
@@ -133,46 +151,36 @@ export default function App() {
           <Dashboard
             user={user}
             onLogout={handleLogout}
-            onNavigate={(view) => {
+            onNavigate={(view, eventId) => {
+              console.log("App onNavigate:", view, eventId);
               window.scrollTo(0, 0);
-              setCurrentView(view);
+
+              if (view === 'check-in') {
+                if (eventId) {
+                  setCheckInEventId(eventId);
+                }
+                setCurrentView(view);
+              } else {
+                setCurrentView(view);
+              }
             }}
           />
         </ErrorBoundary>
       )}
 
-      {currentView === 'create-event' && (
-        <CreateEventPage
-          user={user}
+      {/* ... previous code ... */}
+
+      {currentView === 'check-in' && (
+        <OrganizerCheckInPage
+          eventId={checkInEventId}
           onNavigate={(view) => {
             window.scrollTo(0, 0);
-            setCurrentView(view);
-          }}
-          onLogout={handleLogout}
-          onSave={async (eventData) => {
-            try {
-              const token = localStorage.getItem('token');
-              const res = await fetch('/api/v1/events', {
-                method: 'POST',
-                headers: {
-                  'Authorization': `Bearer ${token}`,
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(eventData)
-              });
-              if (res.ok) {
-                const newEvent = await res.json();
-                return newEvent;
-              } else {
-                const data = await res.json();
-                throw new Error(data.detail || data.message || "Unknown error");
-              }
-            } catch (err) {
-              console.error("Create event error", err);
-              throw err;
-            }
+            setCurrentView(view || 'dashboard');
           }}
         />
+      )}
+      {currentView === 'my-registrations' && (
+        <MyRegistrationsPage />
       )}
 
       {currentView === 'settings' && (
@@ -180,34 +188,34 @@ export default function App() {
           user={user}
           onNavigate={(view) => {
             window.scrollTo(0, 0);
-            setCurrentView(view);
+            setCurrentView(view || 'dashboard');
           }}
         />
       )}
 
-      {currentView === 'check-in' && (
-        <OrganizerCheckIn
-          user={user}
-          onLogout={handleLogout}
+      {currentView === 'create-event' && (
+        <CreateEventPage
           onNavigate={(view) => {
             window.scrollTo(0, 0);
-            setCurrentView(view);
+            setCurrentView(view || 'dashboard');
+          }}
+          onSave={async (eventData) => {
+            const token = localStorage.getItem('token');
+            const res = await fetch('/api/v1/events', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(eventData)
+            });
+            if (!res.ok) {
+              const err = await res.json();
+              throw new Error(err.message || "Failed to create event");
+            }
+            return await res.json();
           }}
         />
-      )}
-      {currentView === 'my-registrations' && (
-        <MyRegistrationsPage
-          user={user}
-          onNavigate={() => {
-            window.scrollTo(0, 0);
-            setCurrentView('feed');
-          }}
-        />
-      )}
-      {currentView !== 'auth' && currentView !== 'landing' && (
-        <ErrorBoundary>
-          <ChatWidget />
-        </ErrorBoundary>
       )}
     </>
   );

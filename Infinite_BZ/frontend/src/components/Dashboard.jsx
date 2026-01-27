@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import {
     LayoutDashboard, Users, Calendar, Settings, LogOut,
     TrendingUp, AlertCircle, CheckCircle2, MoreHorizontal,
-    Search, Bell, Plus, Download, MessageSquare, ClipboardList, X, Eye, UserPlus, UserMinus, Trash2
+    Search, Bell, Plus, Download, MessageSquare, ClipboardList, X, Eye, UserPlus, UserMinus, Trash2, MessageCircle, RefreshCw
 } from 'lucide-react';
 import CityDropdown from './CityDropdown';
 import CreateEventModal from './CreateEventModal';
@@ -41,7 +41,7 @@ export default function Dashboard({ user, onLogout, onNavigate }) {
     const [activeView, setActiveView] = useState('feed'); // 'feed' or 'my-events' or 'my-registrations' or 'notifications'
     const [userActivities, setUserActivities] = useState([]);
     const [activitiesLoading, setActivitiesLoading] = useState(false);
-
+    const [chatbotFilters, setChatbotFilters] = useState({}); // For chatbot-driven filters
 
     useEffect(() => {
         fetchDashboardStats();
@@ -49,7 +49,17 @@ export default function Dashboard({ user, onLogout, onNavigate }) {
         fetchUserActivities(); // Fetch user activities for notifications
     }, []);
 
-
+    // Apply chatbot filters to UI states
+    useEffect(() => {
+        if (Object.keys(chatbotFilters).length > 0) {
+            if (chatbotFilters.category) setSelectedCategory(chatbotFilters.category);
+            if (chatbotFilters.cost) setSelectedCost(chatbotFilters.cost);
+            if (chatbotFilters.mode) setSelectedMode(chatbotFilters.mode);
+            if (chatbotFilters.source) setSelectedSource(chatbotFilters.source);
+            // Reset chatbot filters after applying
+            setChatbotFilters({});
+        }
+    }, [chatbotFilters]);
 
     useEffect(() => {
         fetchEvents(currentPage, activeSearch, selectedCity, selectedCategory, selectedSource, selectedCost, selectedMode, selectedDate);
@@ -273,11 +283,7 @@ export default function Dashboard({ user, onLogout, onNavigate }) {
             const token = localStorage.getItem('token');
             const res = await fetch(`http://localhost:8000/api/v1/events/${pendingEventId}/register`, {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({})
+                headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
 
@@ -347,7 +353,7 @@ export default function Dashboard({ user, onLogout, onNavigate }) {
                     else onNavigate(view); // Catch-all for check-in or others
                 }}
                 onLogout={onLogout}
-                onCreateClick={() => onNavigate('create-event')}
+                onCreateClick={() => setShowCreateEventModal(true)}
             />
 
             {/* MAIN CONTENT */}
@@ -515,6 +521,8 @@ export default function Dashboard({ user, onLogout, onNavigate }) {
                                             <EventCard
                                                 key={event.id}
                                                 event={event}
+                                                user={user}
+                                                onNavigate={onNavigate}
                                                 isRegistered={newlyRegisteredIds.includes(event.id)}
                                                 onRegister={() => handleRegisterClick(event)}
                                             />
@@ -684,7 +692,7 @@ export default function Dashboard({ user, onLogout, onNavigate }) {
                                                     {activity.type === 'new_follower' && activity.follower_image ? (
                                                         <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
                                                             <img
-                                                                src={activity.follower_image?.startsWith('http') ? activity.follower_image : `http://localhost:8000/${activity.follower_image?.replace(/^\//, '')}`}
+                                                                src={activity.follower_image}
                                                                 alt={activity.follower_name || activity.follower_email}
                                                                 className="w-full h-full object-cover"
                                                                 onError={(e) => {
@@ -704,7 +712,7 @@ export default function Dashboard({ user, onLogout, onNavigate }) {
                                                     ) : activity.type === 'event_created' && activity.event_image ? (
                                                         <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0">
                                                             <img
-                                                                src={activity.event_image?.startsWith('http') ? activity.event_image : `http://localhost:8000/${activity.event_image?.replace(/^\//, '')}`}
+                                                                src={activity.event_image}
                                                                 alt={activity.title}
                                                                 className="w-full h-full object-cover"
                                                                 onError={(e) => {
@@ -724,7 +732,7 @@ export default function Dashboard({ user, onLogout, onNavigate }) {
                                                     ) : activity.type === 'event_registered' && activity.image_url ? (
                                                         <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0">
                                                             <img
-                                                                src={activity.image_url?.startsWith('http') ? activity.image_url : `http://localhost:8000/${activity.image_url?.replace(/^\//, '')}`}
+                                                                src={activity.image_url}
                                                                 alt={activity.title}
                                                                 className="w-full h-full object-cover"
                                                                 onError={(e) => {
@@ -807,14 +815,200 @@ export default function Dashboard({ user, onLogout, onNavigate }) {
                     </div>
                 )}
 
-
+                {/* CHATBOT - Bottom Right Corner */}
+                {activeView === 'feed' && (
+                    <ChatBot onApplyFilters={setChatbotFilters} />
+                )}
             </main>
         </div >
     );
 }
 
 // ChatBot Component
+function ChatBot({ onApplyFilters }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const [messages, setMessages] = useState([
+        { id: 1, text: "Hi! I'm your event assistant. How can I help you today?", sender: 'bot', time: new Date() }
+    ]);
+    const [inputValue, setInputValue] = useState('');
 
+    // Function to detect filter keywords and apply filters
+    const detectAndApplyFilters = (message) => {
+        const lowerMessage = message.toLowerCase();
+        const filters = {};
+
+        // Category filters
+        if (lowerMessage.includes('ai') || lowerMessage.includes('artificial intelligence') || lowerMessage.includes('machine learning')) {
+            filters.category = 'Tech';
+        } else if (lowerMessage.includes('startup') || lowerMessage.includes('business')) {
+            filters.category = 'Startup';
+        } else if (lowerMessage.includes('tech') || lowerMessage.includes('technology')) {
+            filters.category = 'Tech';
+        } else if (lowerMessage.includes('music') || lowerMessage.includes('concert')) {
+            filters.category = 'Music';
+        } else if (lowerMessage.includes('sports') || lowerMessage.includes('fitness')) {
+            filters.category = 'Sports';
+        }
+
+        // Cost filters
+        if (lowerMessage.includes('free')) {
+            filters.cost = 'Free';
+        } else if (lowerMessage.includes('paid') || lowerMessage.includes('premium')) {
+            filters.cost = 'Paid';
+        }
+
+        // Mode filters
+        if (lowerMessage.includes('online') || lowerMessage.includes('virtual')) {
+            filters.mode = 'Online';
+        } else if (lowerMessage.includes('offline') || lowerMessage.includes('in person') || lowerMessage.includes('in-person')) {
+            filters.mode = 'In Person';
+        }
+
+        // Source filters
+        if (lowerMessage.includes('eventbrite')) {
+            filters.source = 'Eventbrite';
+        } else if (lowerMessage.includes('infinitebz') || lowerMessage.includes('infinite bz')) {
+            filters.source = 'InfiniteBZ';
+        }
+
+        // Apply filters if any were detected
+        if (Object.keys(filters).length > 0) {
+            onApplyFilters(filters);
+            return true; // Filters were applied
+        }
+
+        return false; // No filters detected
+    };
+
+    const handleSendMessage = () => {
+        if (inputValue.trim()) {
+            const userMessage = {
+                id: messages.length + 1,
+                text: inputValue,
+                sender: 'user',
+                time: new Date()
+            };
+            setMessages(prev => [...prev, userMessage]);
+
+            const currentInput = inputValue;
+            setInputValue('');
+
+            // Check for filter keywords and apply filters
+            const filtersApplied = detectAndApplyFilters(currentInput);
+
+            // Generate bot response
+            setTimeout(() => {
+                let botResponse = '';
+
+                if (filtersApplied) {
+                    botResponse = "I've applied the filters you requested! The events list has been updated to show the events you're looking for.";
+                } else if (currentInput.toLowerCase().includes('help') || currentInput.toLowerCase().includes('what can you do')) {
+                    botResponse = "I can help you find events by category (AI, Tech, Startup, Music, Sports), cost (Free/Paid), mode (Online/In Person), or source (Eventbrite/InfiniteBZ). Just ask for 'AI events' or 'free tech events'!";
+                } else if (currentInput.toLowerCase().includes('hello') || currentInput.toLowerCase().includes('hi')) {
+                    botResponse = "Hello! I'm here to help you discover great events. Try asking for 'AI events' or 'free online events'!";
+                } else {
+                    botResponse = "I can help you filter events! Try asking for specific types like 'AI events', 'free events', 'online events', or 'tech events'.";
+                }
+
+                const botMessage = {
+                    id: messages.length + 2,
+                    text: botResponse,
+                    sender: 'bot',
+                    time: new Date()
+                };
+                setMessages(prev => [...prev, botMessage]);
+            }, 1000);
+        }
+    };
+
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            handleSendMessage();
+        }
+    };
+
+    return (
+        <>
+            {/* ChatBot Toggle Button */}
+            <div className="fixed bottom-6 right-6 z-50">
+                <button
+                    onClick={() => setIsOpen(!isOpen)}
+                    className={`w-14 h-14 rounded-full shadow-lg transition-all duration-300 ${isOpen
+                        ? 'bg-slate-700 hover:bg-slate-600'
+                        : 'bg-primary-500 hover:bg-primary-400'
+                        } flex items-center justify-center text-white`}
+                >
+                    {isOpen ? (
+                        <X size={24} />
+                    ) : (
+                        <MessageCircle size={24} />
+                    )}
+                </button>
+            </div>
+
+            {/* ChatBot Window */}
+            {isOpen && (
+                <div className="fixed bottom-24 right-6 w-80 h-96 bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl z-40 flex flex-col animate-in fade-in zoom-in-95 duration-200">
+                    {/* Header */}
+                    <div className="bg-gradient-to-r from-primary-500 to-indigo-600 px-4 py-3 rounded-t-2xl">
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                                <span className="text-white text-sm">🤖</span>
+                            </div>
+                            <div>
+                                <h3 className="text-white font-bold text-sm">Event Assistant</h3>
+                                <p className="text-white/80 text-xs">Online</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Messages */}
+                    <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                        {messages.map((message) => (
+                            <div
+                                key={message.id}
+                                className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                            >
+                                <div
+                                    className={`max-w-[70%] px-3 py-2 rounded-lg text-sm ${message.sender === 'user'
+                                        ? 'bg-primary-500 text-white'
+                                        : 'bg-slate-700 text-slate-200'
+                                        }`}
+                                >
+                                    <p>{message.text}</p>
+                                    <span className="text-xs opacity-70 mt-1 block">
+                                        {message.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Input */}
+                    <div className="p-4 border-t border-slate-700">
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                value={inputValue}
+                                onChange={(e) => setInputValue(e.target.value)}
+                                onKeyPress={handleKeyPress}
+                                placeholder="Ask me about events..."
+                                className="flex-1 px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder:text-slate-400 focus:outline-none focus:border-primary-500 text-sm"
+                            />
+                            <button
+                                onClick={handleSendMessage}
+                                disabled={!inputValue.trim()}
+                                className="px-4 py-2 bg-primary-500 hover:bg-primary-400 disabled:bg-slate-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+                            >
+                                Send
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
+    );
+}
 
 // --- SUBCOMPONENTS ---
 
@@ -875,8 +1069,11 @@ function FilterDropdown({ label, options, selected, onChange }) {
     )
 }
 
-function EventCard({ event, onRegister, isRegistered }) {
+function EventCard({ event, onRegister, isRegistered, user, onNavigate }) {
     const [registering, setRegistering] = useState(false);
+
+    // Check if current user is the creator
+    const isCreator = user && event.raw_data?.created_by === user.email;
 
     const handleClick = async () => {
         if (event.raw_data?.source === 'InfiniteBZ') {
@@ -899,7 +1096,7 @@ function EventCard({ event, onRegister, isRegistered }) {
                 </div>
                 {event.image_url && (
                     <img
-                        src={event.image_url?.startsWith('http') ? event.image_url : `http://localhost:8000/${event.image_url?.replace(/^\//, '')}`}
+                        src={event.image_url}
                         alt={event.title}
                         className="w-full h-full object-cover absolute inset-0"
                     />
