@@ -52,20 +52,20 @@ const LandingPage = () => {
 
   const services = [
     {
-      title: "Networking Events",
-      desc: "Architecting high-value connections through recursive ecosystem mapping.",
-      icon: <Network size={22} />,
-      image: "/service_events.png",
-      link: "http://localhost:3006",
-      keyword: "Node Connect"
-    },
-    {
       title: "Investor & Startup",
       desc: "Direct deployment pipeline for high-conviction deal flow and venture capital.",
       icon: <Users size={22} />,
       image: "/service_investors.png",
       link: "http://localhost:80",
       keyword: "Capital Intel"
+    },
+    {
+      title: "Networking Events",
+      desc: "Architecting high-value connections through recursive ecosystem mapping.",
+      icon: <Network size={22} />,
+      image: "/service_events.png",
+      link: "http://localhost:3006",
+      keyword: "Node Connect"
     },
     {
       title: "Education & Research",
