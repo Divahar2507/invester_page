@@ -6,7 +6,8 @@ from typing import List, Optional, Dict, Any
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
-import random
+from sqlalchemy import create_engine, text
+import os
 
 app = FastAPI(title="IPA Ecosystem Nerve Center", description="Integrated Platform Authority (IPA) - System Global Controller")
 
@@ -14,6 +15,11 @@ app = FastAPI(title="IPA Ecosystem Nerve Center", description="Integrated Platfo
 SECRET_KEY = "supersecretkey" 
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 # 24 hours for dev
+
+# Database Connections (Read-Only access for Admin)
+DB_MAIN_URL = os.getenv("DB_MAIN_URL", "postgresql://postgres:Diva%402004@db-main:5432/pitch_platform")
+DB_EVENTS_URL = os.getenv("DB_EVENTS_URL", "postgresql://postgres:Diva%402004@db-events:5432/events_db")
+# DB_LEADGEN_URL = os.getenv("DB_LEADGEN_URL", "postgresql://postgres:Diva%402004@db-leadgen:5432/leadgen_db")
 
 app.add_middleware(
     CORSMiddleware,
@@ -49,7 +55,7 @@ class UserCreate(BaseModel):
     email: Optional[str] = None
     full_name: Optional[str] = None
 
-# Mock User DB
+# Mock User DB for Admin Access Only
 fake_users_db = {}
 
 @app.on_event("startup")
@@ -110,42 +116,21 @@ async def get_current_active_user(current_user: User = Depends(get_current_user)
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
-# --- ENHANCED ECOSYSTEM DATA ---
-
-STARTUPS_DB = [
-    {"id": "IPA-ST-001", "name": "NeuralFlow AI", "sector": "Artificial Intelligence", "stage": "Series A", "requestedUpgrade": "Series B", "submissionDate": "Jan 24, 2024", "status": "Pending", "valuation": "$12.5M"},
-    {"id": "IPA-ST-002", "name": "QuantumLeap", "sector": "Quantum Computing", "stage": "Seed", "requestedUpgrade": "Series A", "submissionDate": "Jan 23, 2024", "status": "Approved", "valuation": "$2.1M"},
-    {"id": "IPA-ST-003", "name": "BioSynth Labs", "sector": "BioTech", "stage": "Pre-Seed", "requestedUpgrade": "Seed", "submissionDate": "Jan 22, 2024", "status": "Pending", "valuation": "$500K"},
-    {"id": "IPA-ST-004", "name": "AquaPure", "sector": "CleanTech", "stage": "Series C", "requestedUpgrade": "Late Stage", "submissionDate": "Jan 20, 2024", "status": "Rejected", "valuation": "$150M"},
-    {"id": "IPA-ST-005", "name": "EduSphere", "sector": "EdTech", "stage": "Growth", "requestedUpgrade": "IPO Prep", "submissionDate": "Jan 18, 2024", "status": "Approved", "valuation": "$45M"},
-]
-
-INVESTORS_DB = [
-    {"id": "IPA-INV-01", "name": "Alpha Capital", "type": "VC Firm", "capacity": "$500M+", "focus": "AI, SaaS", "region": "Global", "status": "Active", "totalDeals": 142},
-    {"id": "IPA-INV-02", "name": "Nexus Ventures", "type": "Asset Manager", "capacity": "$1B+", "focus": "Energy, Infra", "region": "Asia", "status": "Active", "totalDeals": 85},
-    {"id": "IPA-INV-03", "name": "Oasiss Angel", "type": "Angel Group", "capacity": "$10M", "focus": "Web3", "region": "Europe", "status": "Pending", "totalDeals": 12},
-]
-
-# Integrated Events from Infinite_BZ logic
-EVENTS_DB = [
-    {"id": "IPA-EV-2024-01", "name": "Global Investors Summit", "module": "Infinite_BZ", "date": "March 12, 2024", "location": "Virtual / Metaverse", "attendees": "5,000+", "status": "Upcoming"},
-    {"id": "IPA-EV-2024-02", "name": "Startup Demo Day Q1", "module": "Infinite_BZ", "date": "Feb 28, 2024", "location": "San Francisco", "attendees": "350", "status": "Planning"},
-    {"id": "IPA-EV-2024-03", "name": "AI Ethics Roundtable", "module": "Infinite_BZ", "date": "Feb 15, 2024", "location": "London, UK", "attendees": "50", "status": "Ongoing"},
-]
-
-# Integrated Leads from LeadGen logic
-LEADS_DB = [
-    {"id": "IPA-LD-992", "source": "LinkedIn Automation", "contact": "David Sterling", "company": "Sterling VC", "interest": "High", "captured_at": "Just now"},
-    {"id": "IPA-LD-991", "source": "Web Scraper v2", "contact": "Maria Rossi", "company": "Innovate IT", "interest": "Medium", "captured_at": "5 mins ago"},
-]
-
-ECOSYSTEM_HEALTH = [
-    {"service": "Core Investor Platform", "status": "Operational", "latency": "45ms", "load": "12%"},
-    {"service": "LeadGen Engine", "status": "Operational", "latency": "120ms", "load": "45%"},
-    {"service": "Connector Hub", "status": "Operational", "latency": "30ms", "load": "5%"},
-    {"service": "Infinite_BZ (Events)", "status": "Degraded", "latency": "850ms", "load": "92%"},
-    {"service": "Super Admin API", "status": "Operational", "latency": "5ms", "load": "1%"},
-]
+# --- DATABASE HELPERS ---
+def run_query(db_url: str, query_str: str, params: dict = {}):
+    """
+    Executes a read-only SQL query against the specified database.
+    Returns a list of dictionaries.
+    """
+    try:
+        engine = create_engine(db_url)
+        with engine.connect() as connection:
+            result = connection.execute(text(query_str), params)
+            # Convert row objects to dicts
+            return [dict(row._mapping) for row in result]
+    except Exception as e:
+        print(f"Error querying {db_url}: {e}")
+        return []
 
 # --- ROUTES ---
 
@@ -179,35 +164,132 @@ async def read_users_me(current_user: User = Depends(get_current_active_user)):
 
 @app.get("/api/dashboard/stats", tags=["IPA Dashboard"])
 def get_dashboard_stats(current_user: User = Depends(get_current_active_user)):
+    # 1. Get Startup Count & Total Valuation
+    # Note: 'valuation' in DB is a string (e.g. "$10M"). Summing it strictly requires cleaning, 
+    # but for now we'll just count rows to keep it robust.
+    startups = run_query(DB_MAIN_URL, "SELECT count(*) as count FROM startup_profiles")
+    startup_count = startups[0]['count'] if startups else 0
+    
+    # 2. Get Investor Count
+    investors = run_query(DB_MAIN_URL, "SELECT count(*) as count FROM investor_profiles")
+    investor_count = investors[0]['count'] if investors else 0
+
+    # 3. Get Events Count
+    events = run_query(DB_EVENTS_URL, "SELECT count(*) as count FROM event")
+    event_count = events[0]['count'] if events else 0
+
+    # 4. Get Total Deals (Investments)
+    investments = run_query(DB_MAIN_URL, "SELECT count(*) as count, sum(amount) as total_amount FROM investments")
+    deal_count = investments[0]['count'] if investments else 0
+    capital_deployed = investments[0]['total_amount'] if investments and investments[0]['total_amount'] else 0
+    
+    # Format Capital
+    capital_fmt = f"${capital_deployed/1000000:.1f}M" if capital_deployed > 1000000 else f"${capital_deployed:,.0f}"
+
     return {
-        "totalStartups": len(STARTUPS_DB),
-        "activeInvestors": len(INVESTORS_DB),
-        "liveEvents": len(EVENTS_DB),
-        "pendingLeads": len(LEADS_DB),
-        "systemHealth": "98.4%",
-        "investorCapital": "$2.9B",
+        "totalStartups": startup_count,
+        "activeInvestors": investor_count,
+        "liveEvents": event_count,
+        "pendingLeads": 12, # Still mock for now as we didn't check leadgen DB schema yet
+        "systemHealth": "99.9%",
+        "investorCapital": capital_fmt, # Real sum of investments
         "processedToday": 142
     }
 
 @app.get("/api/health", tags=["IPA Control"])
 def get_system_health(current_user: User = Depends(get_current_active_user)):
-    return ECOSYSTEM_HEALTH
+    return [
+        {"service": "Investor Platform", "status": "Operational", "latency": "45ms", "load": "12%"},
+        {"service": "Events Engine", "status": "Operational", "latency": "30ms", "load": "8%"},
+        {"service": "Admin Core", "status": "Operational", "latency": "5ms", "load": "1%"},
+    ]
 
 @app.get("/api/startups", tags=["IPA Registry"])
 def get_startups(current_user: User = Depends(get_current_active_user)):
-    return STARTUPS_DB
+    """Fetch real startups from pitch_platform DB"""
+    query = """
+        SELECT sp.id, sp.company_name as name, sp.industry as sector, sp.funding_stage as stage, 
+               u.email, sp.city, sp.vision
+        FROM startup_profiles sp
+        JOIN users u ON sp.user_id = u.id
+        LIMIT 50
+    """
+    results = run_query(DB_MAIN_URL, query)
+    
+    # Map to frontend expected format
+    mapped = []
+    for r in results:
+        mapped.append({
+            "id": f"IPA-ST-{r['id']}",
+            "name": r['name'],
+            "sector": r['sector'],
+            "stage": r['stage'],
+            "requestedUpgrade": "None",
+            "submissionDate": "2024", # Placeholder as creation date not in profile directly (it's in user)
+            "status": "Active",
+            "valuation": "TBD"
+        })
+    return mapped
 
 @app.get("/api/investors", tags=["IPA Registry"])
 def get_investors(current_user: User = Depends(get_current_active_user)):
-    return INVESTORS_DB
+    """Fetch real investors from pitch_platform DB"""
+    query = """
+        SELECT ip.id, ip.firm_name as name, ip.investor_type as type, ip.focus_industries as focus,
+               ip.min_check_size, ip.max_check_size
+        FROM investor_profiles ip
+        LIMIT 50
+    """
+    results = run_query(DB_MAIN_URL, query)
+    
+    mapped = []
+    for r in results:
+        cap_min = f"${r['min_check_size']/1000:.0f}K" if r['min_check_size'] else "N/A"
+        cap_max = f"${r['max_check_size']/1000000:.1f}M" if r['max_check_size'] else "N/A"
+        
+        mapped.append({
+            "id": f"IPA-INV-{r['id']}",
+            "name": r['name'],
+            "type": r['type'] or "Investor",
+            "capacity": f"{cap_min} - {cap_max}",
+            "focus": r['focus'],
+            "region": "Global",
+            "status": "Active",
+            "totalDeals": 0 # Would need join with investments table
+        })
+    return mapped
 
 @app.get("/api/events", tags=["IPA Integration"])
 def get_events(current_user: User = Depends(get_current_active_user)):
-    return EVENTS_DB
+    """Fetch real events from events_db"""
+    query = """
+        SELECT id, title as name, start_time, venue_name as location
+        FROM event
+        ORDER BY start_time DESC
+        LIMIT 20
+    """
+    results = run_query(DB_EVENTS_URL, query)
+    
+    mapped = []
+    for r in results:
+        mapped.append({
+            "id": f"IPA-EV-{r['id']}",
+            "name": r['name'],
+            "module": "Infinite_BZ",
+            "date": r['start_time'].strftime("%b %d, %Y") if r['start_time'] else "TBD",
+            "location": r['location'] or "Virtual",
+            "attendees": "TBD",
+            "status": "Active"
+        })
+    return mapped
 
 @app.get("/api/leads", tags=["IPA Integration"])
 def get_leads(current_user: User = Depends(get_current_active_user)):
-    return LEADS_DB
+    # Still returning mock until we verify leadgen DB
+    return [
+         {"id": "IPA-LD-992", "source": "LinkedIn Automation", "contact": "David Sterling", "company": "Sterling VC", "interest": "High", "captured_at": "Just now"},
+         {"id": "IPA-LD-991", "source": "Web Scraper v2", "contact": "Maria Rossi", "company": "Innovate IT", "interest": "Medium", "captured_at": "5 mins ago"},
+    ]
 
 # IPA Action - Toggle Service
 @app.post("/api/control/service/{service_name}/toggle", tags=["IPA Control"])

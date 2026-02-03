@@ -40,7 +40,7 @@ services:
       - "5435:5432"
     volumes:
       - postgres_data_leadgen:/var/lib/postgresql/data
-      - ./leadgen/leadgen/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./leadgen/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
@@ -96,15 +96,15 @@ services:
   # LEADGEN BACKEND
   backend-leadgen:
     build:
-      context: "./leadgen/leadgen/backend_fastapi"
+      context: "./leadgen/backend_fastapi"
       dockerfile: Dockerfile
     container_name: leadgen_backend
     restart: unless-stopped
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:Diva%402004@db-leadgen:5432/leadgen_db
       GROQ_API_KEY: ${GROQ_API_KEY}
-      BREVO_API_KEY: ${BREVO_API_KEY}
-      BREVO_SENDER_EMAIL: ${BREVO_SENDER_EMAIL}
+      BREVO_API_KEY:
+      BREVO_SENDER_EMAIL: divahardivahar739@gmail.com
     ports:
       - "8003:8000"
     depends_on:
@@ -203,13 +203,13 @@ services:
   # LEADGEN FRONTEND - Port 3003
   frontend-leadgen:
     build:
-      context: "./leadgen/leadgen/frontend"
+      context: "./leadgen/frontend"
       dockerfile: Dockerfile
     container_name: leadgen_frontend
     ports:
       - "3003:80"
     volumes:
-      - "./leadgen/leadgen/frontend:/app"
+      - "./leadgen/frontend:/app"
       - "/app/node_modules"
     networks:
       - ecosystem_net
@@ -291,13 +291,13 @@ services:
   # FOUNDERDASH STARTUP FRONTEND - Port 3007
   frontend-founderdash:
     build:
-      context: "./founderdash_startup"
+      context: "./founder_dash"
       dockerfile: Dockerfile
     container_name: founderdash_frontend
     ports:
       - "3007:80"
     volumes:
-      - "./founderdash_startup:/app"
+      - "./founder_dash:/app"
       - "/app/node_modules"
     networks:
       - ecosystem_net
@@ -311,7 +311,7 @@ services:
     ports:
       - "3008:80"
     volumes:
-      - "./innosphere_admin/innosphere-admin-&-collaboration-portal:/app"
+      - "./innosphere_admin/innosphere:/app"
       - "/app/node_modules"
     networks:
       - ecosystem_net
