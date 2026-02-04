@@ -38,7 +38,8 @@ import {
   FileSearch
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
-import { DASHBOARD_STATS, ICON_MAP, SEMINARS, RESEARCH_PROJECTS } from '../constants';
+import { ICON_MAP, DASHBOARD_STATS, SEMINARS } from '../constants';
+import { fetchStats, fetchResearch, fetchSeminars } from '../src/services/api';
 import { WatchListContext } from '../App';
 
 const Dashboard = () => {
@@ -51,6 +52,11 @@ const Dashboard = () => {
     { id: '1', action: 'Telemetry node initialized', time: '08:30 AM' },
     { id: '2', action: 'System security audit complete', time: '09:15 AM' }
   ]);
+
+  const [stats, setStats] = useState(DASHBOARD_STATS);
+  const [seminars, setSeminars] = useState(SEMINARS);
+  const [trendingResearch, setTrendingResearch] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false);
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
@@ -70,20 +76,38 @@ const Dashboard = () => {
     conclusion: `The initial benchmarks indicate that ${title} is positioned to disrupt current R&D paradigms by providing a modular, scalable architecture for future collaboration. The proposed framework significantly outperforms current industry standards in both latency and fault tolerance.`
   });
 
-  const [trendingResearch, setTrendingResearch] = useState(
-    RESEARCH_PROJECTS.slice(0, 2).map(p => ({
-      ...p,
-      inst: p.institution.toUpperCase(),
-      desc: p.description,
-      tag: p.field.toUpperCase(),
-      img: p.id === '101'
-        ? '/images/neural_plasticity.png'
-        : '/images/graphene_storage.png',
-      author: p.id === '101' ? 'Dr. Sarah Williams' : 'Prof. James Miller',
-      papers: p.id === '101' ? 14 : 8,
-      content: generateFullContent(p.title, p.institution)
-    }))
-  );
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [statsData, researchData, seminarsData] = await Promise.all([
+          fetchStats(),
+          fetchResearch(),
+          fetchSeminars()
+        ]);
+
+        setStats(statsData);
+        setSeminars(seminarsData);
+
+        setTrendingResearch(
+          researchData.slice(0, 2).map(p => ({
+            ...p,
+            inst: p.institution.toUpperCase(),
+            desc: p.description,
+            tag: p.field.toUpperCase(),
+            img: p.image,
+            author: p.id === 1 ? 'Dr. Sarah Williams' : 'Prof. James Miller',
+            papers: p.id === 1 ? 14 : 8,
+            content: generateFullContent(p.title, p.institution)
+          }))
+        );
+      } catch (error) {
+        console.error("Failed to load dashboard data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, []);
 
   const [formData, setFormData] = useState({ title: '', inst: '', domain: '', desc: '' });
 
@@ -111,7 +135,7 @@ const Dashboard = () => {
 
         doc.setTextColor(15, 23, 42); doc.setFontSize(14); doc.text('I. ACTIVE KPIS', 10, 55);
         doc.setFontSize(10); doc.setFont('helvetica', 'normal');
-        DASHBOARD_STATS.forEach((s, i) => doc.text(`• ${s.label}: ${s.value} (Growth: ${s.change})`, 10, 65 + (i * 10)));
+        stats.forEach((s, i) => doc.text(`• ${s.label}: ${s.value} (Growth: ${s.change})`, 10, 65 + (i * 10)));
 
         doc.save('InnoSphere_Analytics_Export.pdf');
         triggerToast("PDF Report Downloaded", "success");
@@ -237,7 +261,7 @@ const Dashboard = () => {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {DASHBOARD_STATS.map((stat, i) => {
+        {stats.map((stat, i) => {
           const Icon = ICON_MAP[stat.icon];
           return (
             <div key={i} className="bg-white dark:bg-slate-900 p-5 rounded-[24px] border border-white dark:border-slate-800 shadow-sm hover:shadow-md transition-all group cursor-pointer">
@@ -307,7 +331,7 @@ const Dashboard = () => {
               <button onClick={() => navigate('/seminars')} className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.15em] hover:text-indigo-600 transition-colors">View Schedule</button>
             </div>
             <div className="bg-white dark:bg-slate-900 rounded-[32px] border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col divide-y divide-slate-100/30 dark:divide-slate-800/50">
-              {SEMINARS.slice(0, 2).map((s) => (
+              {seminars.slice(0, 2).map((s) => (
                 <div key={s.id} className="p-8 flex items-center gap-8 group hover:bg-slate-50/30 transition-all duration-300">
                   <div className="flex flex-col items-center justify-center min-w-[76px] h-[76px] bg-[#EEF2FF] dark:bg-indigo-950/40 rounded-[22px] border border-indigo-50/50 shadow-sm transition-transform group-hover:scale-105">
                     <span className="text-[10px] font-black text-indigo-500 dark:text-indigo-400 uppercase tracking-widest mb-0.5">{s.month}</span>

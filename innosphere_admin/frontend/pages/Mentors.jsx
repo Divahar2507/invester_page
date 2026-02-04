@@ -24,9 +24,12 @@ import {
   Send
 } from 'lucide-react';
 // Added ICON_MAP to the import list from constants
-import { MENTORS, ICON_MAP } from '../constants';
+import { fetchMentors } from '../src/services/api';
+import { ICON_MAP } from '../constants';
 
 const Mentors = () => {
+  const [mentors, setMentors] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedExpertise, setSelectedExpertise] = useState([]);
   const [selectedMentor, setSelectedMentor] = useState(null);
@@ -47,14 +50,32 @@ const Mentors = () => {
     setTimeout(() => setShowToast(null), 3000);
   };
 
-  const allExpertise = useMemo(() => {
-    const set = new Set();
-    MENTORS.forEach(m => m.expertise.forEach(e => set.add(e)));
-    return Array.from(set);
+  useEffect(() => {
+    const loadMentors = async () => {
+      try {
+        const data = await fetchMentors();
+        setMentors(data);
+      } catch (error) {
+        console.error("Failed to fetch mentors:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadMentors();
   }, []);
 
+  const allExpertise = useMemo(() => {
+    const set = new Set();
+    mentors.forEach(m => {
+      if (Array.isArray(m.expertise)) {
+        m.expertise.forEach(e => set.add(e));
+      }
+    });
+    return Array.from(set);
+  }, [mentors]);
+
   const filteredMentors = useMemo(() => {
-    return MENTORS.filter(m => {
+    return mentors.filter(m => {
       const matchesSearch = m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         m.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
         m.company.toLowerCase().includes(searchQuery.toLowerCase());
@@ -62,7 +83,7 @@ const Mentors = () => {
         selectedExpertise.some(e => m.expertise.includes(e));
       return matchesSearch && matchesExpertise;
     });
-  }, [searchQuery, selectedExpertise]);
+  }, [searchQuery, selectedExpertise, mentors]);
 
   const toggleExpertise = (exp) => {
     setSelectedExpertise(prev =>

@@ -22,6 +22,7 @@ import Research from './pages/Research';
 import Mentors from './pages/Mentors';
 import TechParks from './pages/TechParks';
 import Seminars from './pages/Seminars';
+import ResearchEngine from './pages/ResearchEngine';
 
 // Shared State Contexts
 export const ThemeContext = createContext({ isDark: false, toggleTheme: () => { } });
@@ -191,6 +192,7 @@ const App = () => {
                     <Route path="/mentors" element={<Mentors />} />
                     <Route path="/techparks" element={<TechParks />} />
                     <Route path="/seminars" element={<Seminars />} />
+                    <Route path="/research-engine" element={<ResearchEngine />} />
                   </Routes>
                 </div>
               </main>

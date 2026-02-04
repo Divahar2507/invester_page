@@ -33,7 +33,8 @@ import {
   FlaskConical
 } from 'lucide-react';
 import { jsPDF } from 'jspdf';
-import { RESEARCH_PROJECTS, ICON_MAP } from '../constants';
+import { fetchResearch } from '../src/services/api';
+import { ICON_MAP } from '../constants';
 import { WatchListContext } from '../App';
 
 const Research = () => {
@@ -45,7 +46,24 @@ const Research = () => {
   const [showToast, setShowToast] = useState(null);
   const [requestPending, setRequestPending] = useState(new Set());
   const [collaborationHistory, setCollaborationHistory] = useState([]);
-  const [projects, setProjects] = useState([...RESEARCH_PROJECTS]);
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const loadProjects = async () => {
+    try {
+      setLoading(true);
+      const data = await fetchResearch();
+      setProjects(data);
+    } catch (error) {
+      console.error("Failed to fetch research projects:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadProjects();
+  }, []);
 
   // Post Research Modal States
   const [showPostModal, setShowPostModal] = useState(false);
@@ -401,8 +419,8 @@ const Research = () => {
                       <Bookmark size={20} fill={watchList.has(project.id) ? "currentColor" : "none"} />
                     </button>
                     <span className={`px-4 py-1.5 rounded-xl text-[8px] font-black tracking-[0.2em] uppercase border ${project.status === 'Active' ? 'bg-emerald-50 border-emerald-100 text-emerald-600 dark:bg-emerald-900/20 dark:border-emerald-800' :
-                        project.status === 'New' ? 'bg-indigo-50 border-indigo-100 text-indigo-600 dark:bg-indigo-900/20 dark:border-indigo-800' :
-                          'bg-slate-50 border-slate-100 text-slate-500 dark:bg-slate-800 dark:border-slate-700'
+                      project.status === 'New' ? 'bg-indigo-50 border-indigo-100 text-indigo-600 dark:bg-indigo-900/20 dark:border-indigo-800' :
+                        'bg-slate-50 border-slate-100 text-slate-500 dark:bg-slate-800 dark:border-slate-700'
                       }`}>
                       {project.status}
                     </span>

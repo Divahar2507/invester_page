@@ -16,6 +16,7 @@ import {
 
 export const NAV_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', icon: 'LayoutDashboard', path: '/' },
+  { id: 'research-engine', label: 'Research Engine', icon: 'ShieldCheck', path: '/research-engine' },
   { id: 'research', label: 'Research', icon: 'FlaskConical', path: '/research' },
   { id: 'seminars', label: 'Seminars', icon: 'BookOpen', path: '/seminars' },
   { id: 'mentors', label: 'Mentors', icon: 'Users', path: '/mentors' },
