@@ -1,10 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
-import { 
-  ShieldCheck, 
+import {
+  ShieldCheck,
   Star
 } from 'lucide-react';
-import { PartnerCard, UserRole } from '../types';
+import { UserRole, User, PartnerCard } from '../types';
+import { talentApi } from '../api';
 
 interface TalentPoolProps {
   initialFilter?: string;
@@ -13,19 +14,38 @@ interface TalentPoolProps {
 
 const TalentPool: React.FC<TalentPoolProps> = ({ initialFilter = 'All Categories', onConnect }) => {
   const [activeFilter, setActiveFilter] = useState(initialFilter);
+  const [partners, setPartners] = useState<PartnerCard[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     setActiveFilter(initialFilter);
   }, [initialFilter]);
 
-  const partners: PartnerCard[] = [
-    { id: '1', role: UserRole.AGENCY, name: 'Global Talent Recruiters', description: 'Premier hiring and executive search for high-growth tech firms.', image: 'https://picsum.photos/id/10/600/400', rating: 4.9, reviews: 120, tags: ['Recruiting', 'SaaS'], verified: true },
-    { id: '2', role: UserRole.INSTITUTION, name: 'Tech University Internships', description: 'Direct access to top-tier engineering and design student talent.', image: 'https://picsum.photos/id/12/600/400', rating: 4.5, reviews: 85, tags: ['Academia', 'Internships'], verified: false },
-    { id: '3', role: UserRole.FREELANCER, name: 'Creative Design Partners', description: 'Full-service branding and product design for early-stage startups.', image: 'https://picsum.photos/id/20/600/400', rating: 4.8, reviews: 210, tags: ['Branding', 'UX/UI'], verified: true },
-    { id: '4', role: UserRole.AGENCY, name: 'Elite Staffing Solutions', description: 'C-suite and senior leadership recruitment specialists.', image: 'https://picsum.photos/id/35/600/400', rating: 4.7, reviews: 95, tags: ['Executive', 'Consulting'], verified: false },
-    { id: '5', role: UserRole.INSTITUTION, name: 'Future Founders Office', description: 'Incubator-linked sourcing for founders and technical co-founders.', image: 'https://picsum.photos/id/42/600/400', rating: 4.6, reviews: 50, tags: ['Incubator', 'Startup'], verified: false },
-    { id: '6', role: UserRole.FREELANCER, name: 'Nexus Business Partners', description: 'Strategic B2B partnerships and operational scaling consulting.', image: 'https://picsum.photos/id/50/600/400', rating: 4.8, reviews: 140, tags: ['B2B', 'Scaling'], verified: false }
-  ];
+  useEffect(() => {
+    const fetchTalent = async () => {
+      try {
+        setIsLoading(true);
+        const talent = await talentApi.list();
+        const mappedPartners: PartnerCard[] = talent.map(user => ({
+          id: user.id,
+          role: user.role,
+          name: user.organization || user.name,
+          description: user.bio || `${user.role.charAt(0).toUpperCase() + user.role.slice(1)} providing professional services.`,
+          image: user.avatar || `https://picsum.photos/seed/${user.id}/600/400`,
+          rating: 4.5 + Math.random() * 0.5,
+          reviews: Math.floor(Math.random() * 200),
+          tags: [user.role.toUpperCase()],
+          verified: true
+        }));
+        setPartners(mappedPartners);
+      } catch (error) {
+        console.error("Error fetching talent:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchTalent();
+  }, []);
 
   const categories = ['All Categories', 'Agencies', 'Institutions', 'Freelancers'];
 
@@ -51,11 +71,10 @@ const TalentPool: React.FC<TalentPoolProps> = ({ initialFilter = 'All Categories
           <button
             key={cat}
             onClick={() => setActiveFilter(cat)}
-            className={`whitespace-nowrap px-6 py-2 rounded-full text-sm font-semibold transition-all ${
-              activeFilter === cat 
-                ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' 
-                : 'bg-white text-slate-500 border border-slate-200 hover:border-slate-300'
-            }`}
+            className={`whitespace-nowrap px-6 py-2 rounded-full text-sm font-semibold transition-all ${activeFilter === cat
+              ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
+              : 'bg-white text-slate-500 border border-slate-200 hover:border-slate-300'
+              }`}
           >
             {cat}
           </button>
@@ -84,7 +103,7 @@ const TalentPool: React.FC<TalentPoolProps> = ({ initialFilter = 'All Categories
                 <div className="flex items-center gap-1 text-xs font-bold text-slate-900">
                   <Star size={12} className="text-yellow-500 fill-yellow-500" /> {partner.rating}
                 </div>
-                <button 
+                <button
                   onClick={() => onConnect(partner.id, partner.name)}
                   className="bg-blue-600 text-white px-6 py-2 rounded-xl text-xs font-bold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-100"
                 >

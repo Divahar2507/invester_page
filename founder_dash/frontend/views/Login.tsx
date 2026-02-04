@@ -7,8 +7,14 @@ interface LoginProps {
   onLogin: (user: UserType) => void;
 }
 
+import { authApi } from '../api';
+
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [selectedRole, setSelectedRole] = useState<UserRole>(UserRole.STARTUP);
+  const [email, setEmail] = useState('demo@founderdash.io');
+  const [password, setPassword] = useState('password');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const roles = [
     { id: UserRole.STARTUP, label: 'Startup', icon: Rocket, color: 'blue' },
@@ -17,20 +23,18 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     { id: UserRole.FREELANCER, label: 'Freelancer', icon: User, color: 'emerald' },
   ];
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const mockUser: UserType = {
-      id: Math.random().toString(36).substr(2, 9),
-      name: selectedRole === UserRole.STARTUP ? 'Alex Chen' :
-        selectedRole === UserRole.AGENCY ? 'Sarah Agency' :
-          selectedRole === UserRole.INSTITUTION ? 'Dean Miller' : 'John Freelancer',
-      role: selectedRole,
-      avatar: `https://picsum.photos/seed/${selectedRole}/100/100`,
-      organization: selectedRole === UserRole.STARTUP ? 'Nexus AI' :
-        selectedRole === UserRole.AGENCY ? 'Global Talent' :
-          selectedRole === UserRole.INSTITUTION ? 'Tech Institute' : undefined
-    };
-    onLogin(mockUser);
+    setIsLoading(true);
+    setError(null);
+    try {
+      const user = await authApi.login(email, selectedRole);
+      onLogin(user);
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Failed to login. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -59,6 +63,12 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           <h2 className="text-2xl font-bold text-slate-900 mb-2">Welcome Back</h2>
           <p className="text-slate-400 mb-8">Please select your role to sign in to your workspace.</p>
 
+          {error && (
+            <div className="mb-4 p-4 bg-red-50 text-red-600 rounded-xl text-sm font-medium border border-red-100">
+              {error}
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-3 mb-8">
             {roles.map((role) => {
               const Icon = role.icon;
@@ -66,7 +76,8 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               return (
                 <button
                   key={role.id}
-                  onClick={() => setSelectedRole(role.id)}
+                  disabled={isLoading}
+                  onClick={() => setSelectedRole(role.id as UserRole)}
                   className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 group text-center ${isSelected
                     ? `border-blue-600 bg-blue-50 text-blue-600`
                     : 'border-slate-100 hover:border-slate-200 text-slate-400'
@@ -84,7 +95,9 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1 block">Email Address</label>
               <input
                 type="email"
-                defaultValue="demo@founderdash.io"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
                 className="w-full p-4 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-900"
               />
             </div>
@@ -92,15 +105,18 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1 block">Password</label>
               <input
                 type="password"
-                defaultValue="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoading}
                 className="w-full p-4 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-900"
               />
             </div>
             <button
               type="submit"
-              className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-slate-800 transition-colors shadow-lg"
+              disabled={isLoading}
+              className="w-full bg-slate-900 text-white py-4 rounded-xl font-bold hover:bg-slate-800 transition-colors shadow-lg disabled:opacity-50"
             >
-              Sign In
+              {isLoading ? 'Signing In...' : 'Sign In'}
             </button>
           </form>
 
