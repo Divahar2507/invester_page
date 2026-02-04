@@ -16,6 +16,7 @@ export enum UserRole {
 
 export type ProjectType = 'execution' | 'recruitment';
 
+
 export interface User {
   id: string;
   name: string;
@@ -24,6 +25,15 @@ export interface User {
   organization?: string;
   email?: string;
   bio?: string;
+
+  // Talent Marketplace Fields
+  skills?: string[];
+  experience_level?: string;
+  availability?: string;
+  location?: string;
+  linkedin?: string;
+  github?: string;
+  resume?: string;
 }
 
 export interface Interview {
@@ -65,6 +75,39 @@ export interface Project {
   type: ProjectType;
   status: 'Open' | 'In Progress' | 'Completed';
   skills: string[];
+
+  // Job Posting Details
+  salary_range?: string;
+  equity?: string; // "0.5% - 1.0%"
+  location?: string; // "Remote" | "Onsite"
+}
+
+export enum ApplicationStatus {
+  APPLIED = 'Applied',
+  SHORTLISTED = 'Shortlisted',
+  INTERVIEW = 'Interview',
+  SELECTED = 'Selected',
+  REJECTED = 'Rejected'
+}
+
+export interface JobApplication {
+  id: string;
+  job_id: string;
+  talent_id: string;
+  message?: string;
+  resume_link?: string;
+  status: ApplicationStatus;
+  applied_at: string;
+}
+
+
+export interface Message {
+  id: string;
+  sender_id: string;
+  recipient_id: string;
+  text: string;
+  timestamp: string;
+  status?: string;
 }
 
 export interface ChatMessage {

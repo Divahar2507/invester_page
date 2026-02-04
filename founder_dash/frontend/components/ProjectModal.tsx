@@ -55,9 +55,9 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ type, onClose, onSave }) =>
             <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">Title</label>
             <div className="relative">
               <FileText className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-              <input 
+              <input
                 required
-                type="text" 
+                type="text"
                 placeholder={type === 'execution' ? "e.g. Mobile App UI Redesign" : "e.g. React Developer for Q4 Sprint"}
                 className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 text-sm"
                 value={formData.title}
@@ -68,7 +68,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ type, onClose, onSave }) =>
 
           <div>
             <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">Description</label>
-            <textarea 
+            <textarea
               required
               rows={3}
               placeholder="Provide a brief overview of the requirements..."
@@ -83,8 +83,8 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ type, onClose, onSave }) =>
               <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">Budget/Pay</label>
               <div className="relative">
                 <IndianRupee className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   placeholder="e.g. ₹50,000 - ₹1,00,000"
                   className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 text-sm"
                   value={formData.budget}
@@ -94,7 +94,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ type, onClose, onSave }) =>
             </div>
             <div>
               <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">Category</label>
-              <select 
+              <select
                 className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 text-sm appearance-none"
                 value={formData.category}
                 onChange={e => setFormData({ ...formData, category: e.target.value as any })}
@@ -103,6 +103,39 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ type, onClose, onSave }) =>
                 <option value="Full-time">Full-time</option>
                 <option value="Internship">Internship</option>
               </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">Salary Range</label>
+              <input
+                type="text"
+                placeholder="e.g ₹24L - ₹30L"
+                className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 text-sm"
+                value={formData.salary_range || ''}
+                onChange={e => setFormData({ ...formData, salary_range: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">Equity</label>
+              <input
+                type="text"
+                placeholder="e.g 0.5% - 1%"
+                className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 text-sm"
+                value={formData.equity || ''}
+                onChange={e => setFormData({ ...formData, equity: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-2">Location</label>
+              <input
+                type="text"
+                placeholder="Remote / Onsite"
+                className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 text-sm"
+                value={formData.location || ''}
+                onChange={e => setFormData({ ...formData, location: e.target.value })}
+              />
             </div>
           </div>
 
@@ -117,15 +150,15 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ type, onClose, onSave }) =>
               ))}
             </div>
             <div className="flex gap-2">
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder="Press Enter to add"
                 className="flex-1 px-4 py-3 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-900 text-sm"
                 value={skillInput}
                 onChange={e => setSkillInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addSkill())}
               />
-              <button 
+              <button
                 type="button"
                 onClick={addSkill}
                 className="px-4 bg-slate-200 text-slate-600 rounded-xl hover:bg-slate-300 transition-colors"
@@ -135,7 +168,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({ type, onClose, onSave }) =>
             </div>
           </div>
 
-          <button 
+          <button
             type="submit"
             className={`w-full py-4 text-white rounded-xl font-black uppercase tracking-widest shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98] ${type === 'execution' ? 'bg-blue-600 shadow-blue-200' : 'bg-purple-600 shadow-purple-200'}`}
           >

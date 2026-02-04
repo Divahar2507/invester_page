@@ -65,6 +65,27 @@ services:
     networks:
       - ecosystem_net
 
+  # FOUNDERDASH DATABASE
+  db-founderdash:
+    image: postgres:15-alpine
+    container_name: founderdash_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Diva@2004
+      POSTGRES_DB: founderdash_db
+    ports:
+      - "5439:5432"
+    volumes:
+      - postgres_data_founderdash:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ecosystem_net
+
   # ==========================================
   # BACKENDS
   # ==========================================
@@ -103,8 +124,9 @@ services:
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:Diva%402004@db-leadgen:5432/leadgen_db
       GROQ_API_KEY: ${GROQ_API_KEY}
-      BREVO_API_KEY:
-      BREVO_SENDER_EMAIL: divahardivahar739@gmail.com
+      BREVO_API_KEY: ${BREVO_API_KEY}
+      BREVO_SENDER_EMAIL: ${BREVO_SENDER_EMAIL:-divahardivahar739@gmail.com}
+      BREVO_SENDER_NAME: ${BREVO_SENDER_NAME:-IPA Ecosystem Admin}
     ports:
       - "8003:8000"
     depends_on:
@@ -123,7 +145,7 @@ services:
     volumes:
       - "./admin/backend:/app"
     environment:
-      - SECRET_KEY=supersecretkey
+      - SECRET_KEY=${SECRET_KEY:-supersecretkey}
       - ALGORITHM=HS256
     networks:
       - ecosystem_net
@@ -140,6 +162,23 @@ services:
       - "8005:8000"
     depends_on:
       - db-connector
+    networks:
+      - ecosystem_net
+
+  # FOUNDERDASH BACKEND
+  backend-founderdash:
+    build:
+      context: "./founder_dash/backend"
+      dockerfile: Dockerfile
+    container_name: founderdash_backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://postgres:Diva%402004@db-founderdash:5432/founderdash_db
+    ports:
+      - "8008:8000"
+    depends_on:
+      db-founderdash:
+        condition: service_healthy
     networks:
       - ecosystem_net
 
@@ -291,14 +330,20 @@ services:
   # FOUNDERDASH STARTUP FRONTEND - Port 3007
   frontend-founderdash:
     build:
-      context: "./founder_dash"
+      context: "./founder_dash/frontend"
       dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:8008
     container_name: founderdash_frontend
     ports:
       - "3007:80"
     volumes:
-      - "./founder_dash:/app"
+      - "./founder_dash/frontend:/app"
       - "/app/node_modules"
+    environment:
+      - VITE_API_URL=http://localhost:8008
+    depends_on:
+      - backend-founderdash
     networks:
       - ecosystem_net
 
@@ -369,6 +414,7 @@ volumes:
   postgres_data_connector:
   postgres_data_events:
   postgres_data_funds:
+  postgres_data_founderdash:
 
 
 networks:

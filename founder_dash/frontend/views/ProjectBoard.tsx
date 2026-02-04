@@ -1,18 +1,60 @@
 
 import React from 'react';
-import { Briefcase, Clock, DollarSign, Filter, Search, ChevronRight, FileText, Send, UserPlus, Zap } from 'lucide-react';
-import { User, UserRole, Project } from '../types';
+import { Briefcase, Clock, DollarSign, Filter, Search, ChevronRight, FileText, Send, UserPlus, Zap, CheckCircle } from 'lucide-react';
+import { User, UserRole, Project, JobApplication } from '../types';
+import ApplicationModal from '../components/ApplicationModal';
+import ApplicantsModal from '../components/ApplicantsModal';
+import { applicationApi } from '../api';
+import { useState, useEffect } from 'react';
 
 interface ProjectBoardProps {
   user: User;
   projects: Project[];
   onConnect: (id: string, name: string) => void;
+  onScheduleInterview: (participant: { name: string; avatar: string, id: string, role?: UserRole }) => void;
+  onHire: (data: { name: string, avatar: string, role: UserRole, topic: string, participantId: string }) => void;
 }
 
-const ProjectBoard: React.FC<ProjectBoardProps> = ({ user, projects, onConnect }) => {
+const ProjectBoard: React.FC<ProjectBoardProps> = ({ user, projects, onConnect, onScheduleInterview, onHire }) => {
   const isStartup = user.role === UserRole.STARTUP;
   const isFreelancer = user.role === UserRole.FREELANCER;
   const isPartner = user.role === UserRole.AGENCY || user.role === UserRole.INSTITUTION;
+
+  const [applyingJob, setApplyingJob] = useState<Project | null>(null);
+  const [viewingApplicantsJob, setViewingApplicantsJob] = useState<Project | null>(null);
+  const [myApplications, setMyApplications] = useState<JobApplication[]>([]);
+
+  useEffect(() => {
+    if (!isStartup) {
+      const fetchApps = async () => {
+        try {
+          const apps = await applicationApi.listByTalent(user.id);
+          setMyApplications(apps);
+        } catch (err) {
+          console.error("Failed to fetch applications", err);
+        }
+      };
+      fetchApps();
+    }
+  }, [user.id, isStartup]);
+
+  const handleApply = async (message: string, resumeLink: string) => {
+    if (!applyingJob) return;
+    try {
+      await applicationApi.apply({
+        job_id: applyingJob.id,
+        message,
+        resume_link: resumeLink
+      }, user.id);
+
+      const updatedApps = await applicationApi.listByTalent(user.id);
+      setMyApplications(updatedApps);
+      setApplyingJob(null);
+    } catch (error) {
+      console.error("Error applying:", error);
+      alert("Failed to apply. You may have already applied.");
+    }
+  };
 
   // Logic: Freelancers only see project execution, not talent requirements.
   const visibleProjects = projects.filter(project => {
@@ -30,9 +72,9 @@ const ProjectBoard: React.FC<ProjectBoardProps> = ({ user, projects, onConnect }
         <div className="flex items-center gap-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-            <input 
-              type="text" 
-              placeholder="Filter opportunities..." 
+            <input
+              type="text"
+              placeholder="Filter opportunities..."
               className="pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none w-64"
             />
           </div>
@@ -61,9 +103,8 @@ const ProjectBoard: React.FC<ProjectBoardProps> = ({ user, projects, onConnect }
                 <div key={project.id} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all group border-l-4 border-l-transparent hover:border-l-blue-600">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-4">
-                      <div className={`p-3 rounded-2xl ${
-                        project.type === 'recruitment' ? 'bg-purple-50 text-purple-600' : 'bg-blue-50 text-blue-600'
-                      }`}>
+                      <div className={`p-3 rounded-2xl ${project.type === 'recruitment' ? 'bg-purple-50 text-purple-600' : 'bg-blue-50 text-blue-600'
+                        }`}>
                         {project.type === 'recruitment' ? <UserPlus size={24} /> : <Zap size={24} />}
                       </div>
                       <div>
@@ -86,7 +127,7 @@ const ProjectBoard: React.FC<ProjectBoardProps> = ({ user, projects, onConnect }
                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-bold tracking-wider">{project.category}</span>
                     </div>
                   </div>
-                  
+
                   <p className="text-sm text-slate-600 mb-6 leading-relaxed line-clamp-2">
                     {project.description}
                   </p>
@@ -101,26 +142,52 @@ const ProjectBoard: React.FC<ProjectBoardProps> = ({ user, projects, onConnect }
 
                   <div className="flex items-center justify-between pt-6 border-t border-slate-50">
                     <div className="flex items-center gap-4">
-                      <span className="flex items-center gap-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest"><Clock size={12}/> 14 days left</span>
-                      <span className="flex items-center gap-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest"><FileText size={12}/> 3 Offers</span>
+                      <span className="flex items-center gap-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest"><Clock size={12} /> 14 days left</span>
+                      <span className="flex items-center gap-1 text-[10px] font-bold text-slate-400 uppercase tracking-widest"><FileText size={12} /> 3 Offers</span>
                     </div>
-                    
+
                     {!isMine && (
-                      <button 
-                        onClick={() => onConnect(project.postedById, project.postedBy)}
-                        className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
-                          isLeadOpportunity 
-                            ? 'bg-purple-600 text-white hover:bg-purple-700 shadow-lg shadow-purple-100' 
-                            : 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-100'
-                        }`}
-                      >
-                        {isLeadOpportunity ? 'Connect for Lead' : 'Send Quotation'}
-                        <Send size={14} />
-                      </button>
+                      <div className="flex gap-2">
+                        {project.type !== 'execution' && !isStartup ? (
+                          (() => {
+                            const existingApp = myApplications.find(a => a.job_id === project.id);
+                            if (existingApp) {
+                              return (
+                                <div className="flex items-center gap-2 px-4 py-2 bg-green-50 text-green-700 rounded-xl text-xs font-bold uppercase tracking-widest border border-green-200">
+                                  <CheckCircle size={14} /> Applied
+                                </div>
+                              );
+                            }
+                            return (
+                              <button
+                                onClick={() => setApplyingJob(project)}
+                                className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-100"
+                              >
+                                Apply Now
+                                <Send size={14} />
+                              </button>
+                            );
+                          })()
+                        ) : (
+                          <button
+                            onClick={() => onConnect(project.postedById, project.postedBy)}
+                            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${isLeadOpportunity
+                              ? 'bg-purple-600 text-white hover:bg-purple-700 shadow-lg shadow-purple-100'
+                              : 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-100'
+                              }`}
+                          >
+                            {isLeadOpportunity ? 'Connect for Lead' : 'Send Quotation'}
+                            <Send size={14} />
+                          </button>
+                        )}
+                      </div>
                     )}
 
                     {isMine && (
-                      <button className="text-blue-600 font-bold text-sm flex items-center gap-1 hover:underline group-hover:translate-x-1 transition-transform">
+                      <button
+                        onClick={() => setViewingApplicantsJob(project)}
+                        className="text-blue-600 font-bold text-sm flex items-center gap-1 hover:underline group-hover:translate-x-1 transition-transform"
+                      >
                         Manage Leads <ChevronRight size={16} />
                       </button>
                     )}
@@ -165,6 +232,29 @@ const ProjectBoard: React.FC<ProjectBoardProps> = ({ user, projects, onConnect }
           </div>
         </div>
       </div>
+      {applyingJob && (
+        <ApplicationModal
+          jobTitle={applyingJob.title}
+          onClose={() => setApplyingJob(null)}
+          onApply={handleApply}
+        />
+      )}
+
+      {viewingApplicantsJob && (
+        <ApplicantsModal
+          jobId={viewingApplicantsJob.id}
+          jobTitle={viewingApplicantsJob.title}
+          onClose={() => setViewingApplicantsJob(null)}
+          onScheduleInterview={onScheduleInterview}
+          onHire={(app) => onHire({
+            name: app.talent?.name || 'User',
+            avatar: app.talent?.avatar || '',
+            role: app.talent?.role || UserRole.FREELANCER,
+            topic: viewingApplicantsJob.title,
+            participantId: app.talent_id
+          })}
+        />
+      )}
     </div>
   );
 };
