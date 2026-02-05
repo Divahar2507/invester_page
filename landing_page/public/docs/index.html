@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StartOS Sovereign Vault | Official Repository</title>
+    <style>
+        :root {
+            --primary: #0f172a;
+            --accent: #6366f1;
+            --border: #e2e8f0;
+            --bg: #f8fafc;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--primary);
+            margin: 0;
+            padding: 40px;
+        }
+
+        .header {
+            margin-bottom: 50px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .badge {
+            background: #dcfce7;
+            color: #166534;
+            font-size: 12px;
+            padding: 4px 12px;
+            border-radius: 100px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #64748b;
+            margin: 40px 0 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .doc-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            transition: 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .doc-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
+            border-color: var(--accent);
+        }
+
+        .doc-type {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--accent);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .doc-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1e293b;
+        }
+
+        .doc-desc {
+            font-size: 14px;
+            color: #64748b;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .action-row {
+            display: flex;
+            gap: 10px;
+            margin-top: auto;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: #64748b;
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .status-icon {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: #cbd5e1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="header">
+        <h1>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            StartOS Sovereign Vault
+        </h1>
+        <span class="badge">System Verified</span>
+    </header>
+
+    <div class="note"
+        style="background:#fff7ed; border:1px solid #fed7aa; padding:15px; border-radius:8px; margin-bottom:40px; color:#9a3412;">
+        <strong>🚀 StartOS Document Generator:</strong> This vault contains the verified legal and operational templates
+        required to instantiate a new startup node. All documents are compliant with the 2026 Sovereign Startup Act.
+    </div>
+
+    <!-- SECTION 1: ENTITY FORMATION -->
+    <div class="section-title">01. Entity Formation & Structure</div>
+    <div class="grid">
+        <div class="doc-card">
+            <span class="doc-type">Legal Framework</span>
+            <div class="doc-title">Certificate of Incorporation</div>
+            <p class="doc-desc">Standard INC-32 format for private limited registration. Includes SPICe+ form data
+                structure.</p>
+            <div class="action-row">
+                <a href="#" class="btn btn-primary">Generate</a>
+                <a href="#" class="btn btn-outline">Preview</a>
+            </div>
+        </div>
+        <div class="doc-card">
+            <span class="doc-type">Governance</span>
+            <div class="doc-title">MoA & AoA Template</div>
+            <p class="doc-desc">Memorandum and Articles of Association tailored for high-growth tech ventures with
+                vesting clauses.</p>
+            <div class="action-row">
+                <a href="#" class="btn btn-primary">Generate</a>
+                <a href="#" class="btn btn-outline">Preview</a>
+            </div>
+        </div>
+        <div class="doc-card">
+            <span class="doc-type">Team</span>
+            <div class="doc-title">Founders Agreement (SHA)</div>
+            <p class="doc-desc">Pre-seed Shareholders Agreement. Defines equity split, cliff periods, and IP assignment.
+            </p>
+            <div class="action-row">
+                <a href="#" class="btn btn-primary">Generate</a>
+                <a href="#" class="btn btn-outline">Preview</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 2: INTELLECTUAL PROPERTY -->
+    <div class="section-title">02. Intellectual Property (IPR)</div>
+    <div class="grid">
+        <div class="doc-card">
+            <span class="doc-type">Protection</span>
+            <div class="doc-title">Trademark Filing (TM-A)</div>
+            <p class="doc-desc">Application for registration of a trademark. Class 42 (Software) and Class 35 (Business)
+                pre-filled.</p>
+            <div class="action-row">
+                <a href="#" class="btn btn-primary">Initiate Filing</a>
+            </div>
+        </div>
+        <div class="doc-card">
+            <span class="doc-type">Security</span>
+            <div class="doc-title">Non-Disclosure (NDA)</div>
+            <p class="doc-desc">Mutual NDA for vendor discussions, potential hires, and early-stage investor meetings.
+            </p>
+            <div class="action-row">
+                <a href="#" class="btn btn-primary">Generate</a>
+            </div>
+        </div>
+        <div class="doc-card">
+            <span class="doc-type">Assets</span>
+            <div class="doc-title">IP Assignment Deed</div>
+            <p class="doc-desc">Crucial document transferring all code/assets created by founders to the company entity.
+            </p>
+            <div class="action-row">
+                <a href="#" class="btn btn-primary">Transfer Assets</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION 3: FUNDRAISING & CAPITAL -->
+    <div class="section-title">03. Fundraising & Capital</div>
+    <div class="grid">
+        <div class="doc-card">
+            <span class="doc-type">Investment</span>
+            <div class="doc-title">i-SAFE Note</div>
+            <p class="doc-desc">India Simple Agreement for Future Equity. The standard for early-stage angel rounds.</p>
+            <div class="action-row">
+                <a href="#" class="btn btn-primary">Create Note</a>
+            </div>
+        </div>
+        <div class="doc-card">
+            <span class="doc-type">Due Diligence</span>
+            <div class="doc-title">Cap Table Register</div>
+            <p class="doc-desc">Automated capitalization table tracking authorized and issued share capital.</p>
+            <div class="action-row">
+                <a href="#" class="btn btn-primary">Open Sheets</a>
+            </div>
+        </div>
+        <div class="doc-card">
+            <span class="doc-type">Deal Flow</span>
+            <div class="doc-title">Pitch Deck Template</div>
+            <p class="doc-desc">12-slide Sequoia-style institutional deck structure with financial projection
+                placeholders.</p>
+            <div class="action-row">
+                <a href="#" class="btn btn-primary">Download PPT</a>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

@@ -114,5 +114,12 @@ export const api = {
         return request(`/api/health`, {
             headers: getHeaders(),
         });
+    },
+
+    recognizeStartup: async (startupId, action) => {
+        return request(`/api/control/startup/${startupId}/recognize?action=${action}`, {
+            method: "POST",
+            headers: getHeaders(),
+        });
     }
 };

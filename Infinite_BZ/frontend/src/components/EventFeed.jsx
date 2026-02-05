@@ -112,8 +112,15 @@ export default function EventFeed({ events, loading, error, onBack }) {
                       <Calendar size={48} opacity={0.2} />
                     </div>
                   )}
-                  <div className="absolute top-3 right-3 bg-slate-950/90 px-3 py-1 rounded-full text-xs font-bold text-primary-400 border border-primary-500/20 backdrop-blur-sm">
-                    {event.is_free ? 'FREE' : 'PAID'}
+                  <div className="absolute top-3 right-3 flex gap-2">
+                    {event.event_type && (
+                      <div className="bg-slate-950/90 px-3 py-1 rounded-full text-xs font-bold text-white border border-slate-700 backdrop-blur-sm">
+                        {event.event_type}
+                      </div>
+                    )}
+                    <div className="bg-slate-950/90 px-3 py-1 rounded-full text-xs font-bold text-primary-400 border border-primary-500/20 backdrop-blur-sm">
+                      {event.is_free ? 'FREE' : 'PAID'}
+                    </div>
                   </div>
                 </div>
 

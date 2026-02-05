@@ -52,6 +52,7 @@ class Event(SQLModel, table=True):
     is_free: bool = Field(default=True)
     online_event: bool = Field(default=False)
     category: Optional[str] = Field(default="Business", index=True)
+    event_type: Optional[str] = Field(default="Meetup", index=True)  # Hackathon, Challenge, Program, Meetup
     
     # New Fields
     capacity: Optional[int] = None
@@ -75,6 +76,7 @@ class EventCreate(SQLModel):
     venue_address: Optional[str] = None
     image_url: Optional[str] = None
     category: Optional[str] = "Business"
+    event_type: Optional[str] = "Meetup"
     is_free: bool = True
     online_event: bool = False
     

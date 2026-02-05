@@ -17,6 +17,7 @@ export default function CreateEventPage({ user, onNavigate, onLogout, onSave }) 
         title: "",
         description: "",
         category: "Conference",
+        eventType: "Meetup",
         startDate: "",
         startTime: "10:00",
         endDate: "",
@@ -73,8 +74,10 @@ export default function CreateEventPage({ user, onNavigate, onLogout, onSave }) 
             venue_name: formData.mode === 'online' ? 'Online Event' : formData.location,
             venue_address: formData.mode === 'online' ? 'Online' : formData.location,
             online_event: formData.mode === 'online',
+            online_event: formData.mode === 'online',
             image_url: formData.imageUrl,
             category: formData.category,
+            event_type: formData.eventType,
             timezone: formData.timezone,
             agenda: formData.agendaItems,
             speakers: formData.speakers,
@@ -652,6 +655,23 @@ export default function CreateEventPage({ user, onNavigate, onLogout, onSave }) 
                                                         : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500'}`}
                                                 >
                                                     {cat}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="text-[11px] font-bold uppercase text-slate-400 mb-2 block tracking-wider">Event Type (Format)</label>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {["Meetup", "Hackathon", "Challenge", "Program"].map(type => (
+                                                <button
+                                                    key={type}
+                                                    onClick={() => setFormData(p => ({ ...p, eventType: type }))}
+                                                    className={`px-3 py-2 rounded-lg text-xs font-bold border transition-all ${formData.eventType === type
+                                                        ? 'bg-purple-500 text-white border-purple-500'
+                                                        : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500'}`}
+                                                >
+                                                    {type}
                                                 </button>
                                             ))}
                                         </div>

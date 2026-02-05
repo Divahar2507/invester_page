@@ -6,8 +6,8 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=postgress
+      - POSTGRES_PASSWORD=Diva@2004
       - POSTGRES_DB=innosphere_db
     ports:
       - "5433:5432"

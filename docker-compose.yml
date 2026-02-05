@@ -2,6 +2,18 @@ version: '3.8'
 
 services:
   # ==========================================
+  # DOCUMENTATION
+  # ==========================================
+  documentation:
+    build:
+      context: "./documentation"
+    container_name: documentation_service
+    ports:
+      - "3011:80"
+    networks:
+      - ecosystem_net
+
+  # ==========================================
   # DATABASES
   # ==========================================
 
@@ -15,7 +27,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-Diva@2004}
       POSTGRES_DB: ${POSTGRES_DB:-pitch_platform}
     ports:
-      - "5433:5432"
+      - "5434:5432"
     volumes:
       - postgres_data_main:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -65,6 +77,27 @@ services:
     networks:
       - ecosystem_net
 
+  # FOUNDERDASH DATABASE
+  db-founderdash:
+    image: postgres:15-alpine
+    container_name: founderdash_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Diva@2004
+      POSTGRES_DB: founderdash_db
+    ports:
+      - "5439:5432"
+    volumes:
+      - postgres_data_founderdash:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ecosystem_net
+
   # ==========================================
   # BACKENDS
   # ==========================================
@@ -86,7 +119,7 @@ services:
       - "./invester pitch/backend/uploads:/app/uploads"
       - "./invester pitch/backend/data:/app/data"
     ports:
-      - "8000:8000"
+      - "8001:8000"
     depends_on:
       db-main:
         condition: service_healthy
@@ -103,8 +136,9 @@ services:
     environment:
       DATABASE_URL: postgresql+asyncpg://postgres:Diva%402004@db-leadgen:5432/leadgen_db
       GROQ_API_KEY: ${GROQ_API_KEY}
-      BREVO_API_KEY:
-      BREVO_SENDER_EMAIL: divahardivahar739@gmail.com
+      BREVO_API_KEY: ${BREVO_API_KEY}
+      BREVO_SENDER_EMAIL: ${BREVO_SENDER_EMAIL:-divahardivahar739@gmail.com}
+      BREVO_SENDER_NAME: ${BREVO_SENDER_NAME:-IPA Ecosystem Admin}
     ports:
       - "8003:8000"
     depends_on:
@@ -123,7 +157,7 @@ services:
     volumes:
       - "./admin/backend:/app"
     environment:
-      - SECRET_KEY=supersecretkey
+      - SECRET_KEY=${SECRET_KEY:-supersecretkey}
       - ALGORITHM=HS256
     networks:
       - ecosystem_net
@@ -143,6 +177,23 @@ services:
     networks:
       - ecosystem_net
 
+  # FOUNDERDASH BACKEND
+  backend-founderdash:
+    build:
+      context: "./founder_dash/backend"
+      dockerfile: Dockerfile
+    container_name: founderdash_backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://postgres:Diva%402004@db-founderdash:5432/founderdash_db
+    ports:
+      - "8008:8000"
+    depends_on:
+      db-founderdash:
+        condition: service_healthy
+    networks:
+      - ecosystem_net
+
   # ==========================================
   # FRONTENDS
   # ==========================================
@@ -153,7 +204,7 @@ services:
       context: "./landing_page"
     container_name: landing_page
     ports:
-      - "3000:80"
+      - "3010:80"
     volumes:
       - "./landing_page:/app"
       - "/app/node_modules"
@@ -170,31 +221,10 @@ services:
     container_name: investor_frontend
     restart: unless-stopped
     ports:
-      - "80:80"
+      - "3001:80"
     volumes:
       - "./invester pitch/frontend:/app"
       - "/app/node_modules"
-    depends_on:
-      - backend-main
-    networks:
-      - ecosystem_net
-
-  # STARTUP FRONTEND - Port 3001
-  frontend-startup:
-    build:
-      context: "./startup pitch/frontend"
-      dockerfile: Dockerfile
-      args:
-        VITE_API_URL: http://localhost:8000
-    container_name: startup_frontend
-    restart: unless-stopped
-    ports:
-      - "3001:5173"
-    volumes:
-      - "./startup pitch/frontend:/app"
-      - "/app/node_modules"
-    environment:
-      - VITE_API_URL=http://localhost:8000
     depends_on:
       - backend-main
     networks:
@@ -252,6 +282,8 @@ services:
       DATABASE_URL: postgresql://postgres:Diva%402004@db-events:5432/events_db
     ports:
       - "8006:8000"
+    volumes:
+      - "./Infinite_BZ/backend:/app"
     depends_on:
       - db-events
     networks:
@@ -291,14 +323,20 @@ services:
   # FOUNDERDASH STARTUP FRONTEND - Port 3007
   frontend-founderdash:
     build:
-      context: "./founder_dash"
+      context: "./founder_dash/frontend"
       dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:8008
     container_name: founderdash_frontend
     ports:
       - "3007:80"
     volumes:
-      - "./founder_dash:/app"
+      - "./founder_dash/frontend:/app"
       - "/app/node_modules"
+    environment:
+      - VITE_API_URL=http://localhost:8008
+    depends_on:
+      - backend-founderdash
     networks:
       - ecosystem_net
 
@@ -369,6 +407,7 @@ volumes:
   postgres_data_connector:
   postgres_data_events:
   postgres_data_funds:
+  postgres_data_founderdash:
 
 
 networks:

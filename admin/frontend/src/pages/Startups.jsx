@@ -113,43 +113,84 @@ const Startups = () => {
                                 <TableRow>
                                     <TableCell colSpan={7} className="text-center py-20 font-mono text-xs animate-pulse">STREAMING LEDGER DATA...</TableCell>
                                 </TableRow>
-                            ) : startups?.map((startup) => (
-                                <TableRow key={startup.id} className="border-border hover:bg-primary/5 transition-all group">
-                                    <TableCell className="font-mono text-[11px] text-primary/80">{startup.id}</TableCell>
-                                    <TableCell>
-                                        <div className="font-bold text-sm text-foreground">{startup.name}</div>
-                                        <div className="text-[10px] text-muted-foreground">Joined: {startup.submissionDate}</div>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Badge variant="secondary" className="bg-secondary/40 border-none text-[10px]">{startup.sector}</Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                        <div className="flex flex-col">
-                                            <span className="text-xs font-semibold">{startup.stage}</span>
-                                            {startup.status === 'Pending' && (
-                                                <span className="text-[9px] text-blue-400 font-bold uppercase tracking-tighter">↗ Upgrade to {startup.requestedUpgrade}</span>
+                            ) : startups?.map((startup) => {
+                                // Calculate action buttons based on status
+                                const isPending = startup.status === 'Pending' || startup.status === 'Unregistered';
+                                const isRecognized = startup.status === 'Recognized';
+
+                                return (
+                                    <TableRow key={startup.id} className="border-border hover:bg-primary/5 transition-all group">
+                                        <TableCell className="font-mono text-[11px] text-primary/80">
+                                            {startup.id}
+                                            {startup.dpiit_id && startup.dpiit_id !== 'N/A' && (
+                                                <div className="text-[9px] text-emerald-500 font-bold">{startup.dpiit_id}</div>
                                             )}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="font-black text-xs text-foreground/90">{startup.valuation || "N/A"}</TableCell>
-                                    <TableCell>
-                                        <Badge variant="outline" className={`
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="font-bold text-sm text-foreground">{startup.name}</div>
+                                            <div className="text-[10px] text-muted-foreground">Joined: {startup.submissionDate}</div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge variant="secondary" className="bg-secondary/40 border-none text-[10px]">{startup.sector}</Badge>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex flex-col">
+                                                <span className="text-xs font-semibold">{startup.stage}</span>
+                                                {startup.status === 'Pending' && (
+                                                    <span className="text-[9px] text-blue-400 font-bold uppercase tracking-tighter">↗ Upgrade to {startup.requestedUpgrade}</span>
+                                                )}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="font-black text-xs text-foreground/90">{startup.valuation || "N/A"}</TableCell>
+                                        <TableCell>
+                                            <Badge variant="outline" className={`
                                             text-[10px] font-bold border-none
-                                            ${startup.status === 'Pending' ? 'text-amber-400 bg-amber-400/10' : ''}
-                                            ${startup.status === 'Approved' ? 'text-emerald-400 bg-emerald-400/10' : ''}
+                                            ${startup.status === 'Pending' || startup.status === 'Unregistered' ? 'text-amber-400 bg-amber-400/10' : ''}
+                                            ${startup.status === 'Recognized' ? 'text-emerald-400 bg-emerald-400/10' : ''}
                                             ${startup.status === 'Rejected' ? 'text-rose-400 bg-rose-400/10' : ''}
                                         `}>
-                                            • {startup.status.toUpperCase()}
-                                        </Badge>
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <div className="flex justify-end gap-2 px-2">
-                                            <button className="h-6 w-12 rounded bg-secondary/50 hover:bg-primary hover:text-white transition-all text-[9px] font-black uppercase">View</button>
-                                            <button className="h-6 w-12 rounded bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all text-[9px] font-black uppercase">Edit</button>
-                                        </div>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
+                                                • {startup.status.toUpperCase()}
+                                            </Badge>
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <div className="flex justify-end gap-2 px-2">
+                                                {isPending && (
+                                                    <>
+                                                        <button
+                                                            onClick={() => {
+                                                                if (confirm(`Approve recognition for ${startup.name}?`)) {
+                                                                    api.recognizeStartup(startup.db_id, 'approve').then(() => window.location.reload());
+                                                                }
+                                                            }}
+                                                            className="h-6 px-2 rounded bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white transition-all text-[9px] font-black uppercase flex items-center gap-1"
+                                                        >
+                                                            <CheckCircle2 size={12} /> Approve
+                                                        </button>
+                                                        <button
+                                                            onClick={() => {
+                                                                if (confirm(`Reject recognition for ${startup.name}?`)) {
+                                                                    api.recognizeStartup(startup.db_id, 'reject').then(() => window.location.reload());
+                                                                }
+                                                            }}
+                                                            className="h-6 px-2 rounded bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition-all text-[9px] font-black uppercase"
+                                                        >
+                                                            Reject
+                                                        </button>
+                                                    </>
+                                                )}
+                                                {isRecognized && (
+                                                    <button
+                                                        className="h-6 px-2 rounded bg-slate-500/10 text-slate-500 hover:bg-slate-500 hover:text-white transition-all text-[9px] font-black uppercase"
+                                                    >
+                                                        Revoke
+                                                    </button>
+                                                )}
+                                                <button className="h-6 w-12 rounded bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all text-[9px] font-black uppercase">Edit</button>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })}
                         </TableBody>
                     </Table>
                 </div>

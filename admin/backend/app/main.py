@@ -209,7 +209,7 @@ def get_startups(current_user: User = Depends(get_current_active_user)):
     """Fetch real startups from pitch_platform DB"""
     query = """
         SELECT sp.id, sp.company_name as name, sp.industry as sector, sp.funding_stage as stage, 
-               u.email, sp.city, sp.vision
+               u.email, sp.city, sp.vision, sp.recognition_status, sp.dpiit_number
         FROM startup_profiles sp
         JOIN users u ON sp.user_id = u.id
         LIMIT 50
@@ -219,17 +219,52 @@ def get_startups(current_user: User = Depends(get_current_active_user)):
     # Map to frontend expected format
     mapped = []
     for r in results:
+        status = r.get('recognition_status', 'Unregistered')
+        if status not in ['Pending', 'Recognized', 'Rejected']:
+             status = 'Pending' if r['stage'] != 'Idea' else 'Unregistered' # Auto-infer for demo if null
+
         mapped.append({
             "id": f"IPA-ST-{r['id']}",
+            "db_id": r['id'], # Real DB ID for actions
             "name": r['name'],
             "sector": r['sector'],
             "stage": r['stage'],
             "requestedUpgrade": "None",
-            "submissionDate": "2024", # Placeholder as creation date not in profile directly (it's in user)
-            "status": "Active",
+            "submissionDate": "2024", 
+            "status": status,
+            "dpiit_id": r.get('dpiit_number', 'N/A'),
             "valuation": "TBD"
         })
     return mapped
+
+@app.post("/api/control/startup/{startup_id}/recognize", tags=["IPA Action"])
+def recognize_startup(startup_id: int, action: str, current_user: User = Depends(get_current_active_user)):
+    """
+    Action: 'approve' or 'reject'
+    """
+    new_status = "Recognized" if action == "approve" else "Rejected"
+    
+    # Generate DPIIT Number if approving
+    dpiit_update = ""
+    if new_status == "Recognized":
+        import random
+        dpiit_num = f"DPIIT{random.randint(10000,99999)}"
+        dpiit_update = f", dpiit_number = '{dpiit_num}'"
+
+    query = f"""
+        UPDATE startup_profiles
+        SET recognition_status = '{new_status}' {dpiit_update}
+        WHERE id = {startup_id}
+    """
+    
+    try:
+        engine = create_engine(DB_MAIN_URL)
+        with engine.connect() as connection:
+            connection.execute(text(query))
+            connection.commit()
+        return {"message": f"Startup {startup_id} marked as {new_status}"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/investors", tags=["IPA Registry"])
 def get_investors(current_user: User = Depends(get_current_active_user)):

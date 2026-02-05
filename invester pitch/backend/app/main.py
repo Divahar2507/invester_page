@@ -35,15 +35,14 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # CORS
 origins = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
     "http://localhost",
     "http://127.0.0.1",
     "http://localhost:80",
-    "http://localhost:5173",  # Vite dev server
-    "http://127.0.0.1:5173",
+    "http://localhost:3000",
     "http://localhost:3001",
-    "http://127.0.0.1:3001",
+    "http://localhost:3003",
+    "http://localhost:3010",
+    "http://localhost:5173",
 ]
 
 app.add_middleware(

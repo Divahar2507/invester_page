@@ -62,6 +62,10 @@ class StartupProfile(Base):
     resume_url = Column(String)
     website_url = Column(String)
     
+    # Recognition / Startup India Status
+    recognition_status = Column(String, default="Unregistered") # Unregistered, Pending, Recognized, Rejected
+    dpiit_number = Column(String, nullable=True) # e.g. DIPP12345
+    
     user = relationship("User", back_populates="startup_profile")
     pitches = relationship("Pitch", back_populates="startup")
     matches = relationship("Match", back_populates="startup")

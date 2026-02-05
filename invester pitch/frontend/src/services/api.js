@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.PROD ? '/api' : 'http://127.0.0.1:8000';
+const API_URL = import.meta.env.PROD ? '/api' : 'http://localhost:8001';
 
 export const api = {
     login: async (email, password) => {
@@ -150,8 +150,8 @@ export const api = {
         const token = localStorage.getItem('token');
         if (!token) throw new Error('No token found');
 
-        // Startup Backend (8001) uses /me not /auth/me
-        const response = await fetch(`${API_URL}/me`, {
+        // Startup Backend (8001) might use /me but Main Backend uses /auth/me
+        const response = await fetch(`${API_URL}/auth/me`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 

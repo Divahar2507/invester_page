@@ -8,10 +8,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL")
-if not DATABASE_URL or "postgresql" in DATABASE_URL:
+print(f"DEBUG: DATABASE_URL is '{DATABASE_URL}'")
+if not DATABASE_URL:
     # Use SQLite for local development to avoid PG connection issues
     DATABASE_URL = "sqlite+aiosqlite:///./infinite_bz.db"
-    print(f"Switching to local database: {DATABASE_URL}")
+    print(f"Using fallback local database: {DATABASE_URL}")
 
 # Ensure asyncpg is used for PostgreSQL
 if "postgresql" in DATABASE_URL and not DATABASE_URL.startswith("postgresql+asyncpg://"):

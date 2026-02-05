@@ -34,7 +34,7 @@ const Sidebar = () => {
                     <div className="w-8 h-8 flex items-center justify-center">
                         <div className="w-2.5 h-2.5 bg-blue-600 rounded-full shadow-[0_0_10px_rgba(37,99,235,0.4)]" />
                     </div>
-                    <span className="text-xl font-black text-slate-900 tracking-tighter uppercase italic">
+                    <span className="text-xl font-black text-slate-900 tracking-tighter uppercase">
                         {userRole === 'startup' ? 'STARTUP' : 'INVESTOR'}
                     </span>
                 </div>
